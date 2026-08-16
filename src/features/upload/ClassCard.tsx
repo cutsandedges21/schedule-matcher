@@ -86,6 +86,33 @@ export default function ClassCard({ value, index, onChange, onRemove }: Props) {
 
       <div className="mt-3 flex gap-3">
         <div className="flex-1">
+          <label className="text-xs font-medium text-slate-500" htmlFor={`code-${index}`}>Course code</label>
+          <input
+            id={`code-${index}`}
+            value={value.courseCode ?? ''}
+            onChange={(e) => onChange({ ...value, courseCode: e.target.value || null })}
+            placeholder="Optional"
+            className={`min-h-touch w-full rounded-lg border px-3 ${
+              value.courseCode ? 'border-slate-300' : 'border-amber-300 bg-amber-50'
+            }`}
+          />
+        </div>
+        <div className="flex-1">
+          <label className="text-xs font-medium text-slate-500" htmlFor={`section-${index}`}>Section</label>
+          <input
+            id={`section-${index}`}
+            value={value.section ?? ''}
+            onChange={(e) => onChange({ ...value, section: e.target.value || null })}
+            placeholder="Optional"
+            className={`min-h-touch w-full rounded-lg border px-3 ${
+              value.section ? 'border-slate-300' : 'border-amber-300 bg-amber-50'
+            }`}
+          />
+        </div>
+      </div>
+
+      <div className="mt-3 flex gap-3">
+        <div className="flex-1">
           <label className="text-xs font-medium text-slate-500" htmlFor={`room-${index}`}>Room</label>
           <input
             id={`room-${index}`}

@@ -52,9 +52,13 @@ create unique index friendships_pair_key on public.friendships (
 create index friendships_addressee_idx on public.friendships (addressee_id, status);
 create index friendships_requester_idx on public.friendships (requester_id, status);
 
+-- References auth.users, not profiles: an extraction log entry is about an
+-- authenticated user, not about a completed profile. A user who has signed in
+-- but not yet finished onboarding still has no profiles row, and logging their
+-- extraction would otherwise raise an FK violation.
 create table public.extraction_log (
   id          uuid primary key default gen_random_uuid(),
-  user_id     uuid not null references public.profiles(id) on delete cascade,
+  user_id     uuid not null references auth.users(id) on delete cascade,
   created_at  timestamptz not null default now()
 );
 

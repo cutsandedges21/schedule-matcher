@@ -4,10 +4,20 @@ import { extractSchedule } from './gemini.ts';
 
 const EXTRACTIONS_PER_HOUR = 10;
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+// Must match the client's Zod caps (src/domain/schema.ts) so a single over-long
+// field can't cause the client to discard the whole extracted array.
+const NAME_MAX = 120;
+const INSTRUCTOR_MAX = 120;
+const ROOM_MAX = 60;
 
+// Mirrors the SDK's canonical header list (node_modules/@supabase/supabase-js/dist/cors.mjs).
+// supabase.functions.invoke() always sends apikey and x-client-info in addition to
+// authorization/content-type; omitting any of these fails the CORS preflight and
+// silently blocks every browser call. Keep this byte-identical to the SDK's list.
 const CORS = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, content-type',
+  'Access-Control-Allow-Headers':
+    'authorization, x-client-info, apikey, content-type, x-retry-count, traceparent, tracestate, baggage',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
@@ -19,7 +29,7 @@ function json(body: unknown, status = 200) {
 }
 
 function normalizeClass(raw: Record<string, unknown>, warnings: string[]) {
-  const name = typeof raw.name === 'string' ? raw.name.trim() : '';
+  const name = typeof raw.name === 'string' ? raw.name.trim().slice(0, NAME_MAX) : '';
   const days = Array.isArray(raw.days)
     ? [...new Set(raw.days.filter((d): d is number => Number.isInteger(d) && d >= 1 && d <= 7))]
     : [];
@@ -39,8 +49,11 @@ function normalizeClass(raw: Record<string, unknown>, warnings: string[]) {
 
   return {
     name,
-    instructor: typeof raw.instructor === 'string' && raw.instructor.trim() ? raw.instructor.trim() : null,
-    room: typeof raw.room === 'string' && raw.room.trim() ? raw.room.trim() : null,
+    instructor:
+      typeof raw.instructor === 'string' && raw.instructor.trim()
+        ? raw.instructor.trim().slice(0, INSTRUCTOR_MAX)
+        : null,
+    room: typeof raw.room === 'string' && raw.room.trim() ? raw.room.trim().slice(0, ROOM_MAX) : null,
     days: days.sort((a, b) => a - b),
     startMinute,
     endMinute,
@@ -64,18 +77,6 @@ Deno.serve(async (req) => {
   if (userError || !userData.user) return json({ error: 'UNAUTHORIZED' }, 401);
   const userId = userData.user.id;
 
-  // Rate limit: protects a shared free-tier key from one user's daily quota burn.
-  const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-  const { count } = await admin
-    .from('extraction_log')
-    .select('id', { count: 'exact', head: true })
-    .eq('user_id', userId)
-    .gte('created_at', since);
-
-  if ((count ?? 0) >= EXTRACTIONS_PER_HOUR) {
-    return json({ error: 'RATE_LIMITED', retryAfterMinutes: 60 }, 429);
-  }
-
   let body: { imageBase64?: string; mimeType?: string };
   try {
     body = await req.json();
@@ -91,7 +92,22 @@ Deno.serve(async (req) => {
     return json({ error: 'IMAGE_TOO_LARGE' }, 413);
   }
 
-  await admin.from('extraction_log').insert({ user_id: userId });
+  // Rate limit: protects a shared free-tier key from one user's daily quota burn.
+  // log_extraction() checks-and-inserts atomically (advisory xact lock) so concurrent
+  // requests can't all observe the same under-limit count (TOCTOU). Any error here
+  // must fail closed — never let the request through unmetered.
+  const { data: allowed, error: logError } = await admin.rpc('log_extraction', {
+    p_user_id: userId,
+    p_limit: EXTRACTIONS_PER_HOUR,
+  });
+
+  if (logError) {
+    console.error('log_extraction RPC failed:', logError.message);
+    return json({ error: 'RATE_LIMIT_CHECK_FAILED' }, 500);
+  }
+  if (!allowed) {
+    return json({ error: 'RATE_LIMITED', retryAfterMinutes: 60 }, 429);
+  }
 
   try {
     const raw = await extractSchedule({ base64: imageBase64, mimeType }, Deno.env.get('GEMINI_API_KEY')!);
@@ -103,6 +119,9 @@ Deno.serve(async (req) => {
     return json({ classes, warnings });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'PROVIDER_ERROR';
+    // Never log the API key, the URL containing it, or the image data — only the
+    // error message/status derived in gemini.ts.
+    console.error('extract-schedule failed:', message);
     if (message === 'PROVIDER_RATE_LIMITED') {
       return json({ error: 'PROVIDER_RATE_LIMITED', retryAfterMinutes: 5 }, 429);
     }

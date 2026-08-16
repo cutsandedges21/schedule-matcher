@@ -17,9 +17,13 @@ export async function extractSchedule(
   image: { base64: string; mimeType: string },
   apiKey: string
 ): Promise<RawExtraction> {
-  const response = await fetch(`${ENDPOINT}?key=${apiKey}`, {
+  // Key travels as a header, not a URL query param: Deno's fetch includes the full
+  // request URL in TypeError messages on transient network failures, which would
+  // otherwise leak the key into an Error.message. See Google's documented form:
+  // https://ai.google.dev/gemini-api/docs/api-key#use-request-header
+  const response = await fetch(ENDPOINT, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
     body: JSON.stringify({
       systemInstruction: { parts: [{ text: SYSTEM_PROMPT }] },
       contents: [

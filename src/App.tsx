@@ -9,6 +9,7 @@ import SchedulePage from '@/features/schedule/SchedulePage';
 import FriendsPage from '@/features/friends/FriendsPage';
 import InvitePage from '@/features/friends/InvitePage';
 import FriendSchedulePage from '@/features/friends/FriendSchedulePage';
+import ComparePage from '@/features/compare/ComparePage';
 
 export default function App() {
   return (
@@ -29,6 +30,7 @@ export default function App() {
           <Route path="/friends" element={<RequireAuth><AppShell><FriendsPage /></AppShell></RequireAuth>} />
           <Route path="/invite/:code" element={<RequireAuth><InvitePage /></RequireAuth>} />
           <Route path="/u/:username" element={<RequireAuth><AppShell><FriendSchedulePage /></AppShell></RequireAuth>} />
+          <Route path="/compare/:username" element={<RequireAuth><AppShell><ComparePage /></AppShell></RequireAuth>} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>

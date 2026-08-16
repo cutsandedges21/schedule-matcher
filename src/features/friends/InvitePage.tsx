@@ -16,19 +16,24 @@ export default function InvitePage() {
 
   useEffect(() => {
     async function run() {
-      const found = await findProfileByInviteCode(code!);
-      if (!found) {
-        setMessage('That invite link is not valid.');
+      try {
+        const found = await findProfileByInviteCode(code!);
+        if (!found) {
+          setMessage('That invite link is not valid.');
+          setStatus('error');
+          return;
+        }
+        if (found.id === session?.user.id) {
+          setMessage('That is your own invite link.');
+          setStatus('error');
+          return;
+        }
+        setTarget(found);
+        setStatus('ready');
+      } catch (caught) {
+        setMessage(caught instanceof Error ? caught.message : 'Could not check that invite link.');
         setStatus('error');
-        return;
       }
-      if (found.id === session?.user.id) {
-        setMessage('That is your own invite link.');
-        setStatus('error');
-        return;
-      }
-      setTarget(found);
-      setStatus('ready');
     }
     void run();
   }, [code, session?.user.id]);
@@ -62,7 +67,10 @@ export default function InvitePage() {
         <p className="text-lg">Request sent to @{target.username}.</p>
       )}
 
-      <Link to="/friends" className="text-sm text-slate-500 underline">
+      <Link
+        to="/friends"
+        className="flex min-h-touch items-center justify-center px-4 text-sm text-slate-500 underline"
+      >
         {profile ? 'Back to friends' : 'Continue'}
       </Link>
     </main>

@@ -5,7 +5,7 @@ import { useSchedule } from './useSchedule';
 import ScheduleGrid from './ScheduleGrid';
 import EmptyState from '@/components/EmptyState';
 import Spinner from '@/components/Spinner';
-import Button from '@/components/Button';
+import { buttonClassName } from '@/components/Button';
 
 export default function SchedulePage() {
   const { session, profile } = useAuth();
@@ -20,8 +20,8 @@ export default function SchedulePage() {
           <h1 className="text-2xl font-bold">My schedule</h1>
           <p className="text-sm text-slate-500">@{profile?.username}</p>
         </div>
-        <Link to="/upload">
-          <Button variant="secondary">{classes.length > 0 ? 'Replace' : 'Add'}</Button>
+        <Link to="/upload" className={buttonClassName('secondary')}>
+          {classes.length > 0 ? 'Replace' : 'Add'}
         </Link>
       </header>
 
@@ -31,7 +31,7 @@ export default function SchedulePage() {
         <EmptyState
           title="No schedule yet"
           body="Upload a screenshot of your classes and we'll turn it into a real schedule."
-          action={<Link to="/upload"><Button>Upload a screenshot</Button></Link>}
+          action={<Link to="/upload" className={buttonClassName('primary')}>Upload a screenshot</Link>}
         />
       ) : (
         <div className="mt-2">

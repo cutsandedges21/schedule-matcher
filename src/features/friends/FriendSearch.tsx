@@ -1,5 +1,5 @@
 // src/features/friends/FriendSearch.tsx
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { searchProfiles, sendFriendRequest } from './useFriends';
 import Button from '@/components/Button';
 import type { Profile } from '@/domain/types';
@@ -9,15 +9,39 @@ interface Props {
   onSent: () => void;
 }
 
+const DEBOUNCE_MS = 300;
+
 export default function FriendSearch({ userId, onSent }: Props) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<Profile[]>([]);
   const [message, setMessage] = useState<string | null>(null);
+  const sequence = useRef(0);
 
-  async function handleChange(value: string) {
+  useEffect(() => {
+    const mySequence = ++sequence.current;
+    const timer = setTimeout(() => {
+      searchProfiles(query, userId)
+        .then((found) => {
+          // Stale-response guard: on cellular, requests for "ale" and
+          // "alexis" routinely return out of order. Only apply the response
+          // that matches the most recently fired search — otherwise the
+          // list can show results for an earlier query while the field
+          // reads something else, and the student adds the wrong person.
+          if (sequence.current === mySequence) setResults(found);
+        })
+        .catch((error: unknown) => {
+          if (sequence.current !== mySequence) return;
+          setMessage(error instanceof Error ? error.message : 'Could not search right now.');
+          setResults([]);
+        });
+    }, DEBOUNCE_MS);
+
+    return () => clearTimeout(timer);
+  }, [query, userId]);
+
+  function handleChange(value: string) {
     setQuery(value);
     setMessage(null);
-    setResults(await searchProfiles(value, userId));
   }
 
   async function handleSend(target: Profile) {
@@ -37,7 +61,7 @@ export default function FriendSearch({ userId, onSent }: Props) {
       <input
         id="search"
         value={query}
-        onChange={(e) => void handleChange(e.target.value)}
+        onChange={(e) => handleChange(e.target.value)}
         autoCapitalize="none"
         autoCorrect="off"
         spellCheck={false}

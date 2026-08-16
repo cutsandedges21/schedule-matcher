@@ -17,7 +17,7 @@ interface ContentRect {
   offsetY: number;
 }
 
-type DragMode = 'move' | 'tl' | 'tr' | 'bl' | 'br';
+type DragMode = 'move' | 'n' | 's' | 'e' | 'w' | 'nw' | 'ne' | 'sw' | 'se';
 
 interface DragState {
   mode: DragMode;
@@ -26,17 +26,41 @@ interface DragState {
   startNorm: { x: number; y: number };
 }
 
-/** Corner handles can't shrink the rectangle's screen size below this many CSS px. */
+/** Handles can't shrink the rectangle's screen size below this many CSS px. */
 const MIN_CROP_PX = 60;
+
+/** Touch target for every handle, per the 44px minimum. */
+const HANDLE_PX = 44;
 
 /** Inset from the edges so it's visually obvious the rectangle is adjustable. */
 const DEFAULT_CROP: CropRect = { x: 0.1, y: 0.1, width: 0.8, height: 0.8 };
 
-const HANDLES: { mode: DragMode; cornerX: 0 | 1; cornerY: 0 | 1; cursor: string }[] = [
-  { mode: 'tl', cornerX: 0, cornerY: 0, cursor: 'nwse-resize' },
-  { mode: 'tr', cornerX: 1, cornerY: 0, cursor: 'nesw-resize' },
-  { mode: 'bl', cornerX: 0, cornerY: 1, cursor: 'nesw-resize' },
-  { mode: 'br', cornerX: 1, cornerY: 1, cursor: 'nwse-resize' },
+/**
+ * Which edges each mode moves. Edge handles move ONE edge, so a side can be
+ * extended on its own — dragging a corner changes both axes at once, which is
+ * why corners alone made the rectangle feel shape-locked.
+ */
+const EDGES: Record<Exclude<DragMode, 'move'>, { l: boolean; r: boolean; t: boolean; b: boolean }> = {
+  n: { l: false, r: false, t: true, b: false },
+  s: { l: false, r: false, t: false, b: true },
+  w: { l: true, r: false, t: false, b: false },
+  e: { l: false, r: true, t: false, b: false },
+  nw: { l: true, r: false, t: true, b: false },
+  ne: { l: false, r: true, t: true, b: false },
+  sw: { l: true, r: false, t: false, b: true },
+  se: { l: false, r: true, t: false, b: true },
+};
+
+/** Anchor point on the rectangle, as a 0–1 fraction of its width/height. */
+const HANDLES: { mode: Exclude<DragMode, 'move'>; fx: number; fy: number; cursor: string }[] = [
+  { mode: 'nw', fx: 0, fy: 0, cursor: 'nwse-resize' },
+  { mode: 'n', fx: 0.5, fy: 0, cursor: 'ns-resize' },
+  { mode: 'ne', fx: 1, fy: 0, cursor: 'nesw-resize' },
+  { mode: 'w', fx: 0, fy: 0.5, cursor: 'ew-resize' },
+  { mode: 'e', fx: 1, fy: 0.5, cursor: 'ew-resize' },
+  { mode: 'sw', fx: 0, fy: 1, cursor: 'nesw-resize' },
+  { mode: 's', fx: 0.5, fy: 1, cursor: 'ns-resize' },
+  { mode: 'se', fx: 1, fy: 1, cursor: 'nwse-resize' },
 ];
 
 function clamp(value: number, min: number, max: number): number {
@@ -117,7 +141,18 @@ export default function ImageCropper({ file, onConfirm, onCancel }: Props) {
   function beginDrag(mode: DragMode) {
     return (event: React.PointerEvent) => {
       if (!content) return;
-      event.currentTarget.setPointerCapture(event.pointerId);
+      // Handles are children of the rectangle, so without this the event
+      // bubbles to the rectangle's own pointerdown and overwrites the mode
+      // with 'move' — which turned every resize into a whole-rect drag.
+      event.stopPropagation();
+      // Capture keeps the drag alive when the pointer leaves the handle. It can
+      // throw if the pointer is already gone; that must not abort the drag,
+      // since the stage's own move handler works without capture anyway.
+      try {
+        stageRef.current?.setPointerCapture(event.pointerId);
+      } catch {
+        /* capture unavailable — drag still tracked via the stage handlers */
+      }
       dragRef.current = {
         mode,
         pointerId: event.pointerId,
@@ -147,31 +182,22 @@ export default function ImageCropper({ file, onConfirm, onCancel }: Props) {
       return;
     }
 
-    // Resize: the corner opposite the one being dragged stays fixed; the
-    // dragged corner follows the pointer, clamped so the rect can't invert
-    // or shrink past the minimum on-screen size.
+    // Resize: only the edges this handle owns move, so `n`/`s`/`e`/`w` adjust a
+    // single side while corners adjust two. The untouched edges stay exactly
+    // where they were, and each moved edge is clamped so the rectangle can
+    // neither invert nor shrink below the minimum on-screen size.
     const x1 = drag.startCrop.x;
     const y1 = drag.startCrop.y;
     const x2 = drag.startCrop.x + drag.startCrop.width;
     const y2 = drag.startCrop.y + drag.startCrop.height;
+    const edges = EDGES[drag.mode];
 
-    if (drag.mode === 'br') {
-      const nx2 = clamp(current.x, x1 + minW, 1);
-      const ny2 = clamp(current.y, y1 + minH, 1);
-      setCrop({ x: x1, y: y1, width: nx2 - x1, height: ny2 - y1 });
-    } else if (drag.mode === 'tl') {
-      const nx1 = clamp(current.x, 0, x2 - minW);
-      const ny1 = clamp(current.y, 0, y2 - minH);
-      setCrop({ x: nx1, y: ny1, width: x2 - nx1, height: y2 - ny1 });
-    } else if (drag.mode === 'tr') {
-      const nx2 = clamp(current.x, x1 + minW, 1);
-      const ny1 = clamp(current.y, 0, y2 - minH);
-      setCrop({ x: x1, y: ny1, width: nx2 - x1, height: y2 - ny1 });
-    } else {
-      const nx1 = clamp(current.x, 0, x2 - minW);
-      const ny2 = clamp(current.y, y1 + minH, 1);
-      setCrop({ x: nx1, y: y1, width: x2 - nx1, height: ny2 - y1 });
-    }
+    const nx1 = edges.l ? clamp(current.x, 0, x2 - minW) : x1;
+    const nx2 = edges.r ? clamp(current.x, x1 + minW, 1) : x2;
+    const ny1 = edges.t ? clamp(current.y, 0, y2 - minH) : y1;
+    const ny2 = edges.b ? clamp(current.y, y1 + minH, 1) : y2;
+
+    setCrop({ x: nx1, y: ny1, width: nx2 - nx1, height: ny2 - ny1 });
   }
 
   function endDrag(event: React.PointerEvent) {
@@ -208,6 +234,9 @@ export default function ImageCropper({ file, onConfirm, onCancel }: Props) {
         ref={stageRef}
         className="relative flex-1 touch-none overflow-hidden bg-slate-900"
         style={{ touchAction: 'none' }}
+        onPointerMove={handleDragMove}
+        onPointerUp={endDrag}
+        onPointerCancel={endDrag}
       >
         {objectUrl && (
           <img
@@ -259,33 +288,56 @@ export default function ImageCropper({ file, onConfirm, onCancel }: Props) {
               className="absolute touch-none border-2 border-white shadow-lg"
               style={{ left: rect.left, top: rect.top, width: rect.width, height: rect.height, touchAction: 'none', cursor: 'move' }}
               onPointerDown={beginDrag('move')}
-              onPointerMove={handleDragMove}
-              onPointerUp={endDrag}
-              onPointerCancel={endDrag}
             >
-              {HANDLES.map(({ mode, cornerX, cornerY, cursor }) => (
-                <div
-                  key={mode}
-                  className="absolute touch-none"
-                  style={{
-                    left: cornerX * rect.width,
-                    top: cornerY * rect.height,
-                    width: 44,
-                    height: 44,
-                    transform: 'translate(-50%, -50%)',
-                    touchAction: 'none',
-                    cursor,
-                  }}
-                  onPointerDown={beginDrag(mode)}
-                  onPointerMove={handleDragMove}
-                  onPointerUp={endDrag}
-                  onPointerCancel={endDrag}
-                >
-                  <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-                    <div className="h-4 w-4 rounded-full border-2 border-slate-900 bg-white shadow" />
+              {HANDLES.map(({ mode, fx, fy, cursor }) => {
+                const isCorner = mode.length === 2;
+                const horizontalEdge = mode === 'n' || mode === 's';
+                const verticalEdge = mode === 'e' || mode === 'w';
+
+                // Edge handles stretch along their edge so there is something
+                // substantial to grab, stopping short of the corners so they
+                // never sit on top of them.
+                const width = horizontalEdge
+                  ? Math.max(24, rect.width - HANDLE_PX * 2)
+                  : HANDLE_PX;
+                const height = verticalEdge
+                  ? Math.max(24, rect.height - HANDLE_PX * 2)
+                  : HANDLE_PX;
+
+                return (
+                  <div
+                    key={mode}
+                    role="button"
+                    aria-label={`Resize crop: ${mode}`}
+                    className="absolute touch-none"
+                    style={{
+                      left: fx * rect.width,
+                      top: fy * rect.height,
+                      width,
+                      height,
+                      transform: 'translate(-50%, -50%)',
+                      touchAction: 'none',
+                      cursor,
+                    }}
+                    onPointerDown={beginDrag(mode)}
+                  >
+                    <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                      {isCorner ? (
+                        <div className="h-4 w-4 rounded-full border-2 border-slate-900 bg-white shadow" />
+                      ) : (
+                        <div
+                          className="rounded-full bg-white shadow"
+                          style={
+                            horizontalEdge
+                              ? { width: 32, height: 5 }
+                              : { width: 5, height: 32 }
+                          }
+                        />
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </>
         )}

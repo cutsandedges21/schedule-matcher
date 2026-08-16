@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from '@/features/auth/AuthProvider';
 import RequireAuth from '@/features/auth/RequireAuth';
 import LoginPage from '@/features/auth/LoginPage';
+import OnboardingPage from '@/features/auth/OnboardingPage';
 
 export default function App() {
   return (
@@ -9,6 +10,14 @@ export default function App() {
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
+          <Route
+            path="/onboarding"
+            element={
+              <RequireAuth>
+                <OnboardingPage />
+              </RequireAuth>
+            }
+          />
           <Route
             path="/"
             element={

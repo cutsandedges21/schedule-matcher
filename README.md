@@ -53,7 +53,36 @@ sign-in:
 | `npm run dev` | Dev server |
 | `npm test` | Domain unit tests |
 | `npm run build` | Type check and production build |
+| `npm run icons` | Redraw the home-screen icons in `public/` |
 | `node scripts/run-sql.mjs <ref> <file.sql>` | Run SQL via the Management API |
+
+## Phones only
+
+Anything wider than 639px (`ABOVE_MOBILE_QUERY` in `src/domain/viewport.ts`)
+gets `DesktopNotice` instead of the app — the grid, the day chips and the
+compare view are all laid out for a phone. There is no exemption for a phone
+held in landscape; the notice asks those students to rotate back.
+
+The notice offers a "Continue on this screen anyway" escape hatch, kept in
+`sessionStorage` so it lasts one browsing session and no longer. Delete the
+button in `DesktopNotice` if you want the wall to be absolute.
+
+## Home-screen install
+
+Onboarding ends on "add to home screen" instructions for both iPhone and
+Android (`src/components/InstallInstructions.tsx`), skipped for anyone already
+running from a home-screen icon.
+
+On Android, Chrome fires `beforeinstallprompt` when the page qualifies as
+installable. `src/lib/installPrompt.ts` catches that event at startup — before
+onboarding mounts, since it only fires once — and onboarding turns it into a
+one-tap install button. Qualifying needs all of `public/manifest.webmanifest`,
+the PNG icons, and HTTPS; iOS ignores the manifest entirely and reads the
+`apple-*` tags in `index.html` instead.
+
+The icons are drawn by `npm run icons` (no image dependency — it writes PNGs
+straight from `node:zlib`) and the output is committed, so builds never need
+to run it.
 
 ## Docs
 

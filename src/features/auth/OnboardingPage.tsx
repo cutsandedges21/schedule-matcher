@@ -1,10 +1,12 @@
-import { useState, type FormEvent } from 'react';
+import { useRef, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { usernameSchema } from '@/domain/schema';
+import { isStandalone } from '@/lib/installPrompt';
 import { useAuth } from './AuthProvider';
 import { consumeRedirect } from './redirect';
 import Button from '@/components/Button';
+import InstallInstructions from '@/components/InstallInstructions';
 
 /**
  * A 23505 on the profile insert means one of two things: the *username* is
@@ -32,6 +34,30 @@ export default function OnboardingPage() {
   const [username, setUsername] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [step, setStep] = useState<'username' | 'install'>('username');
+
+  /**
+   * Where to go when onboarding finishes — captured the moment the profile is
+   * saved, not when the student taps through the install step. `RequireAuth`
+   * clears the pending redirect as soon as a profile exists, so reading it
+   * later would silently drop the invite link that sent them here.
+   */
+  const destination = useRef('/');
+
+  function finish() {
+    navigate(destination.current, { replace: true });
+  }
+
+  /** Profile saved: show the install step, unless they're already installed. */
+  async function afterProfileSaved() {
+    destination.current = consumeRedirect();
+    await refreshProfile();
+    if (isStandalone()) {
+      finish();
+      return;
+    }
+    setStep('install');
+  }
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
@@ -56,8 +82,7 @@ export default function OnboardingPage() {
       if (insertError.code === '23505' && (await profileExists(session!.user.id))) {
         // Their profile already exists — not a bad username, just a
         // recoverable state. Pick up the existing profile and continue.
-        await refreshProfile();
-        navigate(consumeRedirect(), { replace: true });
+        await afterProfileSaved();
         return;
       }
       setError(
@@ -68,8 +93,34 @@ export default function OnboardingPage() {
       return;
     }
 
-    await refreshProfile();
-    navigate(consumeRedirect(), { replace: true });
+    await afterProfileSaved();
+  }
+
+  if (step === 'install') {
+    return (
+      <main className="flex min-h-dvh flex-col p-6">
+        <h1 className="mt-8 text-2xl font-bold">Keep it one tap away</h1>
+        <p className="mt-2 text-sm leading-relaxed text-slate-600">
+          Add Schedule Matcher to your home screen and it opens like a normal app — no
+          browser, no typing the address, no hunting through tabs.
+        </p>
+
+        <div className="mt-6 flex-1">
+          <InstallInstructions />
+        </div>
+
+        <Button onClick={finish} className="mt-6 w-full">
+          Done
+        </Button>
+        <button
+          type="button"
+          onClick={finish}
+          className="mt-2 min-h-touch text-sm font-medium text-slate-500"
+        >
+          Skip for now
+        </button>
+      </main>
+    );
   }
 
   return (

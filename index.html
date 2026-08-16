@@ -4,6 +4,24 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#0f172a" />
+    <meta
+      name="description"
+      content="Share your class schedule and find the hours you and your friends are both free."
+    />
+
+    <!-- Home-screen install. The manifest is what makes Android offer a real
+         install (rather than a bookmark); the apple-* tags are the iOS
+         equivalent, since Safari ignores the manifest's display and name. -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <!-- "default", not "black-translucent": the app is light and does not pad
+         for the status bar, so translucent would run text under the clock. -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Schedule" />
+
     <title>Schedule Matcher</title>
   </head>
   <body>

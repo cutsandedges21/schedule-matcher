@@ -1,5 +1,5 @@
 // src/components/DesktopNotice.tsx
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import Button from './Button';
 
 /**
@@ -8,24 +8,40 @@ import Button from './Button';
  * cannot go stale when the grid changes.
  */
 function PhoneIllustration() {
+  // useId keeps the clip path unique if this ever renders twice; the colons
+  // React puts in the id are not valid inside a url(#…) reference.
+  const clipId = `phone-screen-${useId().replace(/:/g, '')}`;
+
   return (
     <svg viewBox="0 0 120 200" role="presentation" className="h-40 w-auto">
+      <defs>
+        {/* The bottom bar is a plain rectangle. Clipping the screen contents
+            to the screen's own rounded shape keeps the bar from squaring off
+            the two bottom corners. */}
+        <clipPath id={clipId}>
+          <rect x="16" y="10" width="88" height="180" rx="11" />
+        </clipPath>
+      </defs>
+
       <rect x="10" y="4" width="100" height="192" rx="16" className="fill-slate-900" />
-      <rect x="16" y="10" width="88" height="180" rx="11" className="fill-white" />
-      <rect x="48" y="14" width="24" height="4" rx="2" className="fill-slate-900" />
-      <rect x="24" y="28" width="34" height="5" rx="2.5" className="fill-slate-300" />
-      <rect x="24" y="42" width="22" height="26" rx="4" className="fill-indigo-200" />
-      <rect x="50" y="42" width="22" height="40" rx="4" className="fill-emerald-200" />
-      <rect x="76" y="42" width="22" height="18" rx="4" className="fill-amber-200" />
-      <rect x="24" y="74" width="22" height="34" rx="4" className="fill-rose-200" />
-      <rect x="50" y="88" width="22" height="22" rx="4" className="fill-sky-200" />
-      <rect x="76" y="66" width="22" height="44" rx="4" className="fill-violet-200" />
-      <rect x="24" y="114" width="22" height="30" rx="4" className="fill-teal-200" />
-      <rect x="76" y="116" width="22" height="26" rx="4" className="fill-indigo-200" />
-      <rect x="16" y="164" width="88" height="26" className="fill-slate-100" />
-      <circle cx="38" cy="177" r="3" className="fill-slate-900" />
-      <circle cx="60" cy="177" r="3" className="fill-slate-300" />
-      <circle cx="82" cy="177" r="3" className="fill-slate-300" />
+
+      <g clipPath={`url(#${clipId})`}>
+        <rect x="16" y="10" width="88" height="180" rx="11" className="fill-white" />
+        <rect x="48" y="14" width="24" height="4" rx="2" className="fill-slate-900" />
+        <rect x="24" y="28" width="34" height="5" rx="2.5" className="fill-slate-300" />
+        <rect x="24" y="42" width="22" height="26" rx="4" className="fill-indigo-200" />
+        <rect x="50" y="42" width="22" height="40" rx="4" className="fill-emerald-200" />
+        <rect x="76" y="42" width="22" height="18" rx="4" className="fill-amber-200" />
+        <rect x="24" y="74" width="22" height="34" rx="4" className="fill-rose-200" />
+        <rect x="50" y="88" width="22" height="22" rx="4" className="fill-sky-200" />
+        <rect x="76" y="66" width="22" height="44" rx="4" className="fill-violet-200" />
+        <rect x="24" y="114" width="22" height="30" rx="4" className="fill-teal-200" />
+        <rect x="76" y="116" width="22" height="26" rx="4" className="fill-indigo-200" />
+        <rect x="16" y="164" width="88" height="26" className="fill-slate-100" />
+        <circle cx="38" cy="177" r="3" className="fill-slate-900" />
+        <circle cx="60" cy="177" r="3" className="fill-slate-300" />
+        <circle cx="82" cy="177" r="3" className="fill-slate-300" />
+      </g>
     </svg>
   );
 }

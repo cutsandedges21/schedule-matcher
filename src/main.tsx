@@ -2,6 +2,10 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
 import { configError } from './lib/supabase';
+// Side effect only: catches Chrome's `beforeinstallprompt` before it is lost,
+// so onboarding can offer a real install button. Must run at startup — the
+// event fires long before the onboarding screen mounts.
+import './lib/installPrompt';
 import './index.css';
 
 /**

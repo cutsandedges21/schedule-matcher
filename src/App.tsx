@@ -1,37 +1,42 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { lazy, Suspense, type ReactNode } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from '@/features/auth/AuthProvider';
 import RequireAuth from '@/features/auth/RequireAuth';
-import LoginPage from '@/features/auth/LoginPage';
-import OnboardingPage from '@/features/auth/OnboardingPage';
-import UploadPage from '@/features/upload/UploadPage';
 import AppShell from '@/components/AppShell';
+import Spinner from '@/components/Spinner';
+import LoginPage from '@/features/auth/LoginPage';
 import SchedulePage from '@/features/schedule/SchedulePage';
-import FriendsPage from '@/features/friends/FriendsPage';
-import InvitePage from '@/features/friends/InvitePage';
-import FriendSchedulePage from '@/features/friends/FriendSchedulePage';
-import ComparePage from '@/features/compare/ComparePage';
+
+const OnboardingPage = lazy(() => import('@/features/auth/OnboardingPage'));
+const ProfilePage = lazy(() => import('@/features/auth/ProfilePage'));
+const UploadPage = lazy(() => import('@/features/upload/UploadPage'));
+const FriendsPage = lazy(() => import('@/features/friends/FriendsPage'));
+const FriendSchedulePage = lazy(() => import('@/features/friends/FriendSchedulePage'));
+const InvitePage = lazy(() => import('@/features/friends/InvitePage'));
+const ComparePage = lazy(() => import('@/features/compare/ComparePage'));
+
+const shell = (element: ReactNode) => (
+  <RequireAuth><AppShell>{element}</AppShell></RequireAuth>
+);
 
 export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route
-            path="/onboarding"
-            element={
-              <RequireAuth>
-                <OnboardingPage />
-              </RequireAuth>
-            }
-          />
-          <Route path="/upload" element={<RequireAuth><UploadPage /></RequireAuth>} />
-          <Route path="/" element={<RequireAuth><AppShell><SchedulePage /></AppShell></RequireAuth>} />
-          <Route path="/friends" element={<RequireAuth><AppShell><FriendsPage /></AppShell></RequireAuth>} />
-          <Route path="/invite/:code" element={<RequireAuth><InvitePage /></RequireAuth>} />
-          <Route path="/u/:username" element={<RequireAuth><AppShell><FriendSchedulePage /></AppShell></RequireAuth>} />
-          <Route path="/compare/:username" element={<RequireAuth><AppShell><ComparePage /></AppShell></RequireAuth>} />
-        </Routes>
+        <Suspense fallback={<Spinner />}>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/onboarding" element={<RequireAuth><OnboardingPage /></RequireAuth>} />
+            <Route path="/invite/:code" element={<RequireAuth><InvitePage /></RequireAuth>} />
+            <Route path="/" element={shell(<SchedulePage />)} />
+            <Route path="/upload" element={<RequireAuth><UploadPage /></RequireAuth>} />
+            <Route path="/friends" element={shell(<FriendsPage />)} />
+            <Route path="/profile" element={shell(<ProfilePage />)} />
+            <Route path="/u/:username" element={shell(<FriendSchedulePage />)} />
+            <Route path="/compare/:username" element={shell(<ComparePage />)} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
       </AuthProvider>
     </BrowserRouter>
   );

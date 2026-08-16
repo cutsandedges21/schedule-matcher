@@ -21,7 +21,7 @@ export default function LoginPage() {
   return (
     <main className="flex min-h-dvh flex-col justify-between p-6">
       <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
-        <h1 className="text-3xl font-bold">Schedule Matcher</h1>
+        <h1 className="text-5xl font-bold tracking-tight">Schedule Matcher</h1>
         <p className="max-w-xs text-balance text-slate-600">
           Upload your schedule once. Stop texting screenshots.
         </p>

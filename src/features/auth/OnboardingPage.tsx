@@ -1,6 +1,5 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { PostgrestError } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { usernameSchema } from '@/domain/schema';
 import { useAuth } from './AuthProvider';
@@ -8,16 +7,23 @@ import { consumeRedirect } from './redirect';
 import Button from '@/components/Button';
 
 /**
- * A 23505 on this insert can mean two different things: the *username* is
- * taken (unique constraint), or the profile *row itself* already exists
- * (primary-key collision on `id` — e.g. a previous attempt actually
- * succeeded, or another tab finished onboarding first). Blaming the username
- * for the second case is untrue and unrecoverable: the student can retype
- * any username and it will report "taken" every time.
+ * A 23505 on the profile insert means one of two things: the *username* is
+ * taken (unique index), or the profile *row itself* already exists
+ * (primary-key collision on `id` — a previous attempt actually succeeded, or
+ * another tab finished onboarding first). Blaming the username for the second
+ * case is untrue and unrecoverable: the student retypes any username and it
+ * reports "taken" every time, with no way out.
+ *
+ * We ask the database which it was rather than pattern-matching the error
+ * text, so this cannot silently break if PostgREST rewords its messages.
  */
-function isPrimaryKeyCollision(error: PostgrestError): boolean {
-  const text = `${error.message} ${error.details ?? ''}`.toLowerCase();
-  return text.includes('pkey') || text.includes('(id)');
+async function profileExists(userId: string): Promise<boolean> {
+  const { data } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('id', userId)
+    .maybeSingle();
+  return data !== null;
 }
 
 export default function OnboardingPage() {
@@ -47,8 +53,8 @@ export default function OnboardingPage() {
     setSaving(false);
 
     if (insertError) {
-      if (insertError.code === '23505' && isPrimaryKeyCollision(insertError)) {
-        // Their profile already exists — this is not a bad username, it's a
+      if (insertError.code === '23505' && (await profileExists(session!.user.id))) {
+        // Their profile already exists — not a bad username, just a
         // recoverable state. Pick up the existing profile and continue.
         await refreshProfile();
         navigate(consumeRedirect(), { replace: true });

@@ -6,6 +6,7 @@ import OnboardingPage from '@/features/auth/OnboardingPage';
 import UploadPage from '@/features/upload/UploadPage';
 import AppShell from '@/components/AppShell';
 import SchedulePage from '@/features/schedule/SchedulePage';
+import FriendsPage from '@/features/friends/FriendsPage';
 
 export default function App() {
   return (
@@ -23,6 +24,7 @@ export default function App() {
           />
           <Route path="/upload" element={<RequireAuth><UploadPage /></RequireAuth>} />
           <Route path="/" element={<RequireAuth><AppShell><SchedulePage /></AppShell></RequireAuth>} />
+          <Route path="/friends" element={<RequireAuth><AppShell><FriendsPage /></AppShell></RequireAuth>} />
         </Routes>
       </AuthProvider>
     </BrowserRouter>

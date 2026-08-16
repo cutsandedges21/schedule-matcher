@@ -2,11 +2,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
-import { downscaleImage } from '@/domain/image';
+import { prepareImage, type CropRect } from '@/domain/image';
 import { extractedClassSchema } from '@/domain/schema';
 import { MAX_IMAGE_BYTES } from '@/domain/constants';
 import { saveSchedule } from '@/features/schedule/useSchedule';
 import ImagePicker from './ImagePicker';
+import ImageCropper from './ImageCropper';
 import ReviewForm from './ReviewForm';
 import Button from '@/components/Button';
 import Spinner from '@/components/Spinner';
@@ -14,6 +15,7 @@ import type { ExtractedClass } from '@/domain/types';
 
 type Stage =
   | { name: 'picking' }
+  | { name: 'cropping'; file: File }
   | { name: 'extracting' }
   | { name: 'reviewing'; classes: ExtractedClass[]; warnings: string[] };
 
@@ -101,12 +103,17 @@ export default function UploadPage() {
     setStage({ name: 'reviewing', classes: [], warnings: [] });
   }
 
-  async function handlePick(file: File) {
+  function handlePick(file: File) {
+    setError(null);
+    setStage({ name: 'cropping', file });
+  }
+
+  async function handleCropConfirm(file: File, crop: CropRect) {
     setError(null);
     setStage({ name: 'extracting' });
 
     try {
-      const image = await downscaleImage(file);
+      const image = await prepareImage(file, crop);
 
       // Spec §10: reject an oversized image client-side before it's ever
       // sent. Checked after downscaling — the same base64-length approximation
@@ -157,6 +164,16 @@ export default function UploadPage() {
   }
 
   if (stage.name === 'extracting') return <Spinner label="Reading your schedule…" />;
+
+  if (stage.name === 'cropping') {
+    return (
+      <ImageCropper
+        file={stage.file}
+        onConfirm={(crop) => handleCropConfirm(stage.file, crop)}
+        onCancel={() => setStage({ name: 'picking' })}
+      />
+    );
+  }
 
   return (
     <main className="p-4">

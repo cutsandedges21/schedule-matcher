@@ -3,13 +3,12 @@ import { useState } from 'react';
 import { computeAxis, computeLayout, axisHours } from '@/domain/layout';
 import { formatHourLabel } from '@/domain/time';
 import { WEEKDAYS, WEEKDAY_LABELS } from '@/domain/constants';
+import { HOUR_HEIGHT_PX, HourLabels, HourRules } from '@/components/HourGrid';
 import type { ClassMeeting } from '@/domain/types';
 import DaySelector from './DaySelector';
 import ClassBlock from './ClassBlock';
 
-const HOUR_HEIGHT_PX = 64;
-
-function todayWeekday(): number {
+export function todayWeekday(): number {
   const iso = new Date().getDay();
   return iso === 0 ? 7 : iso;
 }
@@ -33,23 +32,11 @@ export default function ScheduleGrid({ classes }: { classes: ClassMeeting[] }) {
       <DaySelector days={days} selected={selectedDay} onSelect={setSelectedDay} />
 
       <div className="flex px-4 pb-6">
-        <div className="w-12 shrink-0" style={{ height: gridHeight }}>
-          {hours.map((minute, i) => (
-            <div key={minute} className="relative" style={{ height: HOUR_HEIGHT_PX }}>
-              {i < hours.length - 1 && (
-                <span className="absolute -top-2 right-2 text-[10px] text-slate-400">
-                  {formatHourLabel(minute)}
-                </span>
-              )}
-            </div>
-          ))}
-        </div>
+        <HourLabels hours={hours} gridHeight={gridHeight} formatLabel={formatHourLabel} />
 
         {/* Mobile: one day */}
         <div className="relative flex-1 lg:hidden" style={{ height: gridHeight }}>
-          {hours.map((minute) => (
-            <div key={minute} className="border-t border-slate-200" style={{ height: HOUR_HEIGHT_PX }} />
-          ))}
+          <HourRules hours={hours} />
           <div className="absolute inset-0">
             {mobileBlocks.map((block) => (
               <ClassBlock key={`${block.meeting.id}-${block.day}`} block={block} />
@@ -65,9 +52,7 @@ export default function ScheduleGrid({ classes }: { classes: ClassMeeting[] }) {
                 {WEEKDAY_LABELS[day]}
               </p>
               <div className="relative" style={{ height: gridHeight }}>
-                {hours.map((minute) => (
-                  <div key={minute} className="border-t border-slate-200" style={{ height: HOUR_HEIGHT_PX }} />
-                ))}
+                <HourRules hours={hours} />
                 <div className="absolute inset-0">
                   {desktopBlocks
                     .filter((b) => b.day === day)

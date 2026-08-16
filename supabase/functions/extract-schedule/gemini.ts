@@ -1,8 +1,17 @@
 // supabase/functions/extract-schedule/gemini.ts
 import { SYSTEM_PROMPT, RESPONSE_SCHEMA } from './prompt.ts';
 
-const MODEL = 'gemini-2.5-flash';
-const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
+/**
+ * Tried in order. Google retires models for NEW API keys while still listing
+ * them from /v1beta/models, so a hardcoded single model silently 404s with
+ * "no longer available to new users" — which is exactly how extraction broke
+ * on gemini-2.5-flash. Keeping a list means a retirement degrades instead of
+ * taking the feature down.
+ */
+const MODELS = ['gemini-3-flash-preview', 'gemini-flash-latest'];
+
+const endpointFor = (model: string) =>
+  `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
 
 export interface RawExtraction {
   classes: unknown[];
@@ -49,11 +58,33 @@ export async function extractSchedule(
   image: { base64: string; mimeType: string },
   apiKey: string
 ): Promise<RawExtraction> {
+  let lastError: Error = new Error('PROVIDER_ERROR');
+
+  for (const model of MODELS) {
+    try {
+      return await callModel(image, apiKey, model);
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error('PROVIDER_ERROR');
+      // A rate limit is about the KEY, not the model — let the caller rotate keys
+      // rather than pointlessly retrying every model on an exhausted quota.
+      if (lastError.message === 'PROVIDER_RATE_LIMITED') throw lastError;
+      console.error(`Gemini model ${model} failed: ${lastError.message}`);
+    }
+  }
+
+  throw lastError;
+}
+
+async function callModel(
+  image: { base64: string; mimeType: string },
+  apiKey: string,
+  model: string
+): Promise<RawExtraction> {
   // Key travels as a header, not a URL query param: Deno's fetch includes the full
   // request URL in TypeError messages on transient network failures, which would
   // otherwise leak the key into an Error.message. See Google's documented form:
   // https://ai.google.dev/gemini-api/docs/api-key#use-request-header
-  const response = await fetch(ENDPOINT, {
+  const response = await fetch(endpointFor(model), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
     body: JSON.stringify({

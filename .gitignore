@@ -6,3 +6,9 @@ dist
 .DS_Store
 supabase/.temp
 *.tsbuildinfo
+
+# Real schedule screenshots used for local extraction testing. These contain
+# real instructor names and room numbers — never commit them.
+*.PNG
+*.png
+!public/**/*.png

@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    @apply bg-slate-50 text-slate-900 antialiased;
+    overscroll-behavior-y: none;
+  }
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}

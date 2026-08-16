@@ -55,7 +55,7 @@ export default function FriendSchedulePage() {
 
       const { data: classRows, error: classError } = await supabase
         .from('classes')
-        .select('id, user_id, name, instructor, room, days, start_minute, end_minute, color, sort_order')
+        .select('id, user_id, name, instructor, room, course_code, section, days, start_minute, end_minute, color, sort_order')
         .eq('user_id', found.id)
         .order('sort_order');
 

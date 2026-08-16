@@ -15,7 +15,7 @@ export function useSchedule(userId: string | undefined) {
     setLoading(true);
     const { data, error: queryError } = await supabase
       .from('classes')
-      .select('id, user_id, name, instructor, room, days, start_minute, end_minute, color, sort_order')
+      .select('id, user_id, name, instructor, room, course_code, section, days, start_minute, end_minute, color, sort_order')
       .eq('user_id', userId)
       .order('sort_order');
 
@@ -40,6 +40,8 @@ export async function saveSchedule(next: ExtractedClass[]) {
     name: c.name,
     instructor: c.instructor,
     room: c.room,
+    course_code: c.courseCode,
+    section: c.section,
     days: c.days,
     start_minute: c.startMinute,
     end_minute: c.endMinute,

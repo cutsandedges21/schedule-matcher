@@ -4,6 +4,8 @@ export interface ClassMeeting {
   name: string;
   instructor: string | null;
   room: string | null;
+  courseCode: string | null;
+  section: string | null;
   days: number[];
   startMinute: number;
   endMinute: number;
@@ -15,6 +17,8 @@ export interface ExtractedClass {
   name: string;
   instructor: string | null;
   room: string | null;
+  courseCode: string | null;
+  section: string | null;
   days: number[];
   startMinute: number;
   endMinute: number;

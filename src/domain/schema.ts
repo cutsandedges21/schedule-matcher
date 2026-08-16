@@ -12,6 +12,8 @@ export const extractedClassSchema = z
     name: z.string().min(1).max(120),
     instructor: z.string().max(120).nullish().transform((v) => v ?? null),
     room: z.string().max(60).nullish().transform((v) => v ?? null),
+    courseCode: z.string().max(30).nullish().transform((v) => v ?? null),
+    section: z.string().max(20).nullish().transform((v) => v ?? null),
     days: z.array(z.number().int().min(1).max(7)).min(1).max(7),
     startMinute: z.number().int().min(0).max(1439),
     endMinute: z.number().int().min(1).max(1440),

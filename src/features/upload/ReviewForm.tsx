@@ -13,7 +13,7 @@ interface Props {
 }
 
 const BLANK: ExtractedClass = {
-  name: '', instructor: null, room: null,
+  name: '', instructor: null, room: null, courseCode: null, section: null,
   days: [], startMinute: DAY_START_MINUTE, endMinute: DAY_START_MINUTE + 50,
 };
 

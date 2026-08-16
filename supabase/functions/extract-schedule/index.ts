@@ -9,6 +9,8 @@ const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const NAME_MAX = 120;
 const INSTRUCTOR_MAX = 120;
 const ROOM_MAX = 60;
+const COURSE_CODE_MAX = 30;
+const SECTION_MAX = 20;
 
 // Mirrors the SDK's canonical header list (node_modules/@supabase/supabase-js/dist/cors.mjs).
 // supabase.functions.invoke() always sends apikey and x-client-info in addition to
@@ -54,6 +56,14 @@ function normalizeClass(raw: Record<string, unknown>, warnings: string[]) {
         ? raw.instructor.trim().slice(0, INSTRUCTOR_MAX)
         : null,
     room: typeof raw.room === 'string' && raw.room.trim() ? raw.room.trim().slice(0, ROOM_MAX) : null,
+    courseCode:
+      typeof raw.courseCode === 'string' && raw.courseCode.trim()
+        ? raw.courseCode.trim().slice(0, COURSE_CODE_MAX)
+        : null,
+    section:
+      typeof raw.section === 'string' && raw.section.trim()
+        ? raw.section.trim().slice(0, SECTION_MAX)
+        : null,
     days: days.sort((a, b) => a - b),
     startMinute,
     endMinute,

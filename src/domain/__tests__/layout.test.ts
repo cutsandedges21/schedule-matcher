@@ -10,6 +10,8 @@ function meeting(over: Partial<ClassMeeting> = {}): ClassMeeting {
     name: over.name ?? 'BIO 101',
     instructor: null,
     room: null,
+    courseCode: null,
+    section: null,
     days: over.days ?? [1],
     startMinute: over.startMinute ?? 600,
     endMinute: over.endMinute ?? 650,

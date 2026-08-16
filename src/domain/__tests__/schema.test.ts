@@ -6,6 +6,8 @@ const valid = {
   name: 'BIO 101',
   instructor: 'Dr. Reyes',
   room: 'SCI 204',
+  courseCode: '420-SF3-RE',
+  section: '00001',
   days: [1, 3, 5],
   startMinute: 600,
   endMinute: 650,
@@ -17,9 +19,17 @@ describe('extractedClassSchema', () => {
   });
 
   it('defaults missing optional fields to null', () => {
-    const parsed = extractedClassSchema.parse({ ...valid, instructor: undefined, room: undefined });
+    const parsed = extractedClassSchema.parse({
+      ...valid,
+      instructor: undefined,
+      room: undefined,
+      courseCode: undefined,
+      section: undefined,
+    });
     expect(parsed.instructor).toBeNull();
     expect(parsed.room).toBeNull();
+    expect(parsed.courseCode).toBeNull();
+    expect(parsed.section).toBeNull();
   });
 
   it('rejects an end time at or before the start', () => {

@@ -6,6 +6,8 @@ export interface ClassRow {
   name: string;
   instructor: string | null;
   room: string | null;
+  course_code: string | null;
+  section: string | null;
   days: number[];
   start_minute: number;
   end_minute: number;
@@ -27,6 +29,8 @@ export function rowToMeeting(row: ClassRow): ClassMeeting {
     name: row.name,
     instructor: row.instructor,
     room: row.room,
+    courseCode: row.course_code,
+    section: row.section,
     days: row.days,
     startMinute: row.start_minute,
     endMinute: row.end_minute,

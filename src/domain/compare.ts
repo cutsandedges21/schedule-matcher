@@ -10,10 +10,30 @@ export interface SharedClass {
   endMinute: number;
 }
 
-/** Same class = same normalized name and genuinely overlapping time. */
+function normalizeCode(value: string | null): string {
+  return (value ?? '').trim().toLowerCase();
+}
+
+/**
+ * Same class = genuinely overlapping time, plus:
+ *  - when both sides have a course code, the code AND section must match
+ *    (case-insensitive, trimmed) — same code, different section is the same
+ *    *course* but a different class, which is exactly what code+section
+ *    identity is for;
+ *  - otherwise, fall back to the normalized course name, as before.
+ */
 export function isSameClass(a: ClassMeeting, b: ClassMeeting): boolean {
-  if (normalizeClassName(a.name) !== normalizeClassName(b.name)) return false;
-  return a.startMinute < b.endMinute && b.startMinute < a.endMinute;
+  const overlaps = a.startMinute < b.endMinute && b.startMinute < a.endMinute;
+  if (!overlaps) return false;
+
+  if (a.courseCode && b.courseCode) {
+    return (
+      normalizeCode(a.courseCode) === normalizeCode(b.courseCode) &&
+      normalizeCode(a.section) === normalizeCode(b.section)
+    );
+  }
+
+  return normalizeClassName(a.name) === normalizeClassName(b.name);
 }
 
 export function findSharedClasses(

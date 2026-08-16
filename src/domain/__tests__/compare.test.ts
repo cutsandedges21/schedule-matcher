@@ -7,6 +7,7 @@ import type { ClassMeeting } from '../types';
 function meeting(over: Partial<ClassMeeting> = {}): ClassMeeting {
   return {
     id: 'c1', name: 'BIO 101', instructor: null, room: null,
+    courseCode: null, section: null,
     days: [1], startMinute: 600, endMinute: 650, color: 'indigo',
     ...over,
   };
@@ -29,6 +30,52 @@ describe('isSameClass', () => {
     expect(isSameClass(
       meeting({ startMinute: 600, endMinute: 650 }),
       meeting({ id: 'x', startMinute: 650, endMinute: 700 })
+    )).toBe(false);
+  });
+
+  it('matches on course code + section, case-insensitively, even with different truncated names', () => {
+    expect(isSameClass(
+      meeting({ name: 'Program Development', courseCode: '420-SF3-RE', section: '00001' }),
+      meeting({ id: 'x', name: 'Program Dev (cont.)', courseCode: '420-sf3-re', section: '00001' })
+    )).toBe(true);
+  });
+
+  it('rejects the same course code in different sections — same course, different class', () => {
+    expect(isSameClass(
+      meeting({ name: 'Program Development', courseCode: '420-SF3-RE', section: '00001' }),
+      meeting({ id: 'x', name: 'Program Development', courseCode: '420-SF3-RE', section: '00002' })
+    )).toBe(false);
+  });
+
+  it('still requires overlapping time when course code and section both match', () => {
+    expect(isSameClass(
+      meeting({ courseCode: '420-SF3-RE', section: '00001', startMinute: 600, endMinute: 650 }),
+      meeting({ id: 'x', courseCode: '420-SF3-RE', section: '00001', startMinute: 700, endMinute: 750 })
+    )).toBe(false);
+  });
+
+  it('falls back to name comparison when one side has no course code', () => {
+    expect(isSameClass(
+      meeting({ name: 'BIO 101', courseCode: '420-SF3-RE', section: '00001' }),
+      meeting({ id: 'x', name: 'bio-101', courseCode: null, section: null })
+    )).toBe(true);
+  });
+
+  it('falls back to name comparison and still rejects a real mismatch when one side has no course code', () => {
+    expect(isSameClass(
+      meeting({ name: 'BIO 101', courseCode: '420-SF3-RE', section: '00001' }),
+      meeting({ id: 'x', name: 'MATH 220', courseCode: null, section: null })
+    )).toBe(false);
+  });
+
+  it('behaves exactly as today (name-based) when neither side has a course code', () => {
+    expect(isSameClass(
+      meeting({ name: 'BIO 101', courseCode: null, section: null }),
+      meeting({ id: 'x', name: 'bio 101', courseCode: null, section: null })
+    )).toBe(true);
+    expect(isSameClass(
+      meeting({ name: 'BIO 101', courseCode: null, section: null }),
+      meeting({ id: 'x', name: 'MATH 220', courseCode: null, section: null })
     )).toBe(false);
   });
 });

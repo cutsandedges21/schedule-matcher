@@ -2,7 +2,10 @@
 import { MAX_IMAGE_EDGE } from './constants';
 
 export async function downscaleImage(file: File): Promise<{ base64: string; mimeType: string }> {
-  const bitmap = await createImageBitmap(file);
+  // Without this, a photo taken in portrait (which stores its rotation as
+  // EXIF metadata rather than baking it into the pixels) decodes sideways —
+  // the canvas below has no idea about EXIF and just copies raw pixels.
+  const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
   const scale = Math.min(1, MAX_IMAGE_EDGE / Math.max(bitmap.width, bitmap.height));
   const width = Math.round(bitmap.width * scale);
   const height = Math.round(bitmap.height * scale);

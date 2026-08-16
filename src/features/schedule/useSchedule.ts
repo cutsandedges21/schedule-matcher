@@ -29,15 +29,14 @@ export function useSchedule(userId: string | undefined) {
   return { classes, loading, error, reload: load };
 }
 
-/** Replaces the caller's entire schedule with `next`. */
-export async function saveSchedule(userId: string, next: ExtractedClass[]) {
-  const { error: deleteError } = await supabase.from('classes').delete().eq('user_id', userId);
-  if (deleteError) throw new Error('Could not clear your old schedule.');
-
-  if (next.length === 0) return;
-
+/**
+ * Replaces the caller's entire schedule with `next` in one atomic round trip.
+ * `replace_schedule` deletes and re-inserts inside a single transaction under
+ * RLS as the caller, so a dropped connection can no longer leave a student
+ * with an emptied schedule and nothing to replace it.
+ */
+export async function saveSchedule(next: ExtractedClass[]) {
   const rows = next.map((c, index) => ({
-    user_id: userId,
     name: c.name,
     instructor: c.instructor,
     room: c.room,
@@ -48,6 +47,6 @@ export async function saveSchedule(userId: string, next: ExtractedClass[]) {
     sort_order: index,
   }));
 
-  const { error: insertError } = await supabase.from('classes').insert(rows);
-  if (insertError) throw new Error('Could not save your schedule.');
+  const { error } = await supabase.rpc('replace_schedule', { p_classes: rows });
+  if (error) throw new Error('Could not save your schedule. Nothing was changed.');
 }

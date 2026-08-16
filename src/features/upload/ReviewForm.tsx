@@ -30,7 +30,7 @@ export default function ReviewForm({ initial, warnings, saving, onSave }: Props)
         <div className="mb-4 rounded-xl border border-amber-300 bg-amber-50 p-3">
           <p className="text-sm font-semibold text-amber-900">Check these</p>
           <ul className="mt-1 list-disc pl-4 text-sm text-amber-900">
-            {warnings.map((w) => <li key={w}>{w}</li>)}
+            {warnings.map((w, i) => <li key={i}>{w}</li>)}
           </ul>
         </div>
       )}

@@ -1,6 +1,6 @@
 // supabase/functions/extract-schedule/index.ts
 import { createClient } from 'jsr:@supabase/supabase-js@2';
-import { extractSchedule } from './gemini.ts';
+import { extractScheduleWithKeys } from './gemini.ts';
 
 const EXTRACTIONS_PER_HOUR = 10;
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
@@ -110,7 +110,14 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const raw = await extractSchedule({ base64: imageBase64, mimeType }, Deno.env.get('GEMINI_API_KEY')!);
+    // GEMINI_API_KEYS is a comma-separated pool; GEMINI_API_KEY is accepted as a
+    // single-key fallback so either secret name works.
+    const keys = (Deno.env.get('GEMINI_API_KEYS') ?? Deno.env.get('GEMINI_API_KEY') ?? '')
+      .split(',')
+      .map((k) => k.trim())
+      .filter(Boolean);
+
+    const raw = await extractScheduleWithKeys({ base64: imageBase64, mimeType }, keys);
     const warnings = [...raw.warnings];
     const classes = raw.classes
       .map((c) => normalizeClass(c as Record<string, unknown>, warnings))

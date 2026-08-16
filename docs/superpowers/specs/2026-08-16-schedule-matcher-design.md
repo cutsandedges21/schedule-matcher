@@ -286,7 +286,17 @@ obvious in the compare view without any extra coordination.
 One component renders my schedule and a friend's. Layout math is a pure function
 `computeLayout(classes, days) → PositionedBlock[]` — testable without a DOM.
 
-- Time axis auto-fits from the earliest start to the latest end, rounded outward to the hour.
+**The time axis is fixed at 08:00–18:00** — `DAY_START_MINUTE = 480`, `DAY_END_MINUTE = 1080`,
+a 600-minute window. It does not auto-fit to the data. A fixed axis means every schedule renders
+at the same scale, so the compare view always aligns without re-layout, the mobile day column
+keeps a constant height with no shift when swiping between days, and mutual-free-time has a
+fixed window to search.
+
+**Outlier handling.** A class falling outside 08:00–18:00 (an early lab, a night section) must
+never be silently hidden — that would be data loss the student can't see. The axis extends
+outward to the nearest hour needed to contain it, and only for the schedules being displayed.
+08:00–18:00 is the guaranteed minimum window, not a hard clamp.
+
 - Weekend columns appear only when a class lands on them.
 - **Mobile (base):** a single day column with a sticky horizontal day selector, defaulting to
   today. Swipe left/right changes day.
@@ -297,8 +307,10 @@ One component renders my schedule and a friend's. Layout math is a pure function
 - Shared classes (same normalized name and overlapping time) render as one merged full-width
   block with a "shared" badge.
 - Non-shared classes render in two lanes at 50% width — mine left, theirs right.
-- Mutual free time renders as a tinted full-width band: any window ≥ 30 minutes where neither
-  has a class, bounded by the union of both schedules' active hours.
+- Mutual free time renders as a tinted full-width band: any window ≥ 30 minutes within
+  08:00–18:00 where neither student has a class. The window is the fixed axis, not the union of
+  both schedules' active hours — "both free 08:00–09:30" is useful information even if neither
+  student has an early class.
 - Below the grid, a text summary — "3 shared classes · Both free Mon 12:00–13:30, Wed 14:00–15:00"
   — which is often the only part a student actually needs, and reads well on a phone.
 
@@ -314,6 +326,7 @@ One component renders my schedule and a friend's. Layout math is a pure function
 | Image over 5 MB after downscale | Rejected client-side with a clear message before upload |
 | Friend request to an existing pair | Unique index rejects it; UI reports the existing state |
 | Viewing a friend who has no schedule | Empty state: "They haven't added their schedule yet" |
+| Class falls outside 08:00–18:00 | Axis extends to contain it; never clipped or dropped (§9.4) |
 | Network offline | Toast; the edit form retains unsaved state |
 
 ## 11. Testing
@@ -322,10 +335,12 @@ Vitest, focused on the pure logic where the real bugs live:
 
 - Time parsing and normalization — 12h/24h, "10:00 AM", "1:15p", "13:00", malformed input.
 - Zod schema acceptance and rejection, using fixture payloads captured from real extractor output.
-- `computeLayout` — overlapping blocks, single-day and full-week inputs, blocks at day boundaries.
+- `computeLayout` — overlapping blocks, single-day and full-week inputs, blocks sitting exactly
+  on the 08:00 and 18:00 boundaries, and **classes outside 08:00–18:00 correctly extending the
+  axis rather than being clipped or dropped**.
 - Shared-class detection — name normalization, partial time overlap, same name at different times.
 - Mutual-free-block computation — the 30-minute floor, adjacent blocks, no-overlap cases,
-  one empty schedule.
+  one empty schedule, and free time at the leading and trailing edges of the fixed window.
 - Friendship pair canonicalization.
 
 RLS policies are verified with a SQL test script asserting that a non-friend cannot read another

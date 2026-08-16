@@ -8,46 +8,106 @@ interface AuthValue {
   session: Session | null;
   profile: Profile | null;
   loading: boolean;
+  /**
+   * True when the last profile fetch failed (network error, RLS hiccup, or
+   * timeout) as opposed to genuinely finding no row. Consumers must not treat
+   * this the same as "no profile" — that would send an existing user through
+   * onboarding, where their real username collides on the primary key.
+   */
+  profileError: boolean;
   refreshProfile: () => Promise<void>;
   signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthValue | null>(null);
 
+// A stalled network call (dropped connection, captive portal, an auth-js
+// navigator-lock wait when the app is open in several tabs) must never pin
+// the app on a spinner forever. Cap how long we wait and treat a timeout the
+// same as any other failed fetch: a retryable error, not an empty profile.
+const PROFILE_FETCH_TIMEOUT_MS = 15000;
+
+function withTimeout<T>(promise: PromiseLike<T>, ms: number): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('Timed out')), ms);
+    promise.then(
+      (value) => { clearTimeout(timer); resolve(value); },
+      (error) => { clearTimeout(timer); reject(error); }
+    );
+  });
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [profileError, setProfileError] = useState(false);
   const [loading, setLoading] = useState(true);
 
   async function loadProfile(userId: string) {
-    const { data } = await supabase
-      .from('profiles')
-      .select('id, username, display_name, avatar_url, invite_code')
-      .eq('id', userId)
-      .maybeSingle();
-    setProfile(data ? rowToProfile(data as ProfileRow) : null);
+    try {
+      const { data, error } = await withTimeout(
+        supabase
+          .from('profiles')
+          .select('id, username, display_name, avatar_url, invite_code')
+          .eq('id', userId)
+          .maybeSingle(),
+        PROFILE_FETCH_TIMEOUT_MS
+      );
+
+      if (error) {
+        // A failed query is not the same fact as "this user has no profile
+        // row yet" — conflating the two sends an established user into
+        // onboarding, where their real username collides on the PK.
+        setProfileError(true);
+        return;
+      }
+      setProfileError(false);
+      setProfile(data ? rowToProfile(data as ProfileRow) : null);
+    } catch {
+      setProfileError(true);
+    }
   }
 
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data }) => {
-      setSession(data.session);
-      if (data.session) await loadProfile(data.session.user.id);
-      setLoading(false);
-    });
+    let cancelled = false;
+
+    supabase.auth
+      .getSession()
+      .then(async ({ data }) => {
+        if (cancelled) return;
+        setSession(data.session);
+        if (data.session) await loadProfile(data.session.user.id);
+      })
+      .catch(() => {
+        // getSession() rejected (corrupted localStorage session, navigator-lock
+        // timeout across tabs, etc). Fall back to signed-out rather than hang.
+        if (!cancelled) setSession(null);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
 
     const { data: sub } = supabase.auth.onAuthStateChange(async (_event, next) => {
       setSession(next);
-      if (next) await loadProfile(next.user.id);
-      else setProfile(null);
+      if (next) {
+        await loadProfile(next.user.id);
+      } else {
+        setProfile(null);
+        setProfileError(false);
+      }
     });
 
-    return () => sub.subscription.unsubscribe();
+    return () => {
+      cancelled = true;
+      sub.subscription.unsubscribe();
+    };
   }, []);
 
   const value: AuthValue = {
     session,
     profile,
     loading,
+    profileError,
     refreshProfile: async () => {
       if (session) await loadProfile(session.user.id);
     },

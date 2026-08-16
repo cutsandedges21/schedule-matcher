@@ -1,9 +1,24 @@
 import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import type { PostgrestError } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
 import { usernameSchema } from '@/domain/schema';
 import { useAuth } from './AuthProvider';
+import { consumeRedirect } from './redirect';
 import Button from '@/components/Button';
+
+/**
+ * A 23505 on this insert can mean two different things: the *username* is
+ * taken (unique constraint), or the profile *row itself* already exists
+ * (primary-key collision on `id` — e.g. a previous attempt actually
+ * succeeded, or another tab finished onboarding first). Blaming the username
+ * for the second case is untrue and unrecoverable: the student can retype
+ * any username and it will report "taken" every time.
+ */
+function isPrimaryKeyCollision(error: PostgrestError): boolean {
+  const text = `${error.message} ${error.details ?? ''}`.toLowerCase();
+  return text.includes('pkey') || text.includes('(id)');
+}
 
 export default function OnboardingPage() {
   const { session, refreshProfile } = useAuth();
@@ -32,6 +47,13 @@ export default function OnboardingPage() {
     setSaving(false);
 
     if (insertError) {
+      if (insertError.code === '23505' && isPrimaryKeyCollision(insertError)) {
+        // Their profile already exists — this is not a bad username, it's a
+        // recoverable state. Pick up the existing profile and continue.
+        await refreshProfile();
+        navigate(consumeRedirect(), { replace: true });
+        return;
+      }
       setError(
         insertError.code === '23505'
           ? 'That username is taken. Try another.'
@@ -41,7 +63,7 @@ export default function OnboardingPage() {
     }
 
     await refreshProfile();
-    navigate('/', { replace: true });
+    navigate(consumeRedirect(), { replace: true });
   }
 
   return (

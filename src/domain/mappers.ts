@@ -21,7 +21,19 @@ export interface ProfileRow {
   display_name: string | null;
   avatar_url: string | null;
   invite_code: string;
+  school: string | null;
 }
+
+/**
+ * The column list for every `profiles` select, in one place. It used to be
+ * written out at seven call sites — including twice inside the embedded
+ * `requester:profiles!…()` / `addressee:profiles!…()` joins in useFriends,
+ * which a grep for `from('profiles')` does not surface. Missing one when a
+ * column is added fails silently: that screen just sees `undefined` for the
+ * new field, with no error anywhere. Keep this next to ProfileRow — they are
+ * the same fact stated twice, and they have to change together.
+ */
+export const PROFILE_COLUMNS = 'id, username, display_name, avatar_url, invite_code, school';
 
 export function rowToMeeting(row: ClassRow): ClassMeeting {
   return {
@@ -45,5 +57,6 @@ export function rowToProfile(row: ProfileRow): Profile {
     displayName: row.display_name,
     avatarUrl: row.avatar_url,
     inviteCode: row.invite_code,
+    school: row.school,
   };
 }

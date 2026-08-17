@@ -1,0 +1,16 @@
+<!--
+  PLACEHOLDER. Swap this file for a real photo of the team (keep the name, or
+  update ABOUT_BEATS in src/domain/slideshow.ts). It says so on its face on
+  purpose: a forgotten swap should be obvious in the app, not a broken image.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 240" fill="none">
+  <rect x="16" y="16" width="288" height="208" rx="18" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="8 8"/>
+
+  <circle cx="126" cy="102" r="26" fill="#cbd5e1"/>
+  <path d="M84 166a42 42 0 0 1 84 0z" fill="#cbd5e1"/>
+
+  <circle cx="196" cy="102" r="26" fill="#94a3b8"/>
+  <path d="M154 166a42 42 0 0 1 84 0z" fill="#94a3b8"/>
+
+  <text x="160" y="198" text-anchor="middle" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="14" font-weight="600" fill="#64748b">team photo goes here</text>
+</svg>

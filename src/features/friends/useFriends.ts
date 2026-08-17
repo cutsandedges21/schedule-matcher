@@ -1,7 +1,7 @@
 // src/features/friends/useFriends.ts
 import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { rowToProfile, type ProfileRow } from '@/domain/mappers';
+import { PROFILE_COLUMNS, rowToProfile, type ProfileRow } from '@/domain/mappers';
 import type { Profile } from '@/domain/types';
 
 export interface FriendRequest {
@@ -21,8 +21,8 @@ interface FriendshipRow {
 
 const SELECT = `
   id, requester_id, addressee_id, status,
-  requester:profiles!friendships_requester_id_fkey(id, username, display_name, avatar_url, invite_code),
-  addressee:profiles!friendships_addressee_id_fkey(id, username, display_name, avatar_url, invite_code)
+  requester:profiles!friendships_requester_id_fkey(${PROFILE_COLUMNS}),
+  addressee:profiles!friendships_addressee_id_fkey(${PROFILE_COLUMNS})
 `;
 
 export function useFriends(userId: string | undefined) {
@@ -130,7 +130,7 @@ export async function searchProfiles(query: string, excludeId: string): Promise<
 
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, username, display_name, avatar_url, invite_code')
+    .select(PROFILE_COLUMNS)
     .ilike('username', `${term}%`)
     .neq('id', excludeId)
     .limit(10);
@@ -142,7 +142,7 @@ export async function searchProfiles(query: string, excludeId: string): Promise<
 export async function findProfileByInviteCode(code: string): Promise<Profile | null> {
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, username, display_name, avatar_url, invite_code')
+    .select(PROFILE_COLUMNS)
     .eq('invite_code', code)
     .maybeSingle();
 

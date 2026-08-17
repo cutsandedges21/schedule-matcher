@@ -4,8 +4,14 @@ import { twMerge } from 'tailwind-merge';
 type Variant = 'primary' | 'secondary' | 'ghost';
 type Size = 'md' | 'sm';
 
+/**
+ * `primary` follows the student's school (src/domain/schools.ts) via the
+ * accent custom properties. `disabled` stays slate deliberately: a disabled
+ * button tinted with the school colour reads as enabled-but-odd rather than
+ * as unavailable.
+ */
 const VARIANTS: Record<Variant, string> = {
-  primary: 'bg-slate-900 text-white active:bg-slate-700 disabled:bg-slate-400',
+  primary: 'bg-accent text-accent-fg active:bg-accent-strong disabled:bg-slate-400',
   secondary: 'bg-white text-slate-900 border border-slate-300 active:bg-slate-100',
   ghost: 'bg-transparent text-slate-600 active:bg-slate-100',
 };

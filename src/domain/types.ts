@@ -40,4 +40,6 @@ export interface Profile {
   displayName: string | null;
   avatarUrl: string | null;
   inviteCode: string;
+  /** School id from `domain/schools`, or null for the default theme. */
+  school: string | null;
 }

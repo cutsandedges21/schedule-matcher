@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
-import { rowToProfile, type ProfileRow } from '@/domain/mappers';
+import { PROFILE_COLUMNS, rowToProfile, type ProfileRow } from '@/domain/mappers';
 import type { Profile } from '@/domain/types';
 
 interface AuthValue {
@@ -16,6 +16,13 @@ interface AuthValue {
    */
   profileError: boolean;
   refreshProfile: () => Promise<void>;
+  /**
+   * Patch the cached profile with no round trip. Settings uses this so that
+   * tapping a school repaints the app immediately instead of after the update
+   * lands; the write still goes to the database, and a failure calls this
+   * again with the previous value to put it back.
+   */
+  patchProfile: (patch: Partial<Profile>) => void;
   signOut: () => Promise<void>;
 }
 
@@ -48,7 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { data, error } = await withTimeout(
         supabase
           .from('profiles')
-          .select('id, username, display_name, avatar_url, invite_code')
+          .select(PROFILE_COLUMNS)
           .eq('id', userId)
           .maybeSingle(),
         PROFILE_FETCH_TIMEOUT_MS
@@ -110,6 +117,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     profileError,
     refreshProfile: async () => {
       if (session) await loadProfile(session.user.id);
+    },
+    patchProfile: (patch) => {
+      setProfile((current) => (current ? { ...current, ...patch } : current));
     },
     signOut: async () => {
       await supabase.auth.signOut();

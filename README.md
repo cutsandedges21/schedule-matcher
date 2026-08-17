@@ -108,6 +108,60 @@ a shape you tap into rather than read. Anyone in the group with no saved
 schedule is called out explicitly, because "no classes" and "free all week"
 are the same thing to `computeGroupFree` and only one of them is true.
 
+## School themes
+
+Students pick their college in Settings and the app's accent colour follows —
+Vanier red, Dawson blue, and so on. The table lives in `src/domain/schools.ts`
+and is the only place to touch when adding a college; the id format check in
+migration `0006_school.sql` is duplicated there as `SCHOOL_ID_PATTERN`, and
+`schools.test.ts` asserts they agree, so the picker can never offer an id the
+database refuses.
+
+The colour reaches the UI as CSS custom properties (`--accent`,
+`--accent-strong`, `--accent-soft`, `--accent-fg`) written onto `:root` by
+`SchoolThemeEffect`, which Tailwind exposes as the `accent` colour family
+(`bg-accent`, `text-accent-fg`, …). Never build these class names by
+interpolation — the JIT scanner cannot see them and silently drops the styles,
+which is the same trap documented in `src/domain/color.ts`.
+
+Two colours are deliberately darker than the colleges' real brand values:
+Champlain's teal and LaSalle's orange both fail (or barely scrape) WCAG AA
+against white button text. `schools.test.ts` enforces 4.5:1 for every school,
+so a new college with a pretty-but-illegible hex fails the suite.
+
+**Class blocks in the schedule grid are not themed.** Their colours come from
+`colorForClass()`, a hash of the class name, so the same course is the same
+colour for every student — which is the whole mechanism that makes shared
+classes obvious in the compare view. Theming them would break comparison.
+
+Accent-only, by design: primary buttons, the active nav tab, the intro
+progress bar, and the Settings swatches. A friend's school shows as a chip in
+*their* colours (`SchoolChip`), while the app chrome stays on yours.
+
+## Onboarding intro
+
+Onboarding opens with a three-beat sequence — text plus image, each fading in,
+holding, and fading out — that plays itself and then moves to the username
+step (`src/features/auth/AboutIntro.tsx`).
+
+**There are no controls.** No next, no back, no skip, and tapping does
+nothing; a hairline progress bar at the top is the only affordance. That is
+deliberate, and it is why `slideshow.test.ts` asserts that `advance()` always
+terminates and that the whole sequence stays under 12 seconds — with no escape
+hatch, a beat that never ends is a student stuck on the first screen of the
+app. Pace lives in `BEAT_TIMING` in `src/domain/slideshow.ts` (currently
+8.85s end to end).
+
+It runs once per account by construction: onboarding only mounts when the
+signed-in user has no `profiles` row, and finishing it creates one. No flag,
+nothing to keep in sync.
+
+`prefers-reduced-motion: reduce` swaps the keyframes for an opacity-only
+crossfade at the same pace (see the bottom of `src/index.css`).
+
+`public/about/team-placeholder.svg` is a **placeholder** and says so on its
+face. Replace it with a real photo of the team before launch.
+
 ## Legal pages
 
 `/privacy` and `/terms` render **outside** `MobileOnly` and outside

@@ -3,6 +3,18 @@
 @tailwind utilities;
 
 @layer base {
+  /**
+   * The default school's colours (src/domain/schools.ts). Declared here rather
+   * than only written by SchoolThemeEffect so that /login, the legal pages and
+   * the first paint before a profile loads all render correctly — every one of
+   * those is outside the authenticated tree where the effect lives.
+   */
+  :root {
+    --accent: #0f172a;
+    --accent-strong: #334155;
+    --accent-soft: #f1f5f9;
+    --accent-fg: #ffffff;
+  }
   html {
     -webkit-text-size-adjust: 100%;
   }
@@ -14,5 +26,86 @@
   select,
   textarea {
     font-size: 16px;
+  }
+}
+
+/**
+ * Onboarding intro (src/features/auth/AboutIntro.tsx).
+ *
+ * Keyframes rather than Tailwind transitions on purpose: a transition needs
+ * the element to render once in its "from" state and then change, which means
+ * a double render and a frame where the beat is visible before it should be.
+ * An animation runs from mount, so keying each beat by index is enough.
+ *
+ * Durations come from BEAT_TIMING in src/domain/slideshow.ts via inline
+ * custom properties, so the pace stays single-sourced in TypeScript.
+ */
+@layer components {
+  .intro-beat-enter {
+    animation: intro-beat-enter var(--intro-duration) ease-out forwards;
+  }
+  .intro-beat-exit {
+    animation: intro-beat-exit var(--intro-duration) ease-in forwards;
+  }
+  .intro-segment-fill {
+    transform-origin: left;
+    animation: intro-segment-fill var(--intro-duration) linear forwards;
+  }
+}
+
+@keyframes intro-beat-enter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes intro-beat-exit {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+}
+
+@keyframes intro-segment-fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/**
+ * Redefining the keyframes inside the media query is the whole reduced-motion
+ * story for the intro: same names, same durations, so the sequence still
+ * advances at exactly the same pace — it just crossfades instead of moving.
+ * The progress bar keeps animating; it is feedback, not decoration, and it is
+ * the only thing telling someone how much of a skipless intro is left.
+ */
+@media (prefers-reduced-motion: reduce) {
+  @keyframes intro-beat-enter {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes intro-beat-exit {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
   }
 }

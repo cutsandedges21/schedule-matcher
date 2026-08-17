@@ -1,4 +1,4 @@
-import { useRef, useState, type FormEvent } from 'react';
+import { useCallback, useRef, useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { usernameSchema } from '@/domain/schema';
@@ -7,6 +7,7 @@ import { useAuth } from './AuthProvider';
 import { consumeRedirect } from './redirect';
 import Button from '@/components/Button';
 import InstallInstructions from '@/components/InstallInstructions';
+import AboutIntro from './AboutIntro';
 
 /**
  * A 23505 on the profile insert means one of two things: the *username* is
@@ -34,7 +35,7 @@ export default function OnboardingPage() {
   const [username, setUsername] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [step, setStep] = useState<'username' | 'install'>('username');
+  const [step, setStep] = useState<'intro' | 'username' | 'install'>('intro');
 
   /**
    * Where to go when onboarding finishes — captured the moment the profile is
@@ -47,6 +48,10 @@ export default function OnboardingPage() {
   function finish() {
     navigate(destination.current, { replace: true });
   }
+
+  // Stable identity: AboutIntro keys its beat timer off this, and a fresh
+  // arrow every render would keep restarting the current beat.
+  const showUsernameStep = useCallback(() => setStep('username'), []);
 
   /** Profile saved: show the install step, unless they're already installed. */
   async function afterProfileSaved() {
@@ -94,6 +99,10 @@ export default function OnboardingPage() {
     }
 
     await afterProfileSaved();
+  }
+
+  if (step === 'intro') {
+    return <AboutIntro onDone={showUsernameStep} />;
   }
 
   if (step === 'install') {

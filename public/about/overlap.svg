@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 240" fill="none">
+  <rect x="24" y="24" width="272" height="192" rx="14" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+
+  <g stroke="#f1f5f9" stroke-width="2">
+    <path d="M78 24v192M132 24v192M186 24v192M240 24v192"/>
+  </g>
+
+  <rect x="26" y="110" width="268" height="46" fill="#dcfce7"/>
+  <path d="M26 110h268M26 156h268" stroke="#86efac" stroke-width="2"/>
+
+  <rect x="32" y="40" width="38" height="56" rx="6" fill="#e0e7ff"/>
+  <rect x="86" y="54" width="38" height="48" rx="6" fill="#ccfbf1"/>
+  <rect x="140" y="40" width="38" height="40" rx="6" fill="#fee2e2"/>
+  <rect x="194" y="46" width="38" height="58" rx="6" fill="#e0e7ff"/>
+  <rect x="248" y="62" width="38" height="42" rx="6" fill="#fef3c7"/>
+
+  <rect x="32" y="168" width="38" height="36" rx="6" fill="#fee2e2"/>
+  <rect x="86" y="168" width="38" height="30" rx="6" fill="#e0e7ff"/>
+  <rect x="194" y="168" width="38" height="34" rx="6" fill="#ccfbf1"/>
+  <rect x="248" y="168" width="38" height="28" rx="6" fill="#e0e7ff"/>
+
+  <text x="160" y="139" text-anchor="middle" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="15" font-weight="600" fill="#166534">both free</text>
+</svg>

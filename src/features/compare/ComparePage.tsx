@@ -5,7 +5,13 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { useSchedule } from '@/features/schedule/useSchedule';
 import { areFriends } from '@/features/friends/useFriends';
-import { rowToMeeting, rowToProfile, type ClassRow, type ProfileRow } from '@/domain/mappers';
+import {
+  PROFILE_COLUMNS,
+  rowToMeeting,
+  rowToProfile,
+  type ClassRow,
+  type ProfileRow,
+} from '@/domain/mappers';
 import { findSharedClasses, computeMutualFree } from '@/domain/compare';
 import { WEEKDAYS } from '@/domain/constants';
 import CompareGrid from './CompareGrid';
@@ -38,7 +44,7 @@ export default function ComparePage() {
 
       const { data: profileRow, error: profileError } = await supabase
         .from('profiles')
-        .select('id, username, display_name, avatar_url, invite_code')
+        .select(PROFILE_COLUMNS)
         .eq('username', username!)
         .maybeSingle();
 

@@ -4,10 +4,17 @@ import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { areFriends } from './useFriends';
-import { rowToMeeting, rowToProfile, type ClassRow, type ProfileRow } from '@/domain/mappers';
+import {
+  PROFILE_COLUMNS,
+  rowToMeeting,
+  rowToProfile,
+  type ClassRow,
+  type ProfileRow,
+} from '@/domain/mappers';
 import ScheduleGrid from '@/features/schedule/ScheduleGrid';
 import Spinner from '@/components/Spinner';
 import EmptyState from '@/components/EmptyState';
+import SchoolChip from '@/features/theme/SchoolChip';
 import { buttonClassName } from '@/components/Button';
 import type { ClassMeeting, Profile } from '@/domain/types';
 
@@ -28,7 +35,7 @@ export default function FriendSchedulePage() {
 
       const { data: profileRow, error: profileError } = await supabase
         .from('profiles')
-        .select('id, username, display_name, avatar_url, invite_code')
+        .select(PROFILE_COLUMNS)
         .eq('username', username!)
         .maybeSingle();
 
@@ -95,9 +102,10 @@ export default function FriendSchedulePage() {
   return (
     <main>
       <header className="flex items-center justify-between px-4 pt-4">
-        <div>
+        <div className="flex flex-col items-start gap-1">
           <h1 className="text-2xl font-bold">@{profile!.username}</h1>
           {profile!.displayName && <p className="text-sm text-slate-500">{profile!.displayName}</p>}
+          <SchoolChip school={profile!.school} />
         </div>
         <Link to={`/compare/${profile!.username}`} className={buttonClassName('secondary')}>
           Compare

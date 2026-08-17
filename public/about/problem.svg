@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 240" fill="none">
+  <g transform="rotate(-10 88 140)">
+    <rect x="40" y="76" width="96" height="128" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+    <rect x="54" y="94" width="68" height="8" rx="4" fill="#e2e8f0"/>
+    <rect x="54" y="112" width="48" height="8" rx="4" fill="#e2e8f0"/>
+    <rect x="54" y="130" width="68" height="8" rx="4" fill="#e2e8f0"/>
+    <rect x="54" y="148" width="38" height="8" rx="4" fill="#e2e8f0"/>
+    <rect x="54" y="166" width="58" height="8" rx="4" fill="#e2e8f0"/>
+  </g>
+
+  <g transform="rotate(6 160 132)">
+    <rect x="112" y="64" width="96" height="128" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+    <rect x="126" y="82" width="58" height="8" rx="4" fill="#e2e8f0"/>
+    <rect x="126" y="100" width="68" height="8" rx="4" fill="#e2e8f0"/>
+    <rect x="126" y="118" width="42" height="8" rx="4" fill="#e2e8f0"/>
+    <rect x="126" y="136" width="68" height="8" rx="4" fill="#e2e8f0"/>
+    <rect x="126" y="154" width="52" height="8" rx="4" fill="#e2e8f0"/>
+  </g>
+
+  <g transform="rotate(-4 236 146)">
+    <rect x="188" y="84" width="96" height="128" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+    <rect x="202" y="102" width="68" height="8" rx="4" fill="#e2e8f0"/>
+    <rect x="202" y="120" width="44" height="8" rx="4" fill="#e2e8f0"/>
+    <rect x="202" y="138" width="62" height="8" rx="4" fill="#e2e8f0"/>
+    <rect x="202" y="156" width="36" height="8" rx="4" fill="#e2e8f0"/>
+  </g>
+
+  <rect x="20" y="18" width="150" height="34" rx="17" fill="#0f172a"/>
+  <text x="38" y="40" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="14" fill="#ffffff">when r u free</text>
+
+  <rect x="146" y="192" width="156" height="34" rx="17" fill="#e2e8f0"/>
+  <text x="163" y="214" font-family="system-ui, -apple-system, Segoe UI, sans-serif" font-size="14" fill="#334155">send yours again</text>
+</svg>

@@ -4,6 +4,7 @@ import { AuthProvider } from '@/features/auth/AuthProvider';
 import RequireAuth from '@/features/auth/RequireAuth';
 import AppShell from '@/components/AppShell';
 import MobileOnly from '@/components/MobileOnly';
+import SchoolThemeEffect from '@/features/theme/SchoolThemeEffect';
 import Spinner from '@/components/Spinner';
 import LoginPage from '@/features/auth/LoginPage';
 import SchedulePage from '@/features/schedule/SchedulePage';
@@ -32,6 +33,7 @@ function AppRoutes() {
   return (
     <MobileOnly>
       <AuthProvider>
+        <SchoolThemeEffect />
         <Suspense fallback={<Spinner />}>
           <Routes>
             <Route path="/login" element={<LoginPage />} />

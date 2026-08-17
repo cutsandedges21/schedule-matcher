@@ -20,7 +20,7 @@ import type { Profile } from '@/domain/types';
  *    see them and silently drops the styles (see src/domain/color.ts).
  *
  * Three independent slots, any combination of which may be null: a colour
- * (`cosmetic`), a strip (`banner`) and slime (`effect`). With all three null
+ * (`cosmetic`), a strip (`banner`) and a reserved band (`effect`). With all three null
  * this renders exactly the card that shipped before any of them existed, which
  * is what every profile that has never opened Settings still looks like.
  */
@@ -31,9 +31,9 @@ export default function FriendCard({ friend }: { friend: Profile }) {
 
   return (
     <li
-      // overflow-hidden is what stops a drip landing on the friend below —
-      // rows sit 8px apart, and the slime is deliberately clipped to the card
-      // of the student who chose it.
+      // overflow-hidden is what stops an effect landing on the friend below —
+      // rows sit 8px apart, and a card's decoration is deliberately clipped to
+      // the card of the student who chose it.
       className="overflow-hidden rounded-xl border border-slate-200 bg-white"
       style={
         cosmetic

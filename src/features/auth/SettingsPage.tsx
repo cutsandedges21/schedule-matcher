@@ -154,29 +154,13 @@ export default function SettingsPage() {
       name: 'None',
       preview: <span className="block h-full w-full border border-slate-200 bg-white" />,
     },
+    // The swatch is as empty as the effect is. Dashed rather than solid so it
+    // reads as a slot waiting to be filled instead of a broken preview.
     ...EFFECTS.map((effect) => ({
       id: effect.id,
       name: effect.name,
       preview: (
-        <span className="relative block h-full w-full overflow-hidden border border-slate-200 bg-white">
-          <span
-            className="absolute inset-x-0 top-0 block"
-            style={{ height: 10, backgroundColor: effect.drip }}
-          />
-          {[18, 50, 78].map((left, index) => (
-            <span
-              key={left}
-              className="absolute top-0 block rounded-b-full"
-              style={{
-                left: `${left}%`,
-                width: 9,
-                marginLeft: -4.5,
-                height: [26, 18, 30][index],
-                backgroundColor: effect.drip,
-              }}
-            />
-          ))}
-        </span>
+        <span className="block h-full w-full border border-dashed border-slate-300 bg-white" />
       ),
     })),
   ];
@@ -262,7 +246,7 @@ export default function SettingsPage() {
 
           <SwatchPicker
             title="Effect"
-            description="Slime that drips out from under your banner."
+            description="Reserved for something that sits under your banner. Empty for now."
             options={effectOptions}
             selectedId={profile?.effect ?? null}
             onChoose={(id) => void chooseCosmetic('effect', id)}

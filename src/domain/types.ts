@@ -46,6 +46,6 @@ export interface Profile {
   cosmetic: string | null;
   /** Banner id from `domain/banners`, or null for no strip. */
   banner: string | null;
-  /** Effect id from `domain/effects`, or null for no slime. */
+  /** Effect id from `domain/effects`, or null for no effect band. */
   effect: string | null;
 }

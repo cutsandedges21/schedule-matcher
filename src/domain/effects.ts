@@ -4,8 +4,6 @@ export interface Effect {
   /** Stored verbatim in profiles.effect. Must match EFFECT_ID_PATTERN. */
   id: string;
   name: string;
-  /** The drips, the lip they hang from, and the droplets that fall. */
-  drip: string;
 }
 
 /**
@@ -16,45 +14,40 @@ export interface Effect {
 export const EFFECT_ID_PATTERN = /^[a-z0-9-]{2,32}$/;
 
 /**
- * Height of the drip band, in pixels.
+ * Height of the effect band, in pixels.
  *
- * This is the reason there is no contrast rule anywhere in this file pairing a
- * drip against the card's text. The band is a fixed-height box in normal flow
- * that clips its own contents, and the username sits *below* it — not
- * underneath it in z-order. A drip therefore cannot pass behind the text, so
- * there is no pairing to measure. Get this wrong — position the band
- * absolutely over the card — and `#6B5320` brown on `#2B9540` green is 2.4:1,
- * well under the 4.5:1 every other surface here holds to.
+ * Whatever eventually goes in this band, it has to stay a fixed-height box in
+ * **normal flow** that clips its own contents. The username renders after the
+ * band and therefore below it, which is the only reason nothing in this file
+ * needs a contrast rule against the card's text. Make the band absolute and
+ * that stops being true — the previous slime effect drew `#2B9540` green
+ * behind `#6B5320` brown at 2.4:1, well under the 4.5:1 every other surface in
+ * the cosmetics system holds to. It is also what keeps an effect from spilling
+ * onto the friend in the row below.
  */
-export const DRIP_BAND_PX = 34;
+export const EFFECT_BAND_PX = 34;
 
 /**
- * A curated list, for the same reasons as the colour presets: they can be
- * checked in CI, they keep the app looking like one app, and a new one each
- * term keeps the Pass feeling alive after purchase.
+ * The effect slot, reserved and empty.
  *
- * Every `drip` clears 3:1 against white and against every cosmetic background
- * in `cosmetics.ts` — the WCAG bar for a non-text graphic. Slime is decorative
- * and carries no information, so 3:1 rather than 4.5:1 is the right bar, but
- * something has to stop a preset that is invisible on the card it lands on.
+ * `blank` renders nothing — it claims the band and draws no content. It is a
+ * placeholder for the first real effect rather than something a student would
+ * want, so it costs a row of vertical space and gives nothing back. Replace it
+ * rather than adding alongside it.
  *
- * Note what is deliberately *not* constrained: how a drip looks against a
- * banner. The two are independent slots and mismatching them is allowed, so a
- * student who wants green slime under a red strip gets green slime under a red
- * strip.
+ * Anything added here that draws colour needs the treatment the other preset
+ * tables get: a visibility floor against every card background it can land on
+ * (`cosmetics.ts` backgrounds plus plain white), asserted in effects.test.ts.
+ * Decorative marks are held to the WCAG non-text bar of 3:1, not 4.5:1.
  */
-export const EFFECTS: readonly Effect[] = [
-  { id: 'slime-green', name: 'Slime', drip: '#2B9540' },
-  { id: 'slime-void', name: 'Void', drip: '#8B2FD6' },
-  { id: 'slime-magma', name: 'Magma', drip: '#D2540A' },
-  { id: 'slime-tide', name: 'Tide', drip: '#0E7FBF' },
-];
+export const EFFECTS: readonly Effect[] = [{ id: 'blank', name: 'Blank' }];
 
 const BY_ID = new Map(EFFECTS.map((effect) => [effect.id, effect]));
 
 /**
- * Null for "no effect", and null too for an id we no longer ship. Callers
- * render the plain card for both. Never throws: a retired id must not
+ * Null for "no effect", and null too for an id we no longer ship — which now
+ * includes every profile still storing one of the retired slime ids. Callers
+ * render the card without a band for both. Never throws: a retired id must not
  * white-screen the Friends page for everyone who is friends with that student.
  */
 export function effectById(id: string | null | undefined): Effect | null {

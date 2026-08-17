@@ -13,8 +13,8 @@
  * point the column has to be locked server-side, which is the note in the
  * headers of migrations 0007 and 0008. Do not mistake this list for that.
  *
- * Rendering is deliberately not gated: if a tester sets slime, every friend
- * sees it whether or not they are on this list. Cosmetics that only the buyer
+ * Rendering is deliberately not gated: if a tester sets a cosmetic, every
+ * friend sees it whether or not they are on this list. Cosmetics that only the buyer
  * can see have near-zero value — being seen by other people is the entire
  * product — so gating the *display* would test the wrong thing.
  */

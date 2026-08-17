@@ -4,16 +4,23 @@
 -- 0007 added:
 --
 --   banner  the animated strip across the top of the card
---   effect  the slime that drips out from under it
+--   effect  a band below it, reserved and currently empty
+--
+-- `effect` shipped holding a dripping-slime effect, which was pulled the same
+-- day; the column stays because the slot does. src/domain/effects.ts renders
+-- nothing for it today, and `effectById` returns null for the retired slime
+-- ids, so a profile still storing one degrades to no band rather than
+-- throwing. The check constraint is unchanged and needs no migration when the
+-- slot is filled again.
 --
 -- Both nullable: null means "not set" and renders exactly the card 0007
 -- shipped, so every existing profile is unaffected without a backfill.
 --
 -- Three columns rather than one, because the three are genuinely independent.
--- A student can run a colour with nothing else, slime on a plain white card,
--- a strip with no slime, or all three. They are also free to *mismatch* — a
--- green slime under a red strip is allowed on purpose. Packing them into one
--- value would make "clear the slime but keep my strip" a parsing problem, and
+-- A student can run a colour with nothing else, an effect on a plain white
+-- card, a strip with no effect, or all three. They are also free to *mismatch*
+-- — the slots do not co-ordinate, on purpose. Packing them into one value
+-- would make "clear the effect but keep my strip" a parsing problem, and
 -- would imply a co-ordination between them that deliberately does not exist.
 --
 -- Same format check as school (0006) and cosmetic (0007), and for the same

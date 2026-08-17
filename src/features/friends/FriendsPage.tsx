@@ -6,7 +6,6 @@ import { useFriends } from './useFriends';
 import FriendSearch from './FriendSearch';
 import PendingRequests from './PendingRequests';
 import FriendCard from './FriendCard';
-import { CardEffectDefs } from './CardEffect';
 import Button from '@/components/Button';
 import Spinner from '@/components/Spinner';
 import EmptyState from '@/components/EmptyState';
@@ -64,9 +63,6 @@ export default function FriendsPage() {
 
   return (
     <main className="flex flex-col gap-6 pb-6">
-      {/* One <filter> node for the whole page — see CardEffect. */}
-      <CardEffectDefs />
-
       <header className="px-4 pt-4">
         <h1 className="text-2xl font-bold">Friends</h1>
       </header>

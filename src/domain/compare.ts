@@ -61,16 +61,17 @@ export function findSharedClasses(
 }
 
 /**
- * Free windows on one day where neither student has a class. Bounded by the
- * fixed 08:00–18:00 axis rather than the union of both students' active hours,
- * so "both free 08:00–09:30" is reported even when neither has an early class.
+ * Free windows on one day where nobody in the group has a class. Bounded by
+ * the fixed 08:00–18:00 axis rather than the union of the group's active
+ * hours, so "everyone free 08:00–09:30" is reported even when nobody has an
+ * early class.
+ *
+ * Adding a member can only ever remove free time, never add it — every
+ * member's classes go into the same busy union before it is inverted.
  */
-export function computeMutualFree(
-  mine: ClassMeeting[],
-  theirs: ClassMeeting[],
-  day: number
-): Interval[] {
-  const busy = [...mine, ...theirs]
+export function computeGroupFree(schedules: ClassMeeting[][], day: number): Interval[] {
+  const busy = schedules
+    .flat()
     .filter((c) => c.days.includes(day))
     .map((c) => ({
       start: Math.max(c.startMinute, DAY_START_MINUTE),
@@ -97,4 +98,115 @@ export function computeMutualFree(
   }
 
   return free;
+}
+
+/** The two-person case, unchanged in behaviour: a group of exactly two. */
+export function computeMutualFree(
+  mine: ClassMeeting[],
+  theirs: ClassMeeting[],
+  day: number
+): Interval[] {
+  return computeGroupFree([mine, theirs], day);
+}
+
+export interface GroupMember {
+  id: string;
+  classes: ClassMeeting[];
+}
+
+export interface GroupSharedClass {
+  name: string;
+  day: number;
+  /** The window every listed member is actually in the room together. */
+  startMinute: number;
+  endMinute: number;
+  /** Ids of the members who share it, in the order they were passed in. */
+  memberIds: string[];
+  /** The individual meeting rows behind it, so a grid can mark exactly those blocks. */
+  meetingIds: string[];
+}
+
+interface Occurrence {
+  memberIndex: number;
+  memberId: string;
+  meeting: ClassMeeting;
+}
+
+/**
+ * Classes shared by two or more members of a group, per day.
+ *
+ * Pairwise `isSameClass` is not transitive — A can overlap B and B overlap C
+ * while A and C never meet — so clustering by union-find would happily emit a
+ * "shared" class whose intersected window is empty or inverted. Instead each
+ * cluster grows from an anchor and a candidate joins only if it still overlaps
+ * the *running intersection*, which keeps `startMinute < endMinute` true by
+ * construction.
+ *
+ * Members are scanned in the order given (caller passes the viewer first), so
+ * the viewer's own classes anchor their clusters and `memberIds` reads
+ * "you, alice, bob" rather than an arbitrary permutation.
+ */
+export function findGroupSharedClasses(members: GroupMember[]): GroupSharedClass[] {
+  if (members.length < 2) return [];
+
+  const days = new Set<number>();
+  for (const m of members) for (const c of m.classes) for (const d of c.days) days.add(d);
+
+  const out: GroupSharedClass[] = [];
+
+  for (const day of [...days].sort((a, b) => a - b)) {
+    const occurrences: Occurrence[] = [];
+    members.forEach((m, memberIndex) => {
+      for (const meeting of m.classes) {
+        if (meeting.days.includes(day)) {
+          occurrences.push({ memberIndex, memberId: m.id, meeting });
+        }
+      }
+    });
+
+    const taken = new Set<number>();
+
+    for (let i = 0; i < occurrences.length; i += 1) {
+      if (taken.has(i)) continue;
+      const anchor = occurrences[i];
+
+      const cluster = [anchor];
+      const seenMembers = new Set([anchor.memberIndex]);
+      let start = anchor.meeting.startMinute;
+      let end = anchor.meeting.endMinute;
+
+      for (let j = i + 1; j < occurrences.length; j += 1) {
+        if (taken.has(j)) continue;
+        const candidate = occurrences[j];
+        // One slot per member: a second copy of the same class in one person's
+        // own schedule is a data error, not a second person to match against.
+        if (seenMembers.has(candidate.memberIndex)) continue;
+        if (!isSameClass(anchor.meeting, candidate.meeting)) continue;
+        if (!(candidate.meeting.startMinute < end && start < candidate.meeting.endMinute)) continue;
+
+        taken.add(j);
+        cluster.push(candidate);
+        seenMembers.add(candidate.memberIndex);
+        start = Math.max(start, candidate.meeting.startMinute);
+        end = Math.min(end, candidate.meeting.endMinute);
+      }
+
+      if (cluster.length < 2) continue;
+      taken.add(i);
+
+      out.push({
+        name: anchor.meeting.name,
+        day,
+        startMinute: start,
+        endMinute: end,
+        memberIds: cluster
+          .slice()
+          .sort((a, b) => a.memberIndex - b.memberIndex)
+          .map((o) => o.memberId),
+        meetingIds: cluster.map((o) => o.meeting.id),
+      });
+    }
+  }
+
+  return out.sort((x, y) => x.day - y.day || x.startMinute - y.startMinute);
 }

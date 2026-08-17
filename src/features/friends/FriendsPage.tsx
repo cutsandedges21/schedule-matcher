@@ -84,7 +84,14 @@ export default function FriendsPage() {
       <FriendSearch userId={session!.user.id} onSent={reload} />
 
       <section className="px-4">
-        <h2 className="text-sm font-semibold text-slate-500">Your friends</h2>
+        <div className="flex items-baseline justify-between gap-2">
+          <h2 className="text-sm font-semibold text-slate-500">Your friends</h2>
+          {friends.length > 1 && (
+            <Link to="/compare" className="text-sm font-medium underline underline-offset-4">
+              Compare several
+            </Link>
+          )}
+        </div>
         {friends.length === 0 ? (
           <EmptyState title="No friends yet" body="Search for a username or share your invite link." />
         ) : (

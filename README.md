@@ -25,6 +25,13 @@ export SUPABASE_ACCESS_TOKEN=sbp_...          # account/tokens in the dashboard
 npx supabase secrets set --project-ref <ref> GEMINI_API_KEYS=key1,key2,key3
 npx supabase functions deploy extract-schedule --project-ref <ref>
 
+# Account deletion. Only the service role can delete an auth.users row, so
+# "Delete my account" in Settings goes through this function; everything else
+# (profile, classes, friendships, extraction log) follows by ON DELETE CASCADE.
+# The button returns a generic failure until this is deployed — check the
+# browser console for the underlying 404.
+npx supabase functions deploy delete-account --project-ref <ref>
+
 # Prove a non-friend cannot read another student's schedule. Run this after
 # ANY change to a policy or to are_friends.
 node scripts/run-sql.mjs <ref> supabase/tests/rls_check.sql
@@ -55,6 +62,35 @@ sign-in:
 | `npm run build` | Type check and production build |
 | `npm run icons` | Redraw the home-screen icons in `public/` |
 | `node scripts/run-sql.mjs <ref> <file.sql>` | Run SQL via the Management API |
+
+## Comparing
+
+Two entry points, on purpose:
+
+- `/compare/:username` — the original 1:1 view. Two lanes, full class names,
+  shared classes spanning the full width.
+- `/compare?with=alice,bob` — up to `MAX_GROUP_FRIENDS` (5) friends plus you.
+  The selection lives in the query string so back steps through it and a group
+  is shareable as a link. Usernames in `with=` that are not accepted friends
+  are dropped: their classes come back empty under RLS, which would make the
+  group look freer than it is.
+
+Six lanes on a phone leaves ~50px each, so the group grid leads with the
+summary — everyone-free windows and classes in common — and treats the grid as
+a shape you tap into rather than read. Anyone in the group with no saved
+schedule is called out explicitly, because "no classes" and "free all week"
+are the same thing to `computeGroupFree` and only one of them is true.
+
+## Legal pages
+
+`/privacy` and `/terms` render **outside** `MobileOnly` and outside
+`AuthProvider` (see `src/App.tsx`) — a policy you cannot open on a laptop, or
+before you have an account, is not much of a policy. Both are linked from
+Settings.
+
+They ship with deliberate placeholders. Before launch, replace
+`OPERATOR_NAME`, `CONTACT_EMAIL` and `JURISDICTION` in
+`src/features/legal/LegalLayout.tsx` and bump `LAST_UPDATED`.
 
 ## Phones only
 

@@ -49,20 +49,23 @@ export default function PendingRequests({ requests, onChanged }: Props) {
         {requests.map((request) => {
           const busy = pendingId === request.id;
           return (
-            <li key={request.id} className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-3">
-              <div>
-                <p className="font-semibold">@{request.profile.username}</p>
+            <li key={request.id} className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white p-3">
+              {/* min-w-0 so a long username truncates instead of shoving the
+                  buttons off the right edge of a narrow phone. */}
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-semibold">@{request.profile.username}</p>
                 <p className="text-xs text-slate-500">
                   {request.direction === 'incoming' ? 'Wants to connect' : 'Request sent'}
                 </p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex shrink-0 gap-2">
                 {request.direction === 'incoming' && (
-                  <Button disabled={busy} onClick={() => void handleAccept(request.id)}>
-                    {busy ? 'Accepting…' : 'Accept'}
+                  <Button size="sm" disabled={busy} onClick={() => void handleAccept(request.id)}>
+                    {busy ? '…' : 'Accept'}
                   </Button>
                 )}
                 <Button
+                  size="sm"
                   variant="secondary"
                   disabled={busy}
                   onClick={() => void handleRemove(request.id)}

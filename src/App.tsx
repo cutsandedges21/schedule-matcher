@@ -9,40 +9,66 @@ import LoginPage from '@/features/auth/LoginPage';
 import SchedulePage from '@/features/schedule/SchedulePage';
 
 const OnboardingPage = lazy(() => import('@/features/auth/OnboardingPage'));
-const ProfilePage = lazy(() => import('@/features/auth/ProfilePage'));
+const SettingsPage = lazy(() => import('@/features/auth/SettingsPage'));
 const UploadPage = lazy(() => import('@/features/upload/UploadPage'));
 const FriendsPage = lazy(() => import('@/features/friends/FriendsPage'));
 const FriendSchedulePage = lazy(() => import('@/features/friends/FriendSchedulePage'));
 const InvitePage = lazy(() => import('@/features/friends/InvitePage'));
 const ComparePage = lazy(() => import('@/features/compare/ComparePage'));
+const GroupComparePage = lazy(() => import('@/features/compare/GroupComparePage'));
+const PrivacyPage = lazy(() => import('@/features/legal/PrivacyPage'));
+const TermsPage = lazy(() => import('@/features/legal/TermsPage'));
 
 const shell = (element: ReactNode) => (
   <RequireAuth><AppShell>{element}</AppShell></RequireAuth>
 );
 
-export default function App() {
-  // Outside the router and the auth provider on purpose: a desktop visitor
-  // should meet the notice before anything signs them in or fetches for them.
+/**
+ * Everything except the legal pages. MobileOnly still sits outside the auth
+ * provider on purpose: a desktop visitor must meet the notice before anything
+ * signs them in or fetches for them.
+ */
+function AppRoutes() {
   return (
     <MobileOnly>
-      <BrowserRouter>
-        <AuthProvider>
-          <Suspense fallback={<Spinner />}>
-            <Routes>
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/onboarding" element={<RequireAuth><OnboardingPage /></RequireAuth>} />
-              <Route path="/invite/:code" element={<RequireAuth><InvitePage /></RequireAuth>} />
-              <Route path="/" element={shell(<SchedulePage />)} />
-              <Route path="/upload" element={<RequireAuth><UploadPage /></RequireAuth>} />
-              <Route path="/friends" element={shell(<FriendsPage />)} />
-              <Route path="/profile" element={shell(<ProfilePage />)} />
-              <Route path="/u/:username" element={shell(<FriendSchedulePage />)} />
-              <Route path="/compare/:username" element={shell(<ComparePage />)} />
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </Suspense>
-        </AuthProvider>
-      </BrowserRouter>
+      <AuthProvider>
+        <Suspense fallback={<Spinner />}>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/onboarding" element={<RequireAuth><OnboardingPage /></RequireAuth>} />
+            <Route path="/invite/:code" element={<RequireAuth><InvitePage /></RequireAuth>} />
+            <Route path="/" element={shell(<SchedulePage />)} />
+            <Route path="/upload" element={<RequireAuth><UploadPage /></RequireAuth>} />
+            <Route path="/friends" element={shell(<FriendsPage />)} />
+            <Route path="/settings" element={shell(<SettingsPage />)} />
+            {/* The tab was called Profile until the settings rename; old links,
+                bookmarks and home-screen shortcuts still point here. */}
+            <Route path="/profile" element={<Navigate to="/settings" replace />} />
+            <Route path="/u/:username" element={shell(<FriendSchedulePage />)} />
+            <Route path="/compare" element={shell(<GroupComparePage />)} />
+            <Route path="/compare/:username" element={shell(<ComparePage />)} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
+      </AuthProvider>
     </MobileOnly>
+  );
+}
+
+export default function App() {
+  // The legal pages are deliberately outside MobileOnly and outside
+  // AuthProvider: a privacy policy or a set of terms has to be readable on a
+  // laptop, and before you have an account, or it isn't much use to anyone.
+  // `/*` keeps every other route inside the phone-only wall as before.
+  return (
+    <BrowserRouter>
+      <Suspense fallback={<Spinner />}>
+        <Routes>
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/*" element={<AppRoutes />} />
+        </Routes>
+      </Suspense>
+    </BrowserRouter>
   );
 }

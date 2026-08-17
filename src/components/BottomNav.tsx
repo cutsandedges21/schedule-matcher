@@ -4,7 +4,7 @@ import { NavLink } from 'react-router-dom';
 const TABS = [
   { to: '/', label: 'Schedule' },
   { to: '/friends', label: 'Friends' },
-  { to: '/profile', label: 'Profile' },
+  { to: '/settings', label: 'Settings' },
 ];
 
 export default function BottomNav() {

@@ -14,7 +14,17 @@ export default function LoginPage() {
     // request isn't silently dropped after sign-in.
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${window.location.origin}${peekRedirect()}` },
+      options: {
+        redirectTo: `${window.location.origin}${peekRedirect()}`,
+        // Without this, signing out and tapping "Continue with Google" puts
+        // you straight back into the account you just left: our session is
+        // gone, but *Google's* cookie isn't, so Google silently re-authorises
+        // its one signed-in user and bounces back before anything is drawn.
+        // On a shared phone — a sibling's, a friend's, a library machine —
+        // that makes a second account unreachable, with no way to tell it is
+        // even happening. `select_account` always shows the chooser.
+        queryParams: { prompt: 'select_account' },
+      },
     });
   }
 

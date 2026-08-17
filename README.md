@@ -50,6 +50,20 @@ sign-in:
   links survive OAuth), which means these need the `/**` wildcard:
   `http://localhost:5173/**`, `https://<app>.vercel.app/**`.
 
+  This list is checked on the way *back*, not on the way out: an origin that is
+  missing still gets you a normal Google sign-in page, and only then does the
+  callback quietly redirect to the Site URL instead of where you started. It
+  reads as "Google sign-in is broken" rather than as a config problem. If Vite
+  ever prints `Port 5173 is in use, trying another one`, you are on 5174 and
+  will hit exactly this — add the ports you actually use, or kill the stray
+  server.
+
+Sign-in passes `prompt=select_account` (`src/features/auth/LoginPage.tsx`).
+Without it, signing out and tapping "Continue with Google" lands you straight
+back in the account you just left: our session is gone, but Google's cookie is
+not, so Google silently re-authorises its one signed-in user. On a shared
+phone that makes a second account unreachable.
+
 ## Commands
 
 | Command | Purpose |

@@ -33,7 +33,7 @@ export const SCHOOL_ID_PATTERN = /^[a-z0-9-]{2,32}$/;
 export const SCHOOLS: readonly School[] = [
   {
     id: DEFAULT_SCHOOL_ID,
-    name: 'No school',
+    name: 'Default',
     // Exactly today's chrome: bg-slate-900 with active:bg-slate-700.
     accent: '#0F172A',
     accentStrong: '#334155',

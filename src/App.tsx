@@ -35,7 +35,6 @@ function AppRoutes() {
         <Suspense fallback={<Spinner />}>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
-              <Route path="/__preview-upload" element={<UploadPage />} />
             <Route path="/onboarding" element={<RequireAuth><OnboardingPage /></RequireAuth>} />
             <Route path="/invite/:code" element={<RequireAuth><InvitePage /></RequireAuth>} />
             <Route path="/" element={shell(<SchedulePage />)} />

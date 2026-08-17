@@ -36,12 +36,24 @@ export default function OnboardingPage() {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   /**
-   * intro → install → username. The install step comes *before* the username
-   * so that a student who follows the instructions is running from their home
-   * screen by the time they pick a name, rather than typing it into Safari and
-   * then being asked to move.
+   * install → intro → username. Install leads, so that everything after it
+   * happens in the app the student is actually going to keep using.
+   *
+   * On iPhone a home-screen app gets its own storage container, separate from
+   * Safari's, so anyone who follows the instructions and switches over arrives
+   * signed out and finishes onboarding in the installed app. With the intro
+   * first that meant watching the whole nine-second sequence in Safari and
+   * then watching it again in the app; leading with install means they see it
+   * once, in the right place. Picking a username still happens after the move
+   * for the same reason it always did.
+   *
+   * Anyone already running from an icon starts at the intro — there is nothing
+   * to install, and that includes someone who installed midway through a
+   * previous attempt and has come back through the installed app.
    */
-  const [step, setStep] = useState<'intro' | 'install' | 'username'>('intro');
+  const [step, setStep] = useState<'install' | 'intro' | 'username'>(
+    isStandalone() ? 'intro' : 'install'
+  );
 
   /**
    * Where to go when onboarding finishes — captured the moment the profile is
@@ -58,12 +70,8 @@ export default function OnboardingPage() {
   /**
    * Stable identity: AboutIntro keys its beat timer off this, and a fresh arrow
    * every render would keep restarting the current beat.
-   *
-   * Anyone already running from a home-screen icon skips straight past the
-   * install step — including someone who installed midway through a previous
-   * attempt and has come back through the installed app.
    */
-  const afterIntro = useCallback(() => setStep(isStandalone() ? 'username' : 'install'), []);
+  const afterIntro = useCallback(() => setStep('username'), []);
 
   /** The username is the last step, so saving it ends onboarding. */
   async function afterProfileSaved() {
@@ -109,10 +117,6 @@ export default function OnboardingPage() {
     await afterProfileSaved();
   }
 
-  if (step === 'intro') {
-    return <AboutIntro onDone={afterIntro} />;
-  }
-
   if (step === 'install') {
     return (
       <main className="flex min-h-dvh flex-col p-6">
@@ -128,26 +132,30 @@ export default function OnboardingPage() {
 
         {/* On iPhone a home-screen app gets its own storage container, separate
             from Safari's, so a student who adds the app here and switches to it
-            arrives signed out and picks their username there instead. Saying so
-            turns a "wait, it lost me" moment into an expected one. Android
-            shares storage with Chrome, hence "might". */}
+            arrives signed out and does the rest — intro and username — there
+            instead. Saying so turns a "wait, it lost me" moment into an
+            expected one. Android shares storage with Chrome, hence "might". */}
         <p className="mt-6 rounded-xl bg-slate-100 px-4 py-3 text-xs leading-relaxed text-slate-600">
           Added it? Open Schedule Matcher from your home screen and carry on there — you might
           have to sign in once more.
         </p>
 
-        <Button onClick={() => setStep('username')} className="mt-4 w-full">
+        <Button onClick={() => setStep('intro')} className="mt-4 w-full">
           Continue
         </Button>
         <button
           type="button"
-          onClick={() => setStep('username')}
+          onClick={() => setStep('intro')}
           className="mt-2 min-h-touch text-sm font-medium text-slate-500"
         >
           Skip for now
         </button>
       </main>
     );
+  }
+
+  if (step === 'intro') {
+    return <AboutIntro onDone={afterIntro} />;
   }
 
   return (

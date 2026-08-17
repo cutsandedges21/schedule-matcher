@@ -191,9 +191,9 @@ Nothing in the app performs an entitlement check.
 
 ## Onboarding intro
 
-Onboarding opens with a three-beat sequence — text plus image, each fading in,
-holding, and fading out — that plays itself and then moves on to the install
-step (`src/features/auth/AboutIntro.tsx`).
+After the install step comes a three-beat sequence — text plus image, each
+fading in, holding, and fading out — that plays itself and then moves on to the
+username step (`src/features/auth/AboutIntro.tsx`).
 
 **There are no controls.** No next, no back, no skip, and tapping does
 nothing; a hairline progress bar at the top is the only affordance. That is
@@ -237,18 +237,20 @@ button in `DesktopNotice` if you want the wall to be absolute.
 
 ## Home-screen install
 
-Onboarding runs **intro → install → username**. The "add to home screen"
-instructions (`src/components/InstallInstructions.tsx`) come *before* the
-username so a student who follows them is running from their home screen by
-the time they pick a name, instead of typing it into Safari and then being
-asked to move. The step is skipped for anyone already running from an icon.
+Onboarding runs **install → intro → username**. The "add to home screen"
+instructions (`src/components/InstallInstructions.tsx`) come first so that
+everything after them happens in the app the student is actually going to keep
+using. The step is skipped for anyone already running from an icon, who starts
+at the intro instead.
 
-One consequence worth knowing: on iPhone a home-screen app gets its own
-storage container, separate from Safari's, so a student who installs at this
-step and switches over arrives **signed out** and finishes onboarding in the
-installed app — including replaying the intro. The step says so in as many
-words rather than letting it read as a bug. Android shares storage with
-Chrome, so it does not happen there.
+The reason install leads rather than merely preceding the username: on iPhone a
+home-screen app gets its own storage container, separate from Safari's, so a
+student who installs and switches over arrives **signed out** and finishes
+onboarding in the installed app. When the intro ran first, that meant watching
+the whole nine-second sequence in Safari and then watching it again in the app.
+Leading with install means they see it once, in the right place. The step says
+the sign-in is coming in as many words rather than letting it read as a bug.
+Android shares storage with Chrome, so it does not happen there.
 
 On Android, Chrome fires `beforeinstallprompt` when the page qualifies as
 installable. `src/lib/installPrompt.ts` catches that event at startup — before

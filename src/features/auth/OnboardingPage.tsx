@@ -35,13 +35,19 @@ export default function OnboardingPage() {
   const [username, setUsername] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [step, setStep] = useState<'intro' | 'username' | 'install'>('intro');
+  /**
+   * intro → install → username. The install step comes *before* the username
+   * so that a student who follows the instructions is running from their home
+   * screen by the time they pick a name, rather than typing it into Safari and
+   * then being asked to move.
+   */
+  const [step, setStep] = useState<'intro' | 'install' | 'username'>('intro');
 
   /**
    * Where to go when onboarding finishes — captured the moment the profile is
-   * saved, not when the student taps through the install step. `RequireAuth`
-   * clears the pending redirect as soon as a profile exists, so reading it
-   * later would silently drop the invite link that sent them here.
+   * saved. `RequireAuth` clears the pending redirect as soon as a profile
+   * exists, so reading it later would silently drop the invite link that sent
+   * them here.
    */
   const destination = useRef('/');
 
@@ -49,19 +55,21 @@ export default function OnboardingPage() {
     navigate(destination.current, { replace: true });
   }
 
-  // Stable identity: AboutIntro keys its beat timer off this, and a fresh
-  // arrow every render would keep restarting the current beat.
-  const showUsernameStep = useCallback(() => setStep('username'), []);
+  /**
+   * Stable identity: AboutIntro keys its beat timer off this, and a fresh arrow
+   * every render would keep restarting the current beat.
+   *
+   * Anyone already running from a home-screen icon skips straight past the
+   * install step — including someone who installed midway through a previous
+   * attempt and has come back through the installed app.
+   */
+  const afterIntro = useCallback(() => setStep(isStandalone() ? 'username' : 'install'), []);
 
-  /** Profile saved: show the install step, unless they're already installed. */
+  /** The username is the last step, so saving it ends onboarding. */
   async function afterProfileSaved() {
     destination.current = consumeRedirect();
     await refreshProfile();
-    if (isStandalone()) {
-      finish();
-      return;
-    }
-    setStep('install');
+    finish();
   }
 
   async function handleSubmit(event: FormEvent) {
@@ -102,7 +110,7 @@ export default function OnboardingPage() {
   }
 
   if (step === 'intro') {
-    return <AboutIntro onDone={showUsernameStep} />;
+    return <AboutIntro onDone={afterIntro} />;
   }
 
   if (step === 'install') {
@@ -118,12 +126,22 @@ export default function OnboardingPage() {
           <InstallInstructions />
         </div>
 
-        <Button onClick={finish} className="mt-6 w-full">
-          Done
+        {/* On iPhone a home-screen app gets its own storage container, separate
+            from Safari's, so a student who adds the app here and switches to it
+            arrives signed out and picks their username there instead. Saying so
+            turns a "wait, it lost me" moment into an expected one. Android
+            shares storage with Chrome, hence "might". */}
+        <p className="mt-6 rounded-xl bg-slate-100 px-4 py-3 text-xs leading-relaxed text-slate-600">
+          Added it? Open Schedule Matcher from your home screen and carry on there — you might
+          have to sign in once more.
+        </p>
+
+        <Button onClick={() => setStep('username')} className="mt-4 w-full">
+          Continue
         </Button>
         <button
           type="button"
-          onClick={finish}
+          onClick={() => setStep('username')}
           className="mt-2 min-h-touch text-sm font-medium text-slate-500"
         >
           Skip for now
@@ -157,7 +175,7 @@ export default function OnboardingPage() {
         {error && <p className="mt-2 text-sm text-rose-600">{error}</p>}
 
         <Button type="submit" disabled={saving} className="mt-auto w-full">
-          {saving ? 'Saving…' : 'Continue'}
+          {saving ? 'Saving…' : 'Finish'}
         </Button>
       </form>
     </main>

@@ -141,7 +141,7 @@ progress bar, and the Settings swatches. A friend's school shows as a chip in
 ## Onboarding intro
 
 Onboarding opens with a three-beat sequence — text plus image, each fading in,
-holding, and fading out — that plays itself and then moves to the username
+holding, and fading out — that plays itself and then moves on to the install
 step (`src/features/auth/AboutIntro.tsx`).
 
 **There are no controls.** No next, no back, no skip, and tapping does
@@ -186,9 +186,18 @@ button in `DesktopNotice` if you want the wall to be absolute.
 
 ## Home-screen install
 
-Onboarding ends on "add to home screen" instructions for both iPhone and
-Android (`src/components/InstallInstructions.tsx`), skipped for anyone already
-running from a home-screen icon.
+Onboarding runs **intro → install → username**. The "add to home screen"
+instructions (`src/components/InstallInstructions.tsx`) come *before* the
+username so a student who follows them is running from their home screen by
+the time they pick a name, instead of typing it into Safari and then being
+asked to move. The step is skipped for anyone already running from an icon.
+
+One consequence worth knowing: on iPhone a home-screen app gets its own
+storage container, separate from Safari's, so a student who installs at this
+step and switches over arrives **signed out** and finishes onboarding in the
+installed app — including replaying the intro. The step says so in as many
+words rather than letting it read as a bug. Android shares storage with
+Chrome, so it does not happen there.
 
 On Android, Chrome fires `beforeinstallprompt` when the page qualifies as
 installable. `src/lib/installPrompt.ts` catches that event at startup — before

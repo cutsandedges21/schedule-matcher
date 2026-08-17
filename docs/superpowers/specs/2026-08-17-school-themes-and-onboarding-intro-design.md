@@ -345,11 +345,26 @@ New pure-domain tests, matching the existing `src/domain/__tests__/` setup.
 
 ---
 
-## 4. Deferred — revisit after this ships
+## 4. Install step order — done
 
-**Move the install instructions earlier in onboarding.** Today the order is
-intro → username → install. Putting install first would mean a student is
-running from the home-screen icon before they have typed anything, so the
-username they pick is entered in the installed app rather than in Safari — no
-"where did my progress go" when they switch. Untested and out of scope here;
-flagged for a follow-up.
+Onboarding runs **intro → install → username**. Putting install before the
+username means a student who follows the instructions is running from their
+home-screen icon by the time they pick a name, rather than typing it into
+Safari and then being asked to move.
+
+`afterIntro()` skips the install step for anyone already running standalone,
+which also covers someone who installed during an earlier attempt and has come
+back through the installed app. Saving the username is now the last thing
+onboarding does, so `afterProfileSaved()` consumes the pending redirect and
+navigates immediately — it no longer branches on `isStandalone()`.
+
+**Known consequence, not a bug.** On iPhone a home-screen web app gets its own
+storage container, separate from Safari's. A student who installs at this step
+and switches to the icon arrives signed out, signs in again, and finishes
+onboarding — intro included — inside the installed app. The step now says so
+("you might have to sign in once more") rather than letting it read as lost
+progress. Android shares storage with Chrome, so it does not arise there.
+
+Persisting an "intro seen" flag would not help: on iOS the new container starts
+with empty storage, so the flag would be missing exactly where the replay
+happens.

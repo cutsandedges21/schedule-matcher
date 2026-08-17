@@ -35,6 +35,25 @@ function clamp(value: number, min: number, max: number): number {
  * intermediate canvas and no extra generation of quality loss.
  */
 export async function prepareImage(file: File, crop?: CropRect): Promise<{ base64: string; mimeType: string }> {
+  const canvas = await prepareCanvas(file, crop, MAX_IMAGE_EDGE);
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+  return { base64: dataUrl.split(',')[1], mimeType: 'image/jpeg' };
+}
+
+/**
+ * The cropped, scaled image as a canvas — needed by the on-device OCR path,
+ * which reads pixels directly rather than sending bytes anywhere.
+ *
+ * `maxEdge` is a parameter because the two consumers want different things:
+ * the upload path trades resolution for a smaller payload over cellular, while
+ * OCR wants every pixel it can get, since character recognition degrades
+ * sharply as glyphs shrink.
+ */
+export async function prepareCanvas(
+  file: File,
+  crop: CropRect | undefined,
+  maxEdge: number
+): Promise<HTMLCanvasElement> {
   // Without this, a photo taken in portrait (which stores its rotation as
   // EXIF metadata rather than baking it into the pixels) decodes sideways —
   // the canvas below has no idea about EXIF and just copies raw pixels.
@@ -54,8 +73,8 @@ export async function prepareImage(file: File, crop?: CropRect): Promise<{ base6
     const sHeight = Math.max(1, Math.round(ch * bitmap.height));
 
     // Never scale above 1.0 — a cropped grid is often already well under
-    // MAX_IMAGE_EDGE, and upscaling it would invent detail, not preserve it.
-    const scale = Math.min(1, MAX_IMAGE_EDGE / Math.max(sWidth, sHeight));
+    // the cap, and upscaling it would invent detail, not preserve it.
+    const scale = Math.min(1, maxEdge / Math.max(sWidth, sHeight));
     const width = Math.max(1, Math.round(sWidth * scale));
     const height = Math.max(1, Math.round(sHeight * scale));
 
@@ -66,9 +85,7 @@ export async function prepareImage(file: File, crop?: CropRect): Promise<{ base6
     const ctx = canvas.getContext('2d');
     if (!ctx) throw new Error('Canvas is unavailable on this device.');
     ctx.drawImage(bitmap, sx, sy, sWidth, sHeight, 0, 0, width, height);
-
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
-    return { base64: dataUrl.split(',')[1], mimeType: 'image/jpeg' };
+    return canvas;
   } finally {
     bitmap.close();
   }

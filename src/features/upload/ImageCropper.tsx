@@ -226,8 +226,12 @@ export default function ImageCropper({ file, onConfirm, onCancel }: Props) {
         </Button>
       </div>
 
+      {/* Reading the schedule on-device needs both the weekday names and the
+          time column to calibrate against — cropping either away silently
+          falls back to the slower cloud reader, so ask for them explicitly. */}
       <p className="px-4 pb-3 text-sm text-slate-600">
-        Drag to keep only the schedule grid and the times.
+        Keep the day names along the top and the times down the left side. Trim
+        away everything else.
       </p>
 
       <div

@@ -18,6 +18,20 @@ export const WEEKDAY_INITIALS: Record<number, string> = {
   1: 'M', 2: 'T', 3: 'W', 4: 'T', 5: 'F', 6: 'S', 7: 'S',
 };
 
+/**
+ * Friends you can compare against at once, on top of yourself — so six lanes
+ * at the widest. Past that the per-person lane on a 320px phone drops under
+ * ~40px and the grid stops being readable at all.
+ */
+export const MAX_GROUP_FRIENDS = 5;
+
 export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 export const MAX_IMAGE_EDGE = 1600;
+
+/**
+ * OCR gets a larger budget than the upload path. Character recognition degrades
+ * sharply as glyphs shrink, and these pixels never leave the device, so there is
+ * no cellular cost to trade against.
+ */
+export const OCR_MAX_IMAGE_EDGE = 2600;
 export const EXTRACTIONS_PER_HOUR = 10;

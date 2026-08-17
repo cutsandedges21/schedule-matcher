@@ -2,9 +2,10 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
-import { prepareImage, type CropRect } from '@/domain/image';
+import { prepareImage, prepareCanvas, type CropRect } from '@/domain/image';
+import { extractScheduleByOcr, mergeAcrossDays } from '@/domain/ocrSchedule';
 import { extractedClassSchema } from '@/domain/schema';
-import { MAX_IMAGE_BYTES } from '@/domain/constants';
+import { MAX_IMAGE_BYTES, OCR_MAX_IMAGE_EDGE } from '@/domain/constants';
 import { saveSchedule } from '@/features/schedule/useSchedule';
 import ImagePicker from './ImagePicker';
 import ImageCropper from './ImageCropper';
@@ -111,6 +112,24 @@ export default function UploadPage() {
   async function handleCropConfirm(file: File, crop: CropRect) {
     setError(null);
     setStage({ name: 'extracting' });
+
+    // On-device OCR first. It measures block boundaries against the grid's own
+    // printed time labels instead of estimating them, so its times are exact
+    // where the model's drift by up to 30 minutes. It is also free, needs no
+    // network, and consumes no rate-limited quota. It only works on a
+    // weekday-column grid though, so an unrecognised layout falls through to
+    // the model, which handles anything.
+    try {
+      const canvas = await prepareCanvas(file, crop, OCR_MAX_IMAGE_EDGE);
+      const ocr = await extractScheduleByOcr(canvas);
+      if (ocr.recognized && ocr.classes.length > 0) {
+        setStage({ name: 'reviewing', classes: mergeAcrossDays(ocr.classes), warnings: ocr.warnings });
+        return;
+      }
+    } catch (caught) {
+      // Never let an OCR failure block the upload — fall through to the model.
+      console.error('on-device OCR failed, falling back to the model:', caught);
+    }
 
     try {
       const image = await prepareImage(file, crop);

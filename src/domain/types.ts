@@ -42,4 +42,6 @@ export interface Profile {
   inviteCode: string;
   /** School id from `domain/schools`, or null for the default theme. */
   school: string | null;
+  /** Cosmetic id from `domain/cosmetics`, or null for the plain friend card. */
+  cosmetic: string | null;
 }

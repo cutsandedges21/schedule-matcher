@@ -5,10 +5,10 @@ import { useAuth } from '@/features/auth/AuthProvider';
 import { useFriends } from './useFriends';
 import FriendSearch from './FriendSearch';
 import PendingRequests from './PendingRequests';
-import Button, { buttonClassName } from '@/components/Button';
+import FriendCard from './FriendCard';
+import Button from '@/components/Button';
 import Spinner from '@/components/Spinner';
 import EmptyState from '@/components/EmptyState';
-import SchoolChip from '@/features/theme/SchoolChip';
 
 /**
  * `navigator.clipboard.writeText` rejects in insecure contexts or when
@@ -98,16 +98,7 @@ export default function FriendsPage() {
         ) : (
           <ul className="mt-2 flex flex-col gap-2">
             {friends.map((friend) => (
-              <li key={friend.id} className="flex items-center justify-between rounded-xl border border-slate-200 bg-white p-3">
-                <Link to={`/u/${friend.username}`} className="flex min-h-touch flex-1 flex-col justify-center gap-1">
-                  <p className="font-semibold">@{friend.username}</p>
-                  {friend.displayName && <p className="text-sm text-slate-500">{friend.displayName}</p>}
-                  <SchoolChip school={friend.school} />
-                </Link>
-                <Link to={`/compare/${friend.username}`} className={buttonClassName('secondary')}>
-                  Compare
-                </Link>
-              </li>
+              <FriendCard key={friend.id} friend={friend} />
             ))}
           </ul>
         )}

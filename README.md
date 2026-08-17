@@ -152,6 +152,43 @@ Accent-only, by design: primary buttons, the active nav tab, the intro
 progress bar, and the Settings swatches. A friend's school shows as a chip in
 *their* colours (`SchoolChip`), while the app chrome stays on yours.
 
+## Profile cosmetics
+
+Students pick a card colour in Settings and it paints **their** card on their
+friends' Friends page — the plain white box otherwise. The presets live in
+`src/domain/cosmetics.ts`, the only place to touch when adding one; the id
+format check in migration `0007_cosmetic.sql` is duplicated there as
+`COSMETIC_ID_PATTERN`, and `cosmetics.test.ts` asserts they agree, exactly as
+schools do.
+
+A curated preset list rather than a colour picker: presets are contrast-tested
+in CI, cannot be set to white-on-white, and keep the app looking like one app.
+
+Applied with **inline styles** in `FriendCard.tsx`, for the same two reasons as
+`SchoolChip` — the `accent` Tailwind family holds the *viewer's* school, and a
+friend's colours must not repaint the viewer's chrome; and class names are
+never built by interpolation. A friend with no cosmetic, or one storing a
+preset since retired, renders today's plain card unchanged.
+
+Backgrounds are all deliberately **light**. A friend card carries a `SchoolChip`
+too — dark `accentStrong` text on a light `accentSoft` tint — and the two tints
+sit within a shade of each other, so on a themed card the chip's pill
+effectively disappears and the card itself ends up carrying the chip's text.
+`cosmetics.test.ts` states that as the rule: every school's `accentStrong` must
+clear 4.5:1 against every cosmetic background, which floors background
+luminance around 0.61. A pretty-but-dark preset fails the suite.
+
+Not shown in friend search or pending requests, on purpose — those are lists of
+people you have not connected to yet, and the school chip is already scoped the
+same way. The data is there via `PROFILE_COLUMNS` if that call is reversed.
+
+**`profiles.cosmetic` is client-writable.** `profiles_update` lets a student set
+any column on their own row, which is what makes cosmetics free to everyone
+today. When they move behind the paid Pass this column has to be locked —
+revoke column-level update on `profiles(cosmetic)` from `authenticated`, and
+write it through a trigger or a security-definer setter that checks the Pass.
+Nothing in the app performs an entitlement check.
+
 ## Onboarding intro
 
 Onboarding opens with a three-beat sequence — text plus image, each fading in,

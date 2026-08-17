@@ -22,6 +22,7 @@ export interface ProfileRow {
   avatar_url: string | null;
   invite_code: string;
   school: string | null;
+  cosmetic: string | null;
 }
 
 /**
@@ -33,7 +34,8 @@ export interface ProfileRow {
  * new field, with no error anywhere. Keep this next to ProfileRow — they are
  * the same fact stated twice, and they have to change together.
  */
-export const PROFILE_COLUMNS = 'id, username, display_name, avatar_url, invite_code, school';
+export const PROFILE_COLUMNS =
+  'id, username, display_name, avatar_url, invite_code, school, cosmetic';
 
 export function rowToMeeting(row: ClassRow): ClassMeeting {
   return {
@@ -58,5 +60,6 @@ export function rowToProfile(row: ProfileRow): Profile {
     avatarUrl: row.avatar_url,
     inviteCode: row.invite_code,
     school: row.school,
+    cosmetic: row.cosmetic,
   };
 }

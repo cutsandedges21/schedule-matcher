@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { DEFAULT_SCHOOL_ID, SCHOOLS } from '@/domain/schools';
+import { COSMETICS } from '@/domain/cosmetics';
 import { useAuth } from './AuthProvider';
 import { deleteAccount } from './deleteAccount';
 import Button from '@/components/Button';
@@ -14,10 +15,12 @@ export default function SettingsPage() {
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [schoolError, setSchoolError] = useState<string | null>(null);
+  const [cosmeticError, setCosmeticError] = useState<string | null>(null);
 
   const username = profile?.username ?? '';
   const canDelete = typed.trim().toLowerCase() === username && !deleting;
   const selectedSchoolId = profile?.school ?? DEFAULT_SCHOOL_ID;
+  const selectedCosmeticId = profile?.cosmetic ?? null;
 
   /**
    * Optimistic: patch the cached profile first so the accent flips under the
@@ -45,6 +48,38 @@ export default function SettingsPage() {
     if (updateError) {
       patchProfile({ school: previous });
       setSchoolError('Could not save your school. Check your connection and try again.');
+    }
+  }
+
+  /**
+   * Same optimistic write as chooseSchool, and the same reason: the swatch has
+   * to ring under the finger rather than after the round trip.
+   *
+   * Cosmetics are free to everyone today, and this writes straight from the
+   * client through `profiles_update` — the policy lets a student set any
+   * column on their own row. Correct while they are free. When they move
+   * behind the paid Pass, `profiles.cosmetic` has to stop being client
+   * writable: revoke column-level update from `authenticated` and go through a
+   * trigger or a security-definer setter that checks the Pass. See the header
+   * of migration 0007. Nothing here should be read as an entitlement check.
+   */
+  async function chooseCosmetic(id: string | null) {
+    if (!profile) return;
+
+    const previous = profile.cosmetic;
+    if (id === previous) return;
+
+    setCosmeticError(null);
+    patchProfile({ cosmetic: id });
+
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update({ cosmetic: id })
+      .eq('id', profile.id);
+
+    if (updateError) {
+      patchProfile({ cosmetic: previous });
+      setCosmeticError('Could not save your cosmetic. Check your connection and try again.');
     }
   }
 
@@ -105,6 +140,73 @@ export default function SettingsPage() {
           })}
         </ul>
         {schoolError && <p className="mt-2 text-sm text-rose-600">{schoolError}</p>}
+      </section>
+
+      <section>
+        <h2 className="text-sm font-semibold text-slate-500">Card colour</h2>
+        <p className="mt-1 text-xs text-slate-500">
+          How your name looks on your friends&rsquo; Friends page. Only they see it.
+        </p>
+        {/* Swatches rather than a list of names: the colour *is* the choice,
+            and each one previews the real card — background, border and the
+            text drawn on it. The selection ring uses the viewer's own accent,
+            which is right here: this is their Settings, not a friend's card. */}
+        <ul role="radiogroup" aria-label="Card colour" className="mt-2 grid grid-cols-4 gap-2">
+          <li>
+            <button
+              type="button"
+              role="radio"
+              aria-checked={selectedCosmeticId === null}
+              aria-label="None"
+              onClick={() => void chooseCosmetic(null)}
+              className="flex w-full flex-col items-center gap-1"
+            >
+              <span
+                className={
+                  selectedCosmeticId === null
+                    ? 'flex h-12 w-full items-center justify-center rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-400 ring-2 ring-accent ring-offset-2 ring-offset-slate-50'
+                    : 'flex h-12 w-full items-center justify-center rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-400'
+                }
+              >
+                Aa
+              </span>
+              <span className="text-[11px] text-slate-500">None</span>
+            </button>
+          </li>
+
+          {COSMETICS.map((cosmetic) => {
+            const selected = cosmetic.id === selectedCosmeticId;
+            return (
+              <li key={cosmetic.id}>
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={selected}
+                  aria-label={cosmetic.name}
+                  onClick={() => void chooseCosmetic(cosmetic.id)}
+                  className="flex w-full flex-col items-center gap-1"
+                >
+                  <span
+                    className={
+                      selected
+                        ? 'flex h-12 w-full items-center justify-center rounded-xl border text-xs font-semibold ring-2 ring-accent ring-offset-2 ring-offset-slate-50'
+                        : 'flex h-12 w-full items-center justify-center rounded-xl border text-xs font-semibold'
+                    }
+                    style={{
+                      backgroundColor: cosmetic.background,
+                      borderColor: cosmetic.border,
+                      color: cosmetic.fg,
+                    }}
+                  >
+                    Aa
+                  </span>
+                  <span className="text-[11px] text-slate-500">{cosmetic.name}</span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+        {cosmeticError && <p className="mt-2 text-sm text-rose-600">{cosmeticError}</p>}
       </section>
 
       <Button variant="secondary" onClick={() => void signOut()} className="w-full">

@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
  * governing jurisdiction — grep for "[" in this folder before launch.
  */
 export const OPERATOR_NAME = '[OPERATOR_NAME]';
-export const CONTACT_EMAIL = '[CONTACT_EMAIL]';
+export const CONTACT_EMAIL = 'schedulematcher.info@gmail.com';
 export const JURISDICTION = '[JURISDICTION]';
 
 export const LAST_UPDATED = 'August 16, 2026';

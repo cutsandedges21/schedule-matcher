@@ -1,5 +1,5 @@
 // src/features/upload/ClassCard.tsx
-import { ALL_WEEKDAYS, WEEKDAY_INITIALS } from '@/domain/constants';
+import { ALL_WEEKDAYS, WEEKDAY_INITIALS, WEEKDAY_LABELS } from '@/domain/constants';
 import { toTimeInputValue, parseTimeToMinutes } from '@/domain/time';
 import type { ExtractedClass } from '@/domain/types';
 import Button from '@/components/Button';
@@ -44,11 +44,17 @@ export default function ClassCard({ value, index, onChange, onRemove }: Props) {
             key={day}
             type="button"
             aria-pressed={value.days.includes(day)}
-            aria-label={`Day ${day}`}
+            // Was `Day 1`..`Day 7`, which tells a screen-reader user nothing.
+            // The visible initial is ambiguous too — two Ts, two Ss.
+            aria-label={WEEKDAY_LABELS[day]}
             onClick={() => toggleDay(day)}
-            className={`min-h-touch min-w-touch flex-1 rounded-lg border text-sm font-semibold ${
+            // No `min-w-touch`: seven 44px chips plus gaps cannot fit a 320px
+            // phone, and a flex item's default `min-width: auto` means they
+            // overflow rather than shrink. `basis-0 min-w-0` divides the row
+            // evenly instead. Height stays a full 44px touch target.
+            className={`min-h-touch min-w-0 flex-1 basis-0 rounded-lg border text-sm font-semibold ${
               value.days.includes(day)
-                ? 'border-slate-900 bg-slate-900 text-white'
+                ? 'border-accent bg-accent text-accent-fg'
                 : 'border-slate-300 bg-white text-slate-600'
             }`}
           >

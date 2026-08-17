@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { prepareImage, prepareCanvas, type CropRect } from '@/domain/image';
 import { extractScheduleByOcr, mergeAcrossDays } from '@/domain/ocrSchedule';
+import { ocrProgressFraction, ocrProgressLabel } from '@/domain/ocrProgress';
 import { extractedClassSchema } from '@/domain/schema';
 import { MAX_IMAGE_BYTES, OCR_MAX_IMAGE_EDGE } from '@/domain/constants';
 import { saveSchedule } from '@/features/schedule/useSchedule';
@@ -11,13 +12,14 @@ import ImagePicker from './ImagePicker';
 import ImageCropper from './ImageCropper';
 import ReviewForm from './ReviewForm';
 import Button from '@/components/Button';
-import Spinner from '@/components/Spinner';
+import ProgressBar from '@/components/ProgressBar';
 import type { ExtractedClass } from '@/domain/types';
 
 type Stage =
   | { name: 'picking' }
   | { name: 'cropping'; file: File }
-  | { name: 'extracting' }
+  /** `progress` is 0–1 while OCR reports it, and null once we're waiting on the model. */
+  | { name: 'extracting'; progress: number | null; label: string }
   | { name: 'reviewing'; classes: ExtractedClass[]; warnings: string[] };
 
 function plural(n: number, word: string): string {
@@ -111,7 +113,28 @@ export default function UploadPage() {
 
   async function handleCropConfirm(file: File, crop: CropRect) {
     setError(null);
-    setStage({ name: 'extracting' });
+    setStage({ name: 'extracting', progress: 0.02, label: 'Getting the reader ready…' });
+
+    /**
+     * Tesseract counts each phase from zero, and can re-emit a phase it has
+     * already passed, so the bar keeps the highest fraction it has seen. A bar
+     * that slides backwards reads as "something broke".
+     *
+     * The guard also means a late callback — one that arrives after an error
+     * has moved us on — cannot drag the page back to the extracting stage.
+     */
+    const report = (status: string, progress: number) => {
+      const fraction = ocrProgressFraction(status, progress);
+      setStage((current) =>
+        current.name === 'extracting'
+          ? {
+              name: 'extracting',
+              progress: Math.max(current.progress ?? 0, fraction),
+              label: ocrProgressLabel(status),
+            }
+          : current
+      );
+    };
 
     // On-device OCR first. It measures block boundaries against the grid's own
     // printed time labels instead of estimating them, so its times are exact
@@ -121,7 +144,7 @@ export default function UploadPage() {
     // the model, which handles anything.
     try {
       const canvas = await prepareCanvas(file, crop, OCR_MAX_IMAGE_EDGE);
-      const ocr = await extractScheduleByOcr(canvas);
+      const ocr = await extractScheduleByOcr(canvas, report);
       if (ocr.recognized && ocr.classes.length > 0) {
         setStage({ name: 'reviewing', classes: mergeAcrossDays(ocr.classes), warnings: ocr.warnings });
         return;
@@ -130,6 +153,11 @@ export default function UploadPage() {
       // Never let an OCR failure block the upload — fall through to the model.
       console.error('on-device OCR failed, falling back to the model:', caught);
     }
+
+    // Past this point the work is a network round trip to the model, which
+    // reports nothing until it answers. Switch to the indeterminate bar rather
+    // than inventing a number.
+    setStage({ name: 'extracting', progress: null, label: 'Reading your schedule…' });
 
     try {
       const image = await prepareImage(file, crop);
@@ -182,7 +210,21 @@ export default function UploadPage() {
     }
   }
 
-  if (stage.name === 'extracting') return <Spinner label="Reading your schedule…" />;
+  if (stage.name === 'extracting') {
+    return (
+      <main className="flex min-h-dvh flex-col justify-center px-8" aria-busy="true">
+        <div className="w-full">
+          <ProgressBar value={stage.progress} label={stage.label} />
+          <p className="mt-4 text-center text-sm font-medium text-slate-700" aria-live="polite">
+            {stage.label}
+          </p>
+          <p className="mt-1 text-center text-xs text-slate-500">
+            This usually takes a few seconds. Keep this screen open.
+          </p>
+        </div>
+      </main>
+    );
+  }
 
   if (stage.name === 'cropping') {
     return (

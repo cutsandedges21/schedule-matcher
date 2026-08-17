@@ -313,9 +313,16 @@ function parseBlock(lines: string[]): Omit<ExtractedClass, 'days' | 'startMinute
  * resolution. Returns `recognized: false` when the image doesn't present a
  * measurable grid, which is the caller's signal to fall back to the model.
  */
-export async function extractScheduleByOcr(canvas: HTMLCanvasElement): Promise<OcrResult> {
+export async function extractScheduleByOcr(
+  canvas: HTMLCanvasElement,
+  onProgress?: (status: string, progress: number) => void
+): Promise<OcrResult> {
   const warnings: string[] = [];
-  const worker = await Tesseract.createWorker('eng');
+  // Tesseract runs in its own worker, so these callbacks land on an otherwise
+  // idle main thread — the bar keeps moving while the page is reading.
+  const worker = await Tesseract.createWorker('eng', undefined, {
+    logger: onProgress ? (message) => onProgress(message.status, message.progress) : undefined,
+  });
   let words: OcrWord[];
   try {
     const result = await worker.recognize(canvas, {}, { blocks: true });

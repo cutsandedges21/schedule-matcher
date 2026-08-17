@@ -25,11 +25,8 @@ export SUPABASE_ACCESS_TOKEN=sbp_...          # account/tokens in the dashboard
 npx supabase secrets set --project-ref <ref> GEMINI_API_KEYS=key1,key2,key3
 npx supabase functions deploy extract-schedule --project-ref <ref>
 
-# Account deletion. Only the service role can delete an auth.users row, so
-# "Delete my account" in Settings goes through this function; everything else
-# (profile, classes, friendships, extraction log) follows by ON DELETE CASCADE.
-# The button returns a generic failure until this is deployed — check the
-# browser console for the underlying 404.
+# Account deletion, route 2 of 2 (optional if migration 0005 is applied —
+# see "Deleting an account" below). Uses the supported admin API.
 npx supabase functions deploy delete-account --project-ref <ref>
 
 # Prove a non-friend cannot read another student's schedule. Run this after
@@ -62,6 +59,36 @@ sign-in:
 | `npm run build` | Type check and production build |
 | `npm run icons` | Redraw the home-screen icons in `public/` |
 | `node scripts/run-sql.mjs <ref> <file.sql>` | Run SQL via the Management API |
+
+## Deleting an account
+
+Removing an `auth.users` row needs privileges the browser's publishable key
+never has, so "Delete my account" in Settings needs one of two things to exist
+server-side. The client tries them in this order and stops at the first that
+works:
+
+1. **`public.delete_account()`** — `supabase/migrations/0005_delete_account.sql`.
+   A `security definer` function that deletes `auth.users where id = auth.uid()`.
+   It takes no arguments, so a caller can only ever delete themselves. Applying
+   it needs nothing but SQL Editor access, which is why it goes first.
+2. **The `delete-account` Edge Function** — the supported admin-API route, but
+   deploying it needs a management access token.
+
+Either way everything else goes by `ON DELETE CASCADE`: profile, classes,
+friendships (both directions), extraction log, and the auth-side sessions and
+identities.
+
+Route 1 depends on the function's owner being able to delete from `auth.users`.
+That is true for `postgres`, which is what the SQL Editor and `db push` run as,
+but check before relying on it:
+
+```sql
+select has_table_privilege('postgres', 'auth.users', 'DELETE') as can_delete;
+```
+
+If that comes back `false`, deploy the Edge Function instead. When neither is
+in place the button reports a generic failure and logs both underlying errors
+to the browser console.
 
 ## Comparing
 

@@ -150,20 +150,29 @@ than the username sitting next to it.
 
 ### 1.6 Prerequisite cleanup: `PROFILE_COLUMNS`
 
-The select list `'id, username, display_name, avatar_url, invite_code'` is
-duplicated verbatim in five places:
+The column list `id, username, display_name, avatar_url, invite_code` is
+duplicated verbatim in **seven** places across four files:
 
 - `src/features/auth/AuthProvider.tsx:51`
-- `src/features/friends/useFriends.ts:133` and `:145`
+- `src/features/friends/useFriends.ts:24` — inside the `requester:profiles!…()`
+  join of the `SELECT` template
+- `src/features/friends/useFriends.ts:25` — the `addressee:profiles!…()` join
+- `src/features/friends/useFriends.ts:133` (`searchProfiles`)
+- `src/features/friends/useFriends.ts:145` (`findProfileByInviteCode`)
 - `src/features/friends/FriendSchedulePage.tsx:31`
 - `src/features/compare/ComparePage.tsx:41`
 
-Adding a column means editing all five and getting all five right; miss one
-and that screen silently sees `school: undefined`, i.e. an untinted chip with
-no error anywhere. Extract `PROFILE_COLUMNS` into `src/domain/mappers.ts`
-alongside `ProfileRow` — the two are already the same fact stated twice — and
-have all five call sites use it. Do this **before** adding `school`, so the
-new column lands in exactly one place.
+Adding a column means editing all seven and getting all seven right; miss one
+and that screen silently sees `school: undefined` — an untinted chip, no error
+anywhere. The two embedded in the friendship join are the easiest to miss
+(they don't contain the string `from('profiles')`, so a grep for the query
+won't surface them) and they are precisely the ones feeding the friends list
+where the chip is supposed to appear.
+
+Extract `PROFILE_COLUMNS` into `src/domain/mappers.ts` alongside `ProfileRow`
+— the two are already the same fact stated twice — and have all seven call
+sites use it. Do this **before** adding `school`, so the new column lands in
+exactly one place.
 
 Scope is limited to that one constant. No other refactoring.
 

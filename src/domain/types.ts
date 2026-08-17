@@ -44,4 +44,8 @@ export interface Profile {
   school: string | null;
   /** Cosmetic id from `domain/cosmetics`, or null for the plain friend card. */
   cosmetic: string | null;
+  /** Banner id from `domain/banners`, or null for no strip. */
+  banner: string | null;
+  /** Effect id from `domain/effects`, or null for no slime. */
+  effect: string | null;
 }

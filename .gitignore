@@ -12,3 +12,6 @@ supabase/.temp
 *.PNG
 *.png
 !public/**/*.png
+
+# Visual brainstorming companion (local only)
+.superpowers/

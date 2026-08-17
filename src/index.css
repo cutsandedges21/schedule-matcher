@@ -109,3 +109,110 @@
     }
   }
 }
+
+/**
+ * Friend-card cosmetics: the banner strip and the slime that drips off it
+ * (src/domain/banners.ts, src/domain/effects.ts).
+ *
+ * Colours are never written here — every one of them belongs to *another*
+ * student and arrives as an inline style, which is also the rule that keeps
+ * Tailwind out of it: an interpolated class name is invisible to the JIT
+ * scanner and gets dropped silently. These are geometry and timing only.
+ */
+
+/* The strip slides its own gradient sideways and wraps. banners.test.ts
+   asserts first stop === last stop, so the wrap is seamless. */
+@keyframes card-strip-drift {
+  from {
+    background-position: 0% 50%;
+  }
+  to {
+    background-position: 200% 50%;
+  }
+}
+
+/**
+ * One drip is three elements moving together: a stem that stretches, a bulb
+ * that travels down with its tip, and a droplet that detaches. The percentages
+ * below are shared across all three and are the whole trick — the stem snaps
+ * back between 58% and 63% at the same moment the droplet appears, which is
+ * what reads as a pinch-off rather than a bounce. Change one, change all three.
+ */
+@keyframes card-drip-stem {
+  0% {
+    transform: scaleY(0.18);
+  }
+  50% {
+    transform: scaleY(0.92);
+  }
+  58% {
+    transform: scaleY(1);
+  }
+  63% {
+    transform: scaleY(0.22);
+  }
+  100% {
+    transform: scaleY(0.18);
+  }
+}
+
+@keyframes card-drip-bulb {
+  0% {
+    transform: translateY(1px) scale(0.82);
+  }
+  50% {
+    transform: translateY(48px) scale(1);
+  }
+  58% {
+    transform: translateY(57px) scale(1.06);
+  }
+  63% {
+    transform: translateY(4px) scale(0.78);
+  }
+  100% {
+    transform: translateY(1px) scale(0.82);
+  }
+}
+
+@keyframes card-drip-drop {
+  0%,
+  56% {
+    transform: translateY(56px) scale(0.9);
+    opacity: 0;
+  }
+  60% {
+    transform: translateY(66px) scale(1);
+    opacity: 1;
+    animation-timing-function: cubic-bezier(0.38, 0, 0.9, 0.32);
+  }
+  100% {
+    transform: translateY(165px) scale(0.66);
+    opacity: 0;
+  }
+}
+
+/**
+ * Reduced motion stops the cosmetics dead rather than slowing them down.
+ * Unlike the intro's progress bar these convey nothing — they are decoration
+ * a student bought — so there is no information lost by freezing them, and a
+ * friends list with four animating cards is exactly the kind of screen the
+ * preference exists to calm. The stem is pinned mid-stretch so a frozen card
+ * still reads as slime rather than as a flat green bar.
+ */
+@media (prefers-reduced-motion: reduce) {
+  .card-strip,
+  .card-drip-stem,
+  .card-drip-bulb,
+  .card-drip-drop {
+    animation: none !important;
+  }
+  .card-drip-stem {
+    transform: scaleY(0.75);
+  }
+  .card-drip-bulb {
+    transform: translateY(38px) scale(1);
+  }
+  .card-drip-drop {
+    opacity: 0;
+  }
+}

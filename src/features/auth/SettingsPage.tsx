@@ -4,23 +4,28 @@ import { Link } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { DEFAULT_SCHOOL_ID, SCHOOLS } from '@/domain/schools';
 import { COSMETICS } from '@/domain/cosmetics';
+import { BANNERS, STRIP_HEIGHT_PX, bannerGradient } from '@/domain/banners';
+import { EFFECTS } from '@/domain/effects';
+import { canPickCosmetics } from '@/domain/beta';
 import { useAuth } from './AuthProvider';
 import { deleteAccount } from './deleteAccount';
+import SwatchPicker, { type SwatchOption } from './SwatchPicker';
 import Button from '@/components/Button';
 
 export default function SettingsPage() {
-  const { profile, patchProfile, signOut } = useAuth();
+  const { session, profile, patchProfile, signOut } = useAuth();
   const [confirming, setConfirming] = useState(false);
   const [typed, setTyped] = useState('');
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [schoolError, setSchoolError] = useState<string | null>(null);
-  const [cosmeticError, setCosmeticError] = useState<string | null>(null);
+  const [cosmeticError, setCosmeticError] = useState<Record<string, string | null>>({});
 
   const username = profile?.username ?? '';
   const canDelete = typed.trim().toLowerCase() === username && !deleting;
   const selectedSchoolId = profile?.school ?? DEFAULT_SCHOOL_ID;
-  const selectedCosmeticId = profile?.cosmetic ?? null;
+  // Private beta. Hides the pickers only — see the warning in domain/beta.ts.
+  const showCosmetics = canPickCosmetics(session?.user.email);
 
   /**
    * Optimistic: patch the cached profile first so the accent flips under the
@@ -53,35 +58,128 @@ export default function SettingsPage() {
 
   /**
    * Same optimistic write as chooseSchool, and the same reason: the swatch has
-   * to ring under the finger rather than after the round trip.
+   * to ring under the finger rather than after the round trip. Shared by all
+   * three cosmetic slots, which differ only in which column they write.
    *
    * Cosmetics are free to everyone today, and this writes straight from the
    * client through `profiles_update` — the policy lets a student set any
    * column on their own row. Correct while they are free. When they move
-   * behind the paid Pass, `profiles.cosmetic` has to stop being client
-   * writable: revoke column-level update from `authenticated` and go through a
-   * trigger or a security-definer setter that checks the Pass. See the header
-   * of migration 0007. Nothing here should be read as an entitlement check.
+   * behind the paid Pass, `cosmetic`, `banner` and `effect` all have to stop
+   * being client writable: revoke column-level update from `authenticated` and
+   * go through a trigger or a security-definer setter that checks the Pass.
+   * See the headers of migrations 0007 and 0008. Nothing here should be read
+   * as an entitlement check.
    */
-  async function chooseCosmetic(id: string | null) {
+  async function chooseCosmetic(column: 'cosmetic' | 'banner' | 'effect', id: string | null) {
     if (!profile) return;
 
-    const previous = profile.cosmetic;
+    const previous = profile[column];
     if (id === previous) return;
 
-    setCosmeticError(null);
-    patchProfile({ cosmetic: id });
+    setCosmeticError((current) => ({ ...current, [column]: null }));
+    patchProfile({ [column]: id });
 
     const { error: updateError } = await supabase
       .from('profiles')
-      .update({ cosmetic: id })
+      .update({ [column]: id })
       .eq('id', profile.id);
 
     if (updateError) {
-      patchProfile({ cosmetic: previous });
-      setCosmeticError('Could not save your cosmetic. Check your connection and try again.');
+      patchProfile({ [column]: previous });
+      setCosmeticError((current) => ({
+        ...current,
+        [column]: 'Could not save that. Check your connection and try again.',
+      }));
     }
   }
+
+  const colourOptions: SwatchOption[] = [
+    {
+      id: null,
+      name: 'None',
+      preview: (
+        <span className="flex h-full w-full items-center justify-center border border-slate-200 bg-white text-xs font-semibold text-slate-400">
+          Aa
+        </span>
+      ),
+    },
+    ...COSMETICS.map((cosmetic) => ({
+      id: cosmetic.id,
+      name: cosmetic.name,
+      preview: (
+        <span
+          className="flex h-full w-full items-center justify-center border text-xs font-semibold"
+          style={{
+            backgroundColor: cosmetic.background,
+            borderColor: cosmetic.border,
+            color: cosmetic.fg,
+          }}
+        >
+          Aa
+        </span>
+      ),
+    })),
+  ];
+
+  const bannerOptions: SwatchOption[] = [
+    {
+      id: null,
+      name: 'None',
+      preview: <span className="block h-full w-full border border-slate-200 bg-white" />,
+    },
+    // The swatch animates exactly as the real strip does, at the real height,
+    // so the picker shows the thing rather than a still of it.
+    ...BANNERS.map((banner) => ({
+      id: banner.id,
+      name: banner.name,
+      preview: (
+        <span className="flex h-full w-full items-center border border-slate-200 bg-white">
+          <span
+            className="card-strip block w-full"
+            style={{
+              height: STRIP_HEIGHT_PX,
+              backgroundImage: bannerGradient(banner),
+              backgroundSize: '200% 100%',
+              animation: 'card-strip-drift 6s linear infinite',
+            }}
+          />
+        </span>
+      ),
+    })),
+  ];
+
+  const effectOptions: SwatchOption[] = [
+    {
+      id: null,
+      name: 'None',
+      preview: <span className="block h-full w-full border border-slate-200 bg-white" />,
+    },
+    ...EFFECTS.map((effect) => ({
+      id: effect.id,
+      name: effect.name,
+      preview: (
+        <span className="relative block h-full w-full overflow-hidden border border-slate-200 bg-white">
+          <span
+            className="absolute inset-x-0 top-0 block"
+            style={{ height: 10, backgroundColor: effect.drip }}
+          />
+          {[18, 50, 78].map((left, index) => (
+            <span
+              key={left}
+              className="absolute top-0 block rounded-b-full"
+              style={{
+                left: `${left}%`,
+                width: 9,
+                marginLeft: -4.5,
+                height: [26, 18, 30][index],
+                backgroundColor: effect.drip,
+              }}
+            />
+          ))}
+        </span>
+      ),
+    })),
+  ];
 
   async function handleDelete() {
     setError(null);
@@ -142,72 +240,36 @@ export default function SettingsPage() {
         {schoolError && <p className="mt-2 text-sm text-rose-600">{schoolError}</p>}
       </section>
 
-      <section>
-        <h2 className="text-sm font-semibold text-slate-500">Card colour</h2>
-        <p className="mt-1 text-xs text-slate-500">
-          How your name looks on your friends&rsquo; Friends page. Only they see it.
-        </p>
-        {/* Swatches rather than a list of names: the colour *is* the choice,
-            and each one previews the real card — background, border and the
-            text drawn on it. The selection ring uses the viewer's own accent,
-            which is right here: this is their Settings, not a friend's card. */}
-        <ul role="radiogroup" aria-label="Card colour" className="mt-2 grid grid-cols-4 gap-2">
-          <li>
-            <button
-              type="button"
-              role="radio"
-              aria-checked={selectedCosmeticId === null}
-              aria-label="None"
-              onClick={() => void chooseCosmetic(null)}
-              className="flex w-full flex-col items-center gap-1"
-            >
-              <span
-                className={
-                  selectedCosmeticId === null
-                    ? 'flex h-12 w-full items-center justify-center rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-400 ring-2 ring-accent ring-offset-2 ring-offset-slate-50'
-                    : 'flex h-12 w-full items-center justify-center rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-400'
-                }
-              >
-                Aa
-              </span>
-              <span className="text-[11px] text-slate-500">None</span>
-            </button>
-          </li>
+      {showCosmetics && (
+        <>
+          <SwatchPicker
+            title="Card colour"
+            description="How your name looks on your friends' Friends page. Only they see it."
+            options={colourOptions}
+            selectedId={profile?.cosmetic ?? null}
+            onChoose={(id) => void chooseCosmetic('cosmetic', id)}
+            error={cosmeticError.cosmetic ?? null}
+          />
 
-          {COSMETICS.map((cosmetic) => {
-            const selected = cosmetic.id === selectedCosmeticId;
-            return (
-              <li key={cosmetic.id}>
-                <button
-                  type="button"
-                  role="radio"
-                  aria-checked={selected}
-                  aria-label={cosmetic.name}
-                  onClick={() => void chooseCosmetic(cosmetic.id)}
-                  className="flex w-full flex-col items-center gap-1"
-                >
-                  <span
-                    className={
-                      selected
-                        ? 'flex h-12 w-full items-center justify-center rounded-xl border text-xs font-semibold ring-2 ring-accent ring-offset-2 ring-offset-slate-50'
-                        : 'flex h-12 w-full items-center justify-center rounded-xl border text-xs font-semibold'
-                    }
-                    style={{
-                      backgroundColor: cosmetic.background,
-                      borderColor: cosmetic.border,
-                      color: cosmetic.fg,
-                    }}
-                  >
-                    Aa
-                  </span>
-                  <span className="text-[11px] text-slate-500">{cosmetic.name}</span>
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-        {cosmeticError && <p className="mt-2 text-sm text-rose-600">{cosmeticError}</p>}
-      </section>
+          <SwatchPicker
+            title="Banner"
+            description="An animated strip across the top of your card."
+            options={bannerOptions}
+            selectedId={profile?.banner ?? null}
+            onChoose={(id) => void chooseCosmetic('banner', id)}
+            error={cosmeticError.banner ?? null}
+          />
+
+          <SwatchPicker
+            title="Effect"
+            description="Slime that drips out from under your banner."
+            options={effectOptions}
+            selectedId={profile?.effect ?? null}
+            onChoose={(id) => void chooseCosmetic('effect', id)}
+            error={cosmeticError.effect ?? null}
+          />
+        </>
+      )}
 
       <Button variant="secondary" onClick={() => void signOut()} className="w-full">
         Sign out

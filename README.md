@@ -299,25 +299,57 @@ face. Replace it with a real photo of the team before launch.
 
 ## Legal pages
 
-`/privacy` and `/terms` render **outside** `MobileOnly` and outside
-`AuthProvider` (see `src/App.tsx`) — a policy you cannot open on a laptop, or
-before you have an account, is not much of a policy. Both are linked from
-Settings.
+`/privacy` and `/terms` render **outside** `AuthProvider` (see `src/App.tsx`) —
+a policy you cannot read until you have an account is not much of a policy.
+Both are linked from Settings.
 
-They ship with deliberate placeholders. Before launch, replace
-`OPERATOR_NAME`, `CONTACT_EMAIL` and `JURISDICTION` in
-`src/features/legal/LegalLayout.tsx` and bump `LAST_UPDATED`.
+`OPERATOR_NAME`, `CONTACT_EMAIL` and `JURISDICTION` live in
+`src/features/legal/LegalLayout.tsx`, and all three are filled in. Two things
+about them are easy to undo by accident:
 
-## Phones only
+- Both jurisdiction call sites read "governed by the laws of `{JURISDICTION}`",
+  so that string has to complete the sentence. Hence the long Canadian form
+  rather than a bare "Quebec".
+- `OPERATOR_NAME` is one person **on purpose.** It names who is accountable for
+  the service and for the personal information it holds — not who gets credit.
+  Adding a founder who does not operate anything would attach Law 25
+  obligations to them. Credit belongs in About.
 
-Anything wider than 639px (`ABOVE_MOBILE_QUERY` in `src/domain/viewport.ts`)
-gets `DesktopNotice` instead of the app — the grid, the day chips and the
-compare view are all laid out for a phone. There is no exemption for a phone
-held in landscape; the notice asks those students to rotate back.
+Bump `LAST_UPDATED` whenever the wording of either document changes.
 
-The notice offers a "Continue on this screen anyway" escape hatch, kept in
-`sessionStorage` so it lasts one browsing session and no longer. Delete the
-button in `DesktopNotice` if you want the wall to be absolute.
+Two things are still outstanding before the app charges anyone, and neither is
+a code change: designating a privacy officer under Quebec's Law 25, and French
+availability under the Charter of the French Language.
+
+## Phone first, not phone only
+
+There is no width gate any more. `MobileOnly`, `DesktopNotice`,
+`domain/viewport.ts` and `lib/useMediaQuery.ts` are gone, and every route
+renders at every width.
+
+The switch is Tailwind's default `lg` (1024px), and it changes layout only —
+nothing is hidden or refused at any size:
+
+- **Below `lg`**, `BottomNav` is fixed to the bottom of the screen and
+  `AppShell` reserves `pb-20` beneath the content for it.
+- **At `lg` and up**, `BottomNav` hides, `DesktopNav` puts the same three
+  destinations in a sticky top bar, and content is centred in `max-w-5xl`. A
+  tab bar pinned to the bottom of a 1440px window reads as a mistake rather
+  than a choice, and a schedule grid stretched edge to edge on a monitor is
+  unreadable.
+
+Pages keep their own `px-4`, so the phone layout is the base case and every
+desktop rule is additive. That ordering is worth preserving: the reverse —
+desktop styles as the default, overridden down — is how phone regressions get
+shipped without anyone noticing.
+
+Routes that are not nav destinations (compare, a friend's schedule) get a
+`BackButton`. It prefers real history over its `to` prop: react-router stamps
+`history.state.idx` on every in-app navigation, so `idx > 0` means the page was
+genuinely reached by clicking through the app, and going back lands where the
+student came from. A shared link opened cold has `idx === 0` and falls back to
+`to`. This matters more than it looks — a home-screen PWA has no browser
+chrome, so there is no back button but this one.
 
 ## Home-screen install
 

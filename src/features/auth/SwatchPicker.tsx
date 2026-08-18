@@ -16,6 +16,13 @@ interface Props {
   selectedId: string | null;
   onChoose: (id: string | null) => void;
   error: string | null;
+  /**
+   * 4 for swatches that need to show a whole card, 8 for a hue wheel where each
+   * cell is only a colour. At 8 a cell is ~34px wide, under the 44px touch
+   * target — the button stays 44px tall and the row gaps absorb the miss, which
+   * is the same trade the day chips in the schedule grid already make.
+   */
+  columns?: 4 | 8;
 }
 
 /**
@@ -38,13 +45,22 @@ export default function SwatchPicker({
   selectedId,
   onChoose,
   error,
+  columns = 4,
 }: Props) {
   return (
     <section>
       <h2 className="text-sm font-semibold text-slate-500">{title}</h2>
       <p className="mt-1 text-xs text-slate-500">{description}</p>
 
-      <ul role="radiogroup" aria-label={title} className="mt-2 grid grid-cols-4 gap-2">
+      <ul
+        role="radiogroup"
+        aria-label={title}
+        // Full literal class names, never interpolated — the JIT scanner
+        // cannot see `grid-cols-${n}` and drops it silently (domain/color.ts).
+        className={
+          columns === 8 ? 'mt-2 grid grid-cols-8 gap-1.5' : 'mt-2 grid grid-cols-4 gap-2'
+        }
+      >
         {options.map((option) => {
           const selected = option.id === selectedId;
           return (
@@ -66,7 +82,11 @@ export default function SwatchPicker({
                 >
                   {option.preview}
                 </span>
-                <span className="text-[11px] text-slate-500">{option.name}</span>
+                {/* A hue wheel's names are "Hue 210" and "Hue 225" — twenty-four
+                    of those is noise, and the swatch already says everything.
+                    The button keeps its aria-label, so nothing is lost to a
+                    screen reader. */}
+                {columns === 4 && <span className="text-[11px] text-slate-500">{option.name}</span>}
               </button>
             </li>
           );

@@ -5,7 +5,8 @@ import { supabase } from '@/lib/supabase';
 import { DEFAULT_SCHOOL_ID, SCHOOLS } from '@/domain/schools';
 import { COSMETICS } from '@/domain/cosmetics';
 import { BANNERS, STRIP_HEIGHT_PX, bannerGradient } from '@/domain/banners';
-import { EFFECTS } from '@/domain/effects';
+import { EFFECTS, EFFECT_BAND_PX } from '@/domain/effects';
+import CardEffect from '@/features/friends/CardEffect';
 import { canPickCosmetics } from '@/domain/beta';
 import { useAuth } from './AuthProvider';
 import { deleteAccount } from './deleteAccount';
@@ -154,13 +155,17 @@ export default function SettingsPage() {
       name: 'None',
       preview: <span className="block h-full w-full border border-slate-200 bg-white" />,
     },
-    // The swatch is as empty as the effect is. Dashed rather than solid so it
-    // reads as a slot waiting to be filled instead of a broken preview.
+    // The swatch runs the real effect at the real band height, so the picker
+    // shows the moving thing rather than a still of it.
     ...EFFECTS.map((effect) => ({
       id: effect.id,
       name: effect.name,
       preview: (
-        <span className="block h-full w-full border border-dashed border-slate-300 bg-white" />
+        <span className="flex h-full w-full items-start border border-slate-200 bg-white">
+          <span className="relative block w-full" style={{ height: EFFECT_BAND_PX }}>
+            <CardEffect banner={null} effect={effect} />
+          </span>
+        </span>
       ),
     })),
   ];
@@ -246,7 +251,7 @@ export default function SettingsPage() {
 
           <SwatchPicker
             title="Effect"
-            description="Reserved for something that sits under your banner. Empty for now."
+            description="Animates under your banner — or on its own, if you skip one."
             options={effectOptions}
             selectedId={profile?.effect ?? null}
             onChoose={(id) => void chooseCosmetic('effect', id)}

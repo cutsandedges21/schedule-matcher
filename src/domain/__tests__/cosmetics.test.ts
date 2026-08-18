@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { COSMETICS, COSMETIC_ID_PATTERN, cosmeticById } from '../cosmetics';
+import {
+  COSMETICS,
+  COSMETIC_ID_PATTERN,
+  cosmeticById,
+  cosmeticForHue,
+  cosmeticIdForHue,
+} from '../cosmetics';
 import { SCHOOLS } from '../schools';
 
 const HEX = /^#[0-9A-F]{6}$/;
@@ -108,6 +114,55 @@ describe('COSMETICS', () => {
   });
 });
 
+/**
+ * Students pick a hue freely, so every one of the 360 has to satisfy the same
+ * bars the eight hand-picked presets above do. This is the test that replaces
+ * §5.1's objection to a free colour input: white-on-white is not discouraged,
+ * it is unreachable, and this proves it for the whole range rather than for a
+ * sample.
+ */
+describe('cosmeticForHue', () => {
+  const HUES = Array.from({ length: 360 }, (_, i) => i);
+
+  it('produces well-formed colours for every hue', () => {
+    for (const hue of HUES) {
+      const cosmetic = cosmeticForHue(hue);
+      expect(cosmetic.background, `hue ${hue}`).toMatch(HEX);
+      expect(cosmetic.border, `hue ${hue}`).toMatch(HEX);
+      expect(cosmetic.fg, `hue ${hue}`).toMatch(HEX);
+      expect(cosmetic.id, `hue ${hue}`).toMatch(COSMETIC_ID_PATTERN);
+    }
+  });
+
+  it('meets WCAG AA for the username on every hue', () => {
+    for (const hue of HUES) {
+      const cosmetic = cosmeticForHue(hue);
+      expect(contrastRatio(cosmetic.fg, cosmetic.background), `hue ${hue}`).toBeGreaterThanOrEqual(
+        4.5
+      );
+    }
+  });
+
+  it('keeps every school chip legible on every hue', () => {
+    for (const hue of HUES) {
+      const { background } = cosmeticForHue(hue);
+      expect(luminance(background), `hue ${hue}`).toBeGreaterThanOrEqual(MIN_BACKGROUND_LUMINANCE);
+      for (const school of SCHOOLS) {
+        expect(
+          contrastRatio(school.accentStrong, background),
+          `${school.id} chip on hue ${hue}`
+        ).toBeGreaterThanOrEqual(4.5);
+      }
+    }
+  });
+
+  it('round-trips through its id', () => {
+    for (const hue of HUES) {
+      expect(cosmeticById(cosmeticIdForHue(hue))).toEqual(cosmeticForHue(hue));
+    }
+  });
+});
+
 describe('cosmeticById', () => {
   it('finds a cosmetic by id', () => {
     expect(cosmeticById('mint')?.name).toBe('Mint');
@@ -115,7 +170,13 @@ describe('cosmeticById', () => {
 
   // "No cosmetic" and "a preset we have since removed from the code" both have
   // to render the plain card, not throw on someone else's Friends page.
-  it.each([null, undefined, '', 'a-cosmetic-we-dropped'])('returns null for %p', (id) => {
-    expect(cosmeticById(id)).toBeNull();
-  });
+  // The check constraint admits all of these, so a hand-edited or stale row
+  // can contain any of them. Falling back to the plain card beats rendering an
+  // arbitrary colour.
+  it.each([null, undefined, '', 'a-cosmetic-we-dropped', 'hue-360', 'hue-007', 'hue-'])(
+    'returns null for %p',
+    (id) => {
+      expect(cosmeticById(id)).toBeNull();
+    }
+  );
 });

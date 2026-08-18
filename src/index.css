@@ -111,7 +111,8 @@
 }
 
 /**
- * Friend-card cosmetics: the banner strip (src/domain/banners.ts).
+ * Friend-card cosmetics: the banner strip and the effect band beneath it
+ * (src/domain/banners.ts, src/domain/effects.ts).
  *
  * Colours are never written here — every one of them belongs to *another*
  * student and arrives as an inline style, which is also the rule that keeps
@@ -131,13 +132,82 @@
 }
 
 /**
- * Reduced motion stops the strip dead rather than slowing it down. Unlike the
- * intro's progress bar it conveys nothing — it is decoration a student chose —
- * so no information is lost by freezing it, and a friends list with four
- * animating cards is exactly the screen the preference exists to calm.
+ * Rain and bubbles both travel, and both are tuned to reach opacity 0 exactly
+ * as they reach the far edge of a 34px band (EFFECT_BAND_PX). That is the
+ * whole difference between a mark that dies and one the band's overflow slices
+ * in half while it is still fully opaque. Retune these if the band height
+ * changes.
+ */
+@keyframes effect-rain {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  72% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: translateY(46px);
+    opacity: 0;
+  }
+}
+
+@keyframes effect-bubble {
+  0% {
+    transform: translateY(0) scale(0.55);
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(-44px) scale(1.05);
+    opacity: 0;
+  }
+}
+
+/* Sparkles never travel, so there is nothing for the band to clip. */
+@keyframes effect-sparkle {
+  0%,
+  100% {
+    transform: scale(0.2) rotate(0deg);
+    opacity: 0.12;
+  }
+  50% {
+    transform: scale(1) rotate(45deg);
+    opacity: 1;
+  }
+}
+
+/**
+ * Reduced motion stops the cosmetics dead rather than slowing them down.
+ * Unlike the intro's progress bar these convey nothing — they are decoration a
+ * student chose — so no information is lost by freezing them, and a friends
+ * list with four animating cards is exactly the screen the preference exists
+ * to calm.
+ *
+ * The travelling marks are hidden rather than frozen mid-flight: a rain streak
+ * parked halfway down the band reads as a rendering artefact, where a still
+ * sparkle reads as a star. So sparkles hold their bright pose and the other
+ * two stand down entirely.
  */
 @media (prefers-reduced-motion: reduce) {
-  .card-strip {
+  .card-strip,
+  .effect-mark {
     animation: none !important;
+  }
+  .effect-mark-rain,
+  .effect-mark-bubble {
+    opacity: 0;
+  }
+  .effect-mark-sparkle {
+    transform: scale(1) rotate(45deg);
+    opacity: 1;
   }
 }

@@ -3,9 +3,16 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { DEFAULT_SCHOOL_ID, SCHOOLS } from '@/domain/schools';
-import { COSMETICS } from '@/domain/cosmetics';
-import { BANNERS, STRIP_HEIGHT_PX, bannerGradient } from '@/domain/banners';
-import { EFFECTS, EFFECT_BAND_PX } from '@/domain/effects';
+import { cosmeticForHue } from '@/domain/cosmetics';
+import { bannerForHue, bannerGradient } from '@/domain/banners';
+import {
+  EFFECT_BAND_PX,
+  EFFECT_SHAPES,
+  effectForHue,
+  effectHueOf,
+  effectShapeOf,
+} from '@/domain/effects';
+import { HUE_STEPS } from '@/domain/hue';
 import CardEffect from '@/features/friends/CardEffect';
 import { canPickCosmetics } from '@/domain/beta';
 import { useAuth } from './AuthProvider';
@@ -27,6 +34,9 @@ export default function SettingsPage() {
   const selectedSchoolId = profile?.school ?? DEFAULT_SCHOOL_ID;
   // Private beta. Hides the pickers only — see the warning in domain/beta.ts.
   const showCosmetics = canPickCosmetics(session?.user.email);
+
+  /** Where the effect colour wheel starts before a student has moved it. */
+  const DEFAULT_EFFECT_HUE = 210;
 
   /**
    * Optimistic: patch the cached profile first so the accent flips under the
@@ -94,6 +104,15 @@ export default function SettingsPage() {
     }
   }
 
+  /**
+   * Hue wheels rather than a fixed palette. §5.1 of the monetization design
+   * rules out a free hex input because "somebody will pick white-on-white" —
+   * correct about hex, wrong about colour choice generally. The part students
+   * want to control is the hue, and hue has no bearing on contrast. So they
+   * pick the hue and domain/hue.ts picks the lightness, from a luminance target
+   * that every bar in the suite is measured against. An illegible card is not
+   * discouraged here, it is unreachable.
+   */
   const colourOptions: SwatchOption[] = [
     {
       id: null,
@@ -104,22 +123,25 @@ export default function SettingsPage() {
         </span>
       ),
     },
-    ...COSMETICS.map((cosmetic) => ({
-      id: cosmetic.id,
-      name: cosmetic.name,
-      preview: (
-        <span
-          className="flex h-full w-full items-center justify-center border text-xs font-semibold"
-          style={{
-            backgroundColor: cosmetic.background,
-            borderColor: cosmetic.border,
-            color: cosmetic.fg,
-          }}
-        >
-          Aa
-        </span>
-      ),
-    })),
+    ...HUE_STEPS.map((hue) => {
+      const cosmetic = cosmeticForHue(hue);
+      return {
+        id: cosmetic.id,
+        name: cosmetic.name,
+        preview: (
+          <span
+            className="flex h-full w-full items-center justify-center border text-[11px] font-bold"
+            style={{
+              backgroundColor: cosmetic.background,
+              borderColor: cosmetic.border,
+              color: cosmetic.fg,
+            }}
+          >
+            Aa
+          </span>
+        ),
+      };
+    }),
   ];
 
   const bannerOptions: SwatchOption[] = [
@@ -128,46 +150,73 @@ export default function SettingsPage() {
       name: 'None',
       preview: <span className="block h-full w-full border border-slate-200 bg-white" />,
     },
-    // The swatch animates exactly as the real strip does, at the real height,
-    // so the picker shows the thing rather than a still of it.
-    ...BANNERS.map((banner) => ({
-      id: banner.id,
-      name: banner.name,
-      preview: (
-        <span className="flex h-full w-full items-center border border-slate-200 bg-white">
+    // The swatch animates exactly as the real strip does, so the picker shows
+    // the moving thing rather than a still of it.
+    ...HUE_STEPS.map((hue) => {
+      const banner = bannerForHue(hue);
+      return {
+        id: banner.id,
+        name: banner.name,
+        preview: (
           <span
-            className="card-strip block w-full"
+            className="card-strip block h-full w-full"
             style={{
-              height: STRIP_HEIGHT_PX,
               backgroundImage: bannerGradient(banner),
               backgroundSize: '200% 100%',
               animation: 'card-strip-drift 6s linear infinite',
             }}
           />
-        </span>
-      ),
-    })),
+        ),
+      };
+    }),
   ];
 
-  const effectOptions: SwatchOption[] = [
+  /**
+   * An effect is two choices — a shape and a hue — stored in one column as
+   * `rain-210`. Changing one keeps the other, so picking a colour does not
+   * silently reset the shape a student just chose.
+   */
+  const effectShape = effectShapeOf(profile?.effect);
+  const effectHue = effectHueOf(profile?.effect) ?? DEFAULT_EFFECT_HUE;
+
+  const effectShapeOptions: SwatchOption[] = [
     {
       id: null,
       name: 'None',
       preview: <span className="block h-full w-full border border-slate-200 bg-white" />,
     },
-    // The swatch runs the real effect at the real band height, so the picker
-    // shows the moving thing rather than a still of it.
-    ...EFFECTS.map((effect) => ({
+    ...EFFECT_SHAPES.map((shape) => {
+      const effect = effectForHue(shape, effectHue);
+      return {
+        id: effect.id,
+        name: `${shape[0].toUpperCase()}${shape.slice(1)}`,
+        preview: (
+          <span className="flex h-full w-full items-start border border-slate-200 bg-white">
+            <span className="relative block w-full" style={{ height: EFFECT_BAND_PX }}>
+              <CardEffect banner={null} effect={effect} />
+            </span>
+          </span>
+        ),
+      };
+    }),
+  ];
+
+  const effectColourOptions: SwatchOption[] = HUE_STEPS.map((hue) => {
+    const effect = effectForHue(effectShape ?? 'rain', hue);
+    return {
       id: effect.id,
       name: effect.name,
       preview: (
-        <span className="flex h-full w-full items-start border border-slate-200 bg-white">
-          <span className="relative block w-full" style={{ height: EFFECT_BAND_PX }}>
-            <CardEffect banner={null} effect={effect} />
-          </span>
+        <span className="flex h-full w-full items-center justify-center border border-slate-200 bg-white">
+          <span
+            className="block h-5 w-5 rounded-full"
+            style={{ backgroundColor: effect.colour }}
+          />
         </span>
       ),
-    })),
+    };
+  });
+
   ];
 
   async function handleDelete() {

@@ -3,15 +3,34 @@ import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 
 /**
- * Placeholders, deliberately loud. These documents are not binding until the
- * three markers below are replaced with the real operator, contact address and
- * governing jurisdiction — grep for "[" in this folder before launch.
+ * The operator, the address students can reach them at, and the governing law.
+ *
+ * **One person, deliberately.** `OPERATOR_NAME` is not a credits line — it
+ * names who is legally accountable for the service and for the personal
+ * information it holds. Andreas Retsinas is a founder and belongs in About;
+ * naming him here would attach Law 25 obligations to someone who does not
+ * operate anything. See §8.1 of
+ * docs/superpowers/specs/2026-08-17-monetization-design.md.
+ *
+ * `CONTACT_EMAIL` has to stay monitored. Quebec's Law 25 obliges an actual
+ * response to access and deletion requests, and an unread inbox is a breach of
+ * it rather than an oversight.
+ *
+ * Both jurisdiction usages read "governed by the laws of {JURISDICTION}", so
+ * the string has to complete that sentence — hence the long form rather than
+ * bare "Quebec".
+ *
+ * Still open before this is a paid service, and neither is a code change:
+ * designating a privacy officer under Law 25, and French availability under the
+ * Charter of the French Language. Both are noted in §8.2 of the spec.
+ *
+ * Bump LAST_UPDATED whenever the wording of either document changes.
  */
-export const OPERATOR_NAME = '[OPERATOR_NAME]';
+export const OPERATOR_NAME = 'Mossimo Bianco';
 export const CONTACT_EMAIL = 'schedulematcher.info@gmail.com';
-export const JURISDICTION = '[JURISDICTION]';
+export const JURISDICTION = 'the Province of Quebec and the federal laws of Canada applicable therein';
 
-export const LAST_UPDATED = 'August 16, 2026';
+export const LAST_UPDATED = 'August 18, 2026';
 
 export function Section({ title, children }: { title: string; children: ReactNode }) {
   return (

@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
+import { logAppOpen } from '@/lib/analytics';
 import { PROFILE_COLUMNS, rowToProfile, type ProfileRow } from '@/domain/mappers';
 import type { Profile } from '@/domain/types';
 
@@ -109,6 +110,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       sub.subscription.unsubscribe();
     };
   }, []);
+
+  // The retention signal for Phase 0 (see src/lib/analytics.ts). Keyed on the
+  // user id rather than the session object, which is replaced on every token
+  // refresh; logAppOpen throttles to one row per day anyway, so the worst case
+  // if that ever changes is a no-op.
+  const userId = session?.user.id;
+  useEffect(() => {
+    if (userId) logAppOpen(userId);
+  }, [userId]);
 
   const value: AuthValue = {
     session,

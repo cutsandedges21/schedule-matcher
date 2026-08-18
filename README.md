@@ -73,6 +73,7 @@ phone that makes a second account unreachable.
 | `npm run build` | Type check and production build |
 | `npm run icons` | Redraw the home-screen icons in `public/` |
 | `node scripts/run-sql.mjs <ref> <file.sql>` | Run SQL via the Management API |
+| `node scripts/run-sql.mjs <ref> supabase/analytics/phase0.sql` | The Phase 0 monetization numbers |
 
 ## Deleting an account
 
@@ -121,6 +122,47 @@ summary — everyone-free windows and classes in common — and treats the grid 
 a shape you tap into rather than read. Anyone in the group with no saved
 schedule is called out explicitly, because "no classes" and "free all week"
 are the same thing to `computeGroupFree` and only one of them is true.
+
+## Phase 0 analytics
+
+`app_events` (migration `0009`) plus the existing `extraction_log` answer the
+four questions in §6 of `docs/superpowers/specs/2026-08-17-monetization-design.md`.
+Read them all at once with:
+
+```bash
+node scripts/run-sql.mjs <ref> supabase/analytics/phase0.sql
+```
+
+The load-bearing one is the distribution of **group compare sizes**. January's
+paid tier is priced on what share of students would have hit a two-friend cap,
+and you cannot measure demand for a wall that does not exist — so group compare
+stays free to all five this term and the size is recorded instead.
+
+Three things about the table are easy to undo by accident:
+
+- **It stores counts, not relationships.** A row says "this student looked at a
+  group of four" and never who the four were. Holding more would turn a
+  counting table into a map of who hangs out with whom.
+- **There is no `select` policy, deliberately.** Students cannot read the table
+  at all; it is read through the Management API, which connects as `postgres`
+  and bypasses RLS. The consequence is that the client must never chain
+  `.select()` onto the insert — PostgREST would need SELECT to return the row,
+  and every write would 401 silently. Both `src/lib/analytics.ts` and the
+  migration header say so.
+- **Logging never breaks the app.** Every call in `src/lib/analytics.ts` is
+  fire-and-forget and swallows its errors, so the client runs fine before the
+  migration is applied and when an ad blocker eats the request.
+
+Group size is logged on a `GROUP_LOG_SETTLE_MS` debounce and only once the grid
+has rendered. The selection lives in the query string and changes on every tap,
+so eager logging would record 1, then 2, then 3 as a student assembles a group
+of three — inflating precisely the small sizes the cap question turns on.
+
+Term boundaries live in `src/domain/terms.ts` (winter Jan–May, summer Jun–Jul,
+fall Aug–Dec) and are duplicated in `phase0.sql`, which cannot import them.
+`terms.test.ts` pins the numbers so the two cannot drift unnoticed. Both sides
+read Montreal local time, not UTC — a term ticks over at midnight where the
+student is.
 
 ## School themes
 
@@ -181,6 +223,48 @@ luminance around 0.61. A pretty-but-dark preset fails the suite.
 Not shown in friend search or pending requests, on purpose — those are lists of
 people you have not connected to yet, and the school chip is already scoped the
 same way. The data is there via `PROFILE_COLUMNS` if that call is reversed.
+
+### Banners and effects
+
+Two more slots, added by migration `0008_banner_effect.sql`: a `banner` (an
+animated gradient strip, `src/domain/banners.ts`) and an `effect` (animated
+marks below it, `src/domain/effects.ts`). All three slots are independent and
+may be null in any combination; the two do not co-ordinate, so a green effect
+under a red strip is allowed.
+
+An effect preset bakes **shape and colour together** — `Downpour` is rain in
+tide blue, and there is no second rain a shade away. One colour per shape,
+asserted in `effects.test.ts`: two near-identical presets are not two products,
+they are one product and a support question.
+
+Both bands are fixed-height boxes in **normal flow**, never overlays, and they
+clip their own contents. That single fact is why nothing in `effects.ts` needs
+a contrast rule against the card's text — a mark cannot reach the username, so
+there is no pairing to measure — and it is what stops an effect spilling onto
+the friend in the row below. The slot previously held a dripping-slime effect
+that drew `#2B9540` green behind `#6B5320` brown at **2.4:1**; it stayed legible
+only because the band could not reach the text. Make the band absolute and that
+protection is gone.
+
+Effect colours are held to **3:1** against white and every cosmetic background,
+not 4.5:1 — the WCAG bar for a non-text graphic (1.4.11), since the marks are
+decoration and carry no information. The test exists to catch a preset that is
+simply invisible on the card it lands on.
+
+The travelling keyframes (`effect-rain`, `effect-bubble` in `src/index.css`)
+are tuned to reach opacity 0 exactly at `EFFECT_BAND_PX`. Change the band
+height without retuning them and marks get sliced in half at full opacity
+instead of fading out. Sparkles never travel, so they are exempt.
+
+`prefers-reduced-motion: reduce` stops all of it. The travelling marks are
+hidden rather than frozen — a rain streak parked halfway down the band reads as
+a rendering artefact, where a still sparkle reads as a star, so sparkles hold
+their bright pose instead.
+
+While cosmetics are in private beta the pickers are limited to the accounts in
+`src/domain/beta.ts`. **That hides the UI and nothing more** — `profiles_update`
+still permits the write from any account. Rendering is deliberately ungated: an
+effect only has value because other people see it.
 
 **`profiles.cosmetic` is client-writable.** `profiles_update` lets a student set
 any column on their own row, which is what makes cosmetics free to everyone

@@ -1,6 +1,7 @@
 // src/features/compare/GroupComparePage.tsx
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { logCompareGroup } from '@/lib/analytics';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { useFriends } from '@/features/friends/useFriends';
 import { useGroupSchedules } from './useGroupSchedules';
@@ -10,10 +11,18 @@ import { todayWeekday } from '@/features/schedule/ScheduleGrid';
 import Button, { buttonClassName } from '@/components/Button';
 import Spinner from '@/components/Spinner';
 import EmptyState from '@/components/EmptyState';
+import BackButton from '@/components/BackButton';
 import GroupPicker from './GroupPicker';
 import GroupSummary, { type GroupPerson } from './GroupSummary';
 import GroupGrid from './GroupGrid';
 import type { Interval } from '@/domain/types';
+
+/**
+ * How long a selection has to hold still before it counts as the group the
+ * student meant. Long enough to cover the gap between two deliberate taps in
+ * the picker, short enough that nobody navigates away before it fires.
+ */
+const GROUP_LOG_SETTLE_MS = 2500;
 
 /**
  * The selection lives in `?with=alice,bob` rather than in component state so
@@ -84,6 +93,36 @@ export default function GroupComparePage() {
   // lie by omission.
   const missingSchedules = people.filter((p) => (byUser[p.id] ?? []).length === 0);
 
+  // Phase 0: the group size a student settled on, which is the number §6 of
+  // the monetization spec turns on — what share of students would have hit a
+  // two-friend cap.
+  //
+  // Debounced, and only once the grid has actually rendered. The selection
+  // lives in the URL and changes on every tap, so logging eagerly would record
+  // 1, then 2, then 3 as somebody assembles a group of three, and inflate
+  // precisely the small sizes the cap question is about.
+  //
+  // Each distinct size is recorded once per visit. That keeps the per-user
+  // maximum — the figure the cap question actually needs — intact, while
+  // toggling the same friend in and out does not multiply into the totals.
+  const loggedSizes = useRef<Set<number>>(new Set());
+  const groupSize = selectedFriends.length;
+  const groupRendered = groupSize > 0 && !schedulesLoading && !schedulesError;
+  const viewerId = session?.user.id;
+
+  useEffect(() => {
+    if (!groupRendered || !viewerId) return;
+    const sizes = loggedSizes.current;
+    if (sizes.has(groupSize)) return;
+
+    const timer = setTimeout(() => {
+      sizes.add(groupSize);
+      logCompareGroup(viewerId, groupSize);
+    }, GROUP_LOG_SETTLE_MS);
+
+    return () => clearTimeout(timer);
+  }, [groupRendered, groupSize, viewerId]);
+
   function toggle(username: string) {
     const next = selectedUsernames.includes(username)
       ? selectedUsernames.filter((u) => u !== username)
@@ -115,7 +154,11 @@ export default function GroupComparePage() {
 
   return (
     <main className="flex flex-col gap-4 pb-6">
-      <header className="flex items-start justify-between gap-3 px-4 pt-4">
+      <div className="px-4 pt-4">
+        <BackButton to="/friends" />
+      </div>
+
+      <header className="flex items-start justify-between gap-3 px-4">
         <div className="min-w-0">
           <h1 className="text-2xl font-bold">Compare</h1>
           <p className="truncate text-sm text-slate-500">

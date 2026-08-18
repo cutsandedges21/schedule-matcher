@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
+import { logComparePair } from '@/lib/analytics';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { useSchedule } from '@/features/schedule/useSchedule';
 import { areFriends } from '@/features/friends/useFriends';
@@ -18,6 +19,7 @@ import CompareGrid from './CompareGrid';
 import CompareSummary from './CompareSummary';
 import Spinner from '@/components/Spinner';
 import EmptyState from '@/components/EmptyState';
+import BackButton from '@/components/BackButton';
 import type { ClassMeeting, Interval, Profile } from '@/domain/types';
 
 type Status = 'loading' | 'not-found' | 'not-friends' | 'error' | 'ready';
@@ -87,6 +89,18 @@ export default function ComparePage() {
     return () => { cancelled = true; };
   }, [username, session]);
 
+  // Phase 0: a 1:1 compare that actually rendered. Gated on 'ready' rather than
+  // on mount so a not-friends or not-found visit is not counted as a compare,
+  // and skipped when the "friend" is yourself — /compare/<your-own-username>
+  // resolves, but it is not a use of the feature we are trying to size.
+  const viewerId = session?.user.id;
+  const subjectId = profile?.id;
+  useEffect(() => {
+    if (status === 'ready' && viewerId && subjectId && subjectId !== viewerId) {
+      logComparePair(viewerId);
+    }
+  }, [status, viewerId, subjectId]);
+
   const days = useMemo(() => {
     const weekend = [6, 7].filter((d) =>
       [...mine, ...theirs].some((c) => c.days.includes(d))
@@ -133,7 +147,11 @@ export default function ComparePage() {
 
   return (
     <main>
-      <header className="px-4 pt-4">
+      <div className="px-4 pt-4">
+        <BackButton to="/friends" />
+      </div>
+
+      <header className="px-4 pt-2">
         <h1 className="text-2xl font-bold">You and @{profile!.username}</h1>
       </header>
 

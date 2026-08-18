@@ -16,6 +16,7 @@ import Spinner from '@/components/Spinner';
 import EmptyState from '@/components/EmptyState';
 import SchoolChip from '@/features/theme/SchoolChip';
 import { buttonClassName } from '@/components/Button';
+import BackButton from '@/components/BackButton';
 import type { ClassMeeting, Profile } from '@/domain/types';
 
 type Status = 'loading' | 'not-found' | 'not-friends' | 'error' | 'ready';
@@ -101,7 +102,11 @@ export default function FriendSchedulePage() {
 
   return (
     <main>
-      <header className="flex items-center justify-between px-4 pt-4">
+      <div className="px-4 pt-4">
+        <BackButton to="/friends" />
+      </div>
+
+      <header className="flex items-center justify-between px-4 pt-2">
         <div className="flex flex-col items-start gap-1">
           <h1 className="text-2xl font-bold">@{profile!.username}</h1>
           {profile!.displayName && <p className="text-sm text-slate-500">{profile!.displayName}</p>}

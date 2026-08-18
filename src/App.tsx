@@ -3,7 +3,6 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from '@/features/auth/AuthProvider';
 import RequireAuth from '@/features/auth/RequireAuth';
 import AppShell from '@/components/AppShell';
-import MobileOnly from '@/components/MobileOnly';
 import SchoolThemeEffect from '@/features/theme/SchoolThemeEffect';
 import Spinner from '@/components/Spinner';
 import LoginPage from '@/features/auth/LoginPage';
@@ -24,44 +23,37 @@ const shell = (element: ReactNode) => (
   <RequireAuth><AppShell>{element}</AppShell></RequireAuth>
 );
 
-/**
- * Everything except the legal pages. MobileOnly still sits outside the auth
- * provider on purpose: a desktop visitor must meet the notice before anything
- * signs them in or fetches for them.
- */
+/** Everything except the legal pages. */
 function AppRoutes() {
   return (
-    <MobileOnly>
-      <AuthProvider>
-        <SchoolThemeEffect />
-        <Suspense fallback={<Spinner />}>
-          <Routes>
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/onboarding" element={<RequireAuth><OnboardingPage /></RequireAuth>} />
-            <Route path="/invite/:code" element={<RequireAuth><InvitePage /></RequireAuth>} />
-            <Route path="/" element={shell(<SchedulePage />)} />
-            <Route path="/upload" element={<RequireAuth><UploadPage /></RequireAuth>} />
-            <Route path="/friends" element={shell(<FriendsPage />)} />
-            <Route path="/settings" element={shell(<SettingsPage />)} />
-            {/* The tab was called Profile until the settings rename; old links,
-                bookmarks and home-screen shortcuts still point here. */}
-            <Route path="/profile" element={<Navigate to="/settings" replace />} />
-            <Route path="/u/:username" element={shell(<FriendSchedulePage />)} />
-            <Route path="/compare" element={shell(<GroupComparePage />)} />
-            <Route path="/compare/:username" element={shell(<ComparePage />)} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Suspense>
-      </AuthProvider>
-    </MobileOnly>
+    <AuthProvider>
+      <SchoolThemeEffect />
+      <Suspense fallback={<Spinner />}>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/onboarding" element={<RequireAuth><OnboardingPage /></RequireAuth>} />
+          <Route path="/invite/:code" element={<RequireAuth><InvitePage /></RequireAuth>} />
+          <Route path="/" element={shell(<SchedulePage />)} />
+          <Route path="/upload" element={<RequireAuth><UploadPage /></RequireAuth>} />
+          <Route path="/friends" element={shell(<FriendsPage />)} />
+          <Route path="/settings" element={shell(<SettingsPage />)} />
+          {/* The tab was called Profile until the settings rename; old links,
+              bookmarks and home-screen shortcuts still point here. */}
+          <Route path="/profile" element={<Navigate to="/settings" replace />} />
+          <Route path="/u/:username" element={shell(<FriendSchedulePage />)} />
+          <Route path="/compare" element={shell(<GroupComparePage />)} />
+          <Route path="/compare/:username" element={shell(<ComparePage />)} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Suspense>
+    </AuthProvider>
   );
 }
 
 export default function App() {
-  // The legal pages are deliberately outside MobileOnly and outside
-  // AuthProvider: a privacy policy or a set of terms has to be readable on a
-  // laptop, and before you have an account, or it isn't much use to anyone.
-  // `/*` keeps every other route inside the phone-only wall as before.
+  // The legal pages are deliberately outside AuthProvider: a privacy policy
+  // or a set of terms has to be readable before you have an account, or it
+  // isn't much use to anyone. `/*` covers every other route.
   return (
     <BrowserRouter>
       <Suspense fallback={<Spinner />}>

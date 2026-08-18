@@ -12,6 +12,7 @@ import ImagePicker from './ImagePicker';
 import ImageCropper from './ImageCropper';
 import ReviewForm from './ReviewForm';
 import Button from '@/components/Button';
+import BackButton from '@/components/BackButton';
 import ProgressBar from '@/components/ProgressBar';
 import type { ExtractedClass } from '@/domain/types';
 
@@ -237,15 +238,8 @@ export default function UploadPage() {
   }
 
   return (
-    <main className="p-4">
-      <Button
-        variant="ghost"
-        onClick={() => navigate('/')}
-        aria-label="Back to schedule"
-        className="-ml-3 px-3"
-      >
-        ← Back
-      </Button>
+    <main className="p-4 lg:mx-auto lg:max-w-2xl lg:py-6">
+      <BackButton to="/" />
 
       <h1 className="mt-1 text-2xl font-bold">Add your schedule</h1>
 

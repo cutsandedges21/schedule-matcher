@@ -217,8 +217,6 @@ export default function SettingsPage() {
     };
   });
 
-  ];
-
   async function handleDelete() {
     setError(null);
     setDeleting(true);
@@ -287,6 +285,7 @@ export default function SettingsPage() {
             selectedId={profile?.cosmetic ?? null}
             onChoose={(id) => void chooseCosmetic('cosmetic', id)}
             error={cosmeticError.cosmetic ?? null}
+            columns={8}
           />
 
           <SwatchPicker
@@ -296,16 +295,32 @@ export default function SettingsPage() {
             selectedId={profile?.banner ?? null}
             onChoose={(id) => void chooseCosmetic('banner', id)}
             error={cosmeticError.banner ?? null}
+            columns={8}
           />
 
           <SwatchPicker
             title="Effect"
             description="Animates under your banner — or on its own, if you skip one."
-            options={effectOptions}
+            options={effectShapeOptions}
             selectedId={profile?.effect ?? null}
             onChoose={(id) => void chooseCosmetic('effect', id)}
             error={cosmeticError.effect ?? null}
           />
+
+          {/* Only once a shape is chosen — a colour with no shape is not an
+              effect, and offering the wheel first invites a tap that does
+              nothing visible. */}
+          {effectShape && (
+            <SwatchPicker
+              title="Effect colour"
+              description="Any hue you like. The app picks the shade so it stays visible."
+              options={effectColourOptions}
+              selectedId={profile?.effect ?? null}
+              onChoose={(id) => void chooseCosmetic('effect', id)}
+              error={null}
+              columns={8}
+            />
+          )}
         </>
       )}
 

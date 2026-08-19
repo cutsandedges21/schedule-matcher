@@ -73,11 +73,25 @@ export default function SwatchPicker({
                 onClick={() => onChoose(option.id)}
                 className="flex w-full flex-col items-center gap-1"
               >
+                {/*
+                  The radius lives here and the preview inside inherits it with
+                  `rounded-[inherit]`, so a swatch's border curves with the
+                  corner instead of being sliced flat by this element's
+                  overflow clip.
+
+                  Smaller radius on the dense grid: at 8 columns a cell is only
+                  ~34px wide, and a 12px curve takes a visible bite out of each
+                  corner of what should read as a square of colour.
+                */}
                 <span
                   className={
                     selected
-                      ? 'block h-12 w-full overflow-hidden rounded-xl ring-2 ring-accent ring-offset-2 ring-offset-slate-50'
-                      : 'block h-12 w-full overflow-hidden rounded-xl'
+                      ? columns === 8
+                        ? 'block h-12 w-full overflow-hidden rounded-md ring-2 ring-accent ring-offset-2 ring-offset-slate-50'
+                        : 'block h-12 w-full overflow-hidden rounded-xl ring-2 ring-accent ring-offset-2 ring-offset-slate-50'
+                      : columns === 8
+                        ? 'block h-12 w-full overflow-hidden rounded-md'
+                        : 'block h-12 w-full overflow-hidden rounded-xl'
                   }
                 >
                   {option.preview}

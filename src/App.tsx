@@ -10,6 +10,7 @@ import SchedulePage from '@/features/schedule/SchedulePage';
 
 const OnboardingPage = lazy(() => import('@/features/auth/OnboardingPage'));
 const SettingsPage = lazy(() => import('@/features/auth/SettingsPage'));
+const CustomizationPage = lazy(() => import('@/features/auth/CustomizationPage'));
 const UploadPage = lazy(() => import('@/features/upload/UploadPage'));
 const FriendsPage = lazy(() => import('@/features/friends/FriendsPage'));
 const FriendSchedulePage = lazy(() => import('@/features/friends/FriendSchedulePage'));
@@ -37,6 +38,7 @@ function AppRoutes() {
           <Route path="/upload" element={<RequireAuth><UploadPage /></RequireAuth>} />
           <Route path="/friends" element={shell(<FriendsPage />)} />
           <Route path="/settings" element={shell(<SettingsPage />)} />
+          <Route path="/settings/customization" element={shell(<CustomizationPage />)} />
           {/* The tab was called Profile until the settings rename; old links,
               bookmarks and home-screen shortcuts still point here. */}
           <Route path="/profile" element={<Navigate to="/settings" replace />} />

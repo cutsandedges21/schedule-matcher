@@ -2,23 +2,26 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
-import { DEFAULT_SCHOOL_ID, SCHOOLS } from '@/domain/schools';
-import { cosmeticForHue } from '@/domain/cosmetics';
-import { bannerForHue, bannerGradient } from '@/domain/banners';
-import {
-  EFFECT_BAND_PX,
-  EFFECT_SHAPES,
-  effectForHue,
-  effectHueOf,
-  effectShapeOf,
-} from '@/domain/effects';
-import { HUE_STEPS } from '@/domain/hue';
-import CardEffect from '@/features/friends/CardEffect';
+import { DEFAULT_SCHOOL_ID, SCHOOLS, schoolById } from '@/domain/schools';
 import { canPickCosmetics } from '@/domain/beta';
 import { useAuth } from './AuthProvider';
 import { deleteAccount } from './deleteAccount';
-import SwatchPicker, { type SwatchOption } from './SwatchPicker';
 import Button from '@/components/Button';
+
+/** One row in a grouped list: a label, a chevron, and a whole-row tap target. */
+function NavRow({ to, label }: { to: string; label: string }) {
+  return (
+    <Link
+      to={to}
+      className="flex min-h-touch items-center justify-between px-4 py-3 text-sm font-medium active:bg-slate-100"
+    >
+      {label}
+      <span aria-hidden className="text-slate-400">
+        ›
+      </span>
+    </Link>
+  );
+}
 
 export default function SettingsPage() {
   const { session, profile, patchProfile, signOut } = useAuth();
@@ -27,16 +30,12 @@ export default function SettingsPage() {
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [schoolError, setSchoolError] = useState<string | null>(null);
-  const [cosmeticError, setCosmeticError] = useState<Record<string, string | null>>({});
 
   const username = profile?.username ?? '';
   const canDelete = typed.trim().toLowerCase() === username && !deleting;
   const selectedSchoolId = profile?.school ?? DEFAULT_SCHOOL_ID;
-  // Private beta. Hides the pickers only — see the warning in domain/beta.ts.
+  // Private beta. Hides the link only — see the warning in domain/beta.ts.
   const showCosmetics = canPickCosmetics(session?.user.email);
-
-  /** Where the effect colour wheel starts before a student has moved it. */
-  const DEFAULT_EFFECT_HUE = 210;
 
   /**
    * Optimistic: patch the cached profile first so the accent flips under the
@@ -67,156 +66,6 @@ export default function SettingsPage() {
     }
   }
 
-  /**
-   * Same optimistic write as chooseSchool, and the same reason: the swatch has
-   * to ring under the finger rather than after the round trip. Shared by all
-   * three cosmetic slots, which differ only in which column they write.
-   *
-   * Cosmetics are free to everyone today, and this writes straight from the
-   * client through `profiles_update` — the policy lets a student set any
-   * column on their own row. Correct while they are free. When they move
-   * behind the paid Pass, `cosmetic`, `banner` and `effect` all have to stop
-   * being client writable: revoke column-level update from `authenticated` and
-   * go through a trigger or a security-definer setter that checks the Pass.
-   * See the headers of migrations 0007 and 0008. Nothing here should be read
-   * as an entitlement check.
-   */
-  async function chooseCosmetic(column: 'cosmetic' | 'banner' | 'effect', id: string | null) {
-    if (!profile) return;
-
-    const previous = profile[column];
-    if (id === previous) return;
-
-    setCosmeticError((current) => ({ ...current, [column]: null }));
-    patchProfile({ [column]: id });
-
-    const { error: updateError } = await supabase
-      .from('profiles')
-      .update({ [column]: id })
-      .eq('id', profile.id);
-
-    if (updateError) {
-      patchProfile({ [column]: previous });
-      setCosmeticError((current) => ({
-        ...current,
-        [column]: 'Could not save that. Check your connection and try again.',
-      }));
-    }
-  }
-
-  /**
-   * Hue wheels rather than a fixed palette. §5.1 of the monetization design
-   * rules out a free hex input because "somebody will pick white-on-white" —
-   * correct about hex, wrong about colour choice generally. The part students
-   * want to control is the hue, and hue has no bearing on contrast. So they
-   * pick the hue and domain/hue.ts picks the lightness, from a luminance target
-   * that every bar in the suite is measured against. An illegible card is not
-   * discouraged here, it is unreachable.
-   */
-  const colourOptions: SwatchOption[] = [
-    {
-      id: null,
-      name: 'None',
-      preview: (
-        <span className="flex h-full w-full items-center justify-center border border-slate-200 bg-white text-xs font-semibold text-slate-400">
-          Aa
-        </span>
-      ),
-    },
-    ...HUE_STEPS.map((hue) => {
-      const cosmetic = cosmeticForHue(hue);
-      return {
-        id: cosmetic.id,
-        name: cosmetic.name,
-        preview: (
-          <span
-            className="flex h-full w-full items-center justify-center border text-[11px] font-bold"
-            style={{
-              backgroundColor: cosmetic.background,
-              borderColor: cosmetic.border,
-              color: cosmetic.fg,
-            }}
-          >
-            Aa
-          </span>
-        ),
-      };
-    }),
-  ];
-
-  const bannerOptions: SwatchOption[] = [
-    {
-      id: null,
-      name: 'None',
-      preview: <span className="block h-full w-full border border-slate-200 bg-white" />,
-    },
-    // The swatch animates exactly as the real strip does, so the picker shows
-    // the moving thing rather than a still of it.
-    ...HUE_STEPS.map((hue) => {
-      const banner = bannerForHue(hue);
-      return {
-        id: banner.id,
-        name: banner.name,
-        preview: (
-          <span
-            className="card-strip block h-full w-full"
-            style={{
-              backgroundImage: bannerGradient(banner),
-              backgroundSize: '200% 100%',
-              animation: 'card-strip-drift 6s linear infinite',
-            }}
-          />
-        ),
-      };
-    }),
-  ];
-
-  /**
-   * An effect is two choices — a shape and a hue — stored in one column as
-   * `rain-210`. Changing one keeps the other, so picking a colour does not
-   * silently reset the shape a student just chose.
-   */
-  const effectShape = effectShapeOf(profile?.effect);
-  const effectHue = effectHueOf(profile?.effect) ?? DEFAULT_EFFECT_HUE;
-
-  const effectShapeOptions: SwatchOption[] = [
-    {
-      id: null,
-      name: 'None',
-      preview: <span className="block h-full w-full border border-slate-200 bg-white" />,
-    },
-    ...EFFECT_SHAPES.map((shape) => {
-      const effect = effectForHue(shape, effectHue);
-      return {
-        id: effect.id,
-        name: `${shape[0].toUpperCase()}${shape.slice(1)}`,
-        preview: (
-          <span className="flex h-full w-full items-start border border-slate-200 bg-white">
-            <span className="relative block w-full" style={{ height: EFFECT_BAND_PX }}>
-              <CardEffect banner={null} effect={effect} />
-            </span>
-          </span>
-        ),
-      };
-    }),
-  ];
-
-  const effectColourOptions: SwatchOption[] = HUE_STEPS.map((hue) => {
-    const effect = effectForHue(effectShape ?? 'rain', hue);
-    return {
-      id: effect.id,
-      name: effect.name,
-      preview: (
-        <span className="flex h-full w-full items-center justify-center border border-slate-200 bg-white">
-          <span
-            className="block h-5 w-5 rounded-full"
-            style={{ backgroundColor: effect.colour }}
-          />
-        </span>
-      ),
-    };
-  });
-
   async function handleDelete() {
     setError(null);
     setDeleting(true);
@@ -235,122 +84,82 @@ export default function SettingsPage() {
     <main className="flex flex-col gap-6 p-4 pb-6">
       <h1 className="text-2xl font-bold">Settings</h1>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-4">
-        <p className="font-semibold">@{profile?.username}</p>
-        {profile?.displayName && <p className="text-sm text-slate-500">{profile.displayName}</p>}
-      </section>
-
       <section>
         <h2 className="text-sm font-semibold text-slate-500">School</h2>
         <p className="mt-1 text-xs text-slate-500">
           Sets the app&rsquo;s colour. Friends can see which school you&rsquo;re at.
         </p>
-        <ul
-          role="radiogroup"
-          aria-label="School"
-          className="mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white"
-        >
-          {SCHOOLS.map((school, index) => {
-            const selected = school.id === selectedSchoolId;
-            return (
-              <li key={school.id} className={index > 0 ? 'border-t border-slate-200' : undefined}>
-                <button
-                  type="button"
-                  role="radio"
-                  aria-checked={selected}
-                  onClick={() => void chooseSchool(school.id)}
-                  className="flex min-h-touch w-full items-center gap-3 px-4 py-3 text-left text-sm font-medium active:bg-slate-100"
-                >
-                  <span
-                    aria-hidden
-                    className="h-5 w-5 shrink-0 rounded-full border border-black/10"
-                    style={{ backgroundColor: school.accent }}
-                  />
-                  <span className="flex-1">{school.name}</span>
-                  {selected && <span aria-hidden className="font-bold text-accent">✓</span>}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
+
+        {/*
+          A native <select>, so iOS and Android give their own picker rather than
+          a bespoke menu that has to reimplement scrolling, dismissal and
+          keyboard focus. `appearance-none` drops the platform arrow, and the
+          chevron below replaces it — without one the control reads as a text
+          field on Android, which is the thing that makes a dropdown
+          non-obvious. The swatch keeps the colour visible: an <option> cannot
+          carry one, so the current school's accent is drawn beside the label.
+        */}
+        <div className="relative mt-2">
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-y-0 left-4 flex items-center"
+          >
+            <span
+              className="h-5 w-5 rounded-full border border-black/10"
+              style={{ backgroundColor: schoolById(selectedSchoolId).accent }}
+            />
+          </span>
+
+          <select
+            aria-label="School"
+            value={selectedSchoolId}
+            onChange={(event) => void chooseSchool(event.target.value)}
+            className="min-h-touch w-full appearance-none rounded-2xl border border-slate-300 bg-white py-3 pl-12 pr-11 text-sm font-medium text-slate-900"
+          >
+            {SCHOOLS.map((school) => (
+              <option key={school.id} value={school.id}>
+                {school.name}
+              </option>
+            ))}
+          </select>
+
+          <span
+            aria-hidden
+            className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-base text-slate-500"
+          >
+            ▾
+          </span>
+        </div>
+
         {schoolError && <p className="mt-2 text-sm text-rose-600">{schoolError}</p>}
       </section>
 
       {showCosmetics && (
-        <>
-          <SwatchPicker
-            title="Card colour"
-            description="How your name looks on your friends' Friends page. Only they see it."
-            options={colourOptions}
-            selectedId={profile?.cosmetic ?? null}
-            onChoose={(id) => void chooseCosmetic('cosmetic', id)}
-            error={cosmeticError.cosmetic ?? null}
-            columns={8}
-          />
-
-          <SwatchPicker
-            title="Banner"
-            description="An animated strip across the top of your card."
-            options={bannerOptions}
-            selectedId={profile?.banner ?? null}
-            onChoose={(id) => void chooseCosmetic('banner', id)}
-            error={cosmeticError.banner ?? null}
-            columns={8}
-          />
-
-          <SwatchPicker
-            title="Effect"
-            description="Animates under your banner — or on its own, if you skip one."
-            options={effectShapeOptions}
-            selectedId={profile?.effect ?? null}
-            onChoose={(id) => void chooseCosmetic('effect', id)}
-            error={cosmeticError.effect ?? null}
-          />
-
-          {/* Only once a shape is chosen — a colour with no shape is not an
-              effect, and offering the wheel first invites a tap that does
-              nothing visible. */}
-          {effectShape && (
-            <SwatchPicker
-              title="Effect colour"
-              description="Any hue you like. The app picks the shade so it stays visible."
-              options={effectColourOptions}
-              selectedId={profile?.effect ?? null}
-              onChoose={(id) => void chooseCosmetic('effect', id)}
-              error={null}
-              columns={8}
-            />
-          )}
-        </>
+        <section>
+          <h2 className="text-sm font-semibold text-slate-500">Appearance</h2>
+          <ul className="mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+            <li>
+              <NavRow to="/settings/customization" label="Customization" />
+            </li>
+          </ul>
+        </section>
       )}
+
+      <section>
+        <h2 className="text-sm font-semibold text-slate-500">Legal</h2>
+        <ul className="mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+          <li>
+            <NavRow to="/privacy" label="Privacy Policy" />
+          </li>
+          <li className="border-t border-slate-200">
+            <NavRow to="/terms" label="Terms of Service" />
+          </li>
+        </ul>
+      </section>
 
       <Button variant="secondary" onClick={() => void signOut()} className="w-full">
         Sign out
       </Button>
-
-      <section>
-        <h2 className="text-sm font-semibold text-slate-500">About</h2>
-        <ul className="mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white">
-          <li>
-            <Link
-              to="/privacy"
-              className="flex min-h-touch items-center justify-between px-4 py-3 text-sm font-medium active:bg-slate-100"
-            >
-              Privacy Policy
-              <span aria-hidden className="text-slate-400">›</span>
-            </Link>
-          </li>
-          <li className="border-t border-slate-200">
-            <Link
-              to="/terms"
-              className="flex min-h-touch items-center justify-between px-4 py-3 text-sm font-medium active:bg-slate-100"
-            >
-              Terms of Service
-              <span aria-hidden className="text-slate-400">›</span>
-            </Link>
-          </li>
-        </ul>
-      </section>
 
       <section className="rounded-2xl border border-rose-200 bg-rose-50 p-4">
         <h2 className="text-sm font-semibold text-rose-900">Delete account</h2>

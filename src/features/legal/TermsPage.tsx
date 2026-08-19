@@ -8,6 +8,7 @@ import LegalLayout, {
   OPERATOR_NAME,
   CONTACT_EMAIL,
   JURISDICTION,
+  JURISDICTION_FR,
 } from './LegalLayout';
 
 /**
@@ -22,14 +23,19 @@ import LegalLayout, {
  *
  * Clause 18 — the Charter of the French Language requires that a contract of
  * adhesion be drawn up in French, an English version being available only
- * where the parties so agree after the French version has been remitted. The
- * French version does not yet exist. The clause states the position as it is
- * rather than asserting a compliance that has not been achieved; producing it
- * is tracked in §8.2 of the monetization spec.
+ * where the parties so agree after the French version has been remitted.
+ * `TermsEn` and `TermsFr` below now both exist, with byte-identical clause
+ * numbering, so a citation ("clause 9.2") means the same provision in either
+ * language. Clause 18.1 states that the French text governs in case of
+ * conflict — that sentence is the substance of the compliance, not
+ * decoration, so it must survive even if the two versions read as equivalent
+ * today. If either version's wording changes, the other must change with it
+ * in the same edit, and LegalLayout's LAST_UPDATED_EN/LAST_UPDATED_FR must
+ * both move.
  */
-export default function TermsPage() {
+function TermsEn() {
   return (
-    <LegalLayout title="Terms of Service">
+    <>
       <Section title="1. Agreement">
         <Clause n="1.1">
           These Terms of Service (the &ldquo;Terms&rdquo;) constitute a binding agreement between
@@ -338,13 +344,14 @@ export default function TermsPage() {
 
       <Section title="18. Language">
         <Clause n="18.1">
-          These Terms are presently available in English only. A French version is in preparation
-          and will be made available within the Service upon completion.
+          These Terms are available in English and in French. In the event of any inconsistency or
+          conflict between the two versions, the French version prevails, in accordance with the
+          Charter of the French Language.
         </Clause>
         <Clause n="18.2">
-          Nothing in this clause derogates from any right you hold under the Charter of the French
-          Language. Upon request to {CONTACT_EMAIL} we will provide such French-language version of
-          these Terms as is then available.
+          You may switch between the English and French versions of these Terms at any time using
+          the language control at the top of this page. Nothing in this clause derogates from any
+          right you hold under the Charter of the French Language.
         </Clause>
       </Section>
 
@@ -376,6 +383,396 @@ export default function TermsPage() {
           {CONTACT_EMAIL}.
         </P>
       </Section>
+    </>
+  );
+}
+
+function TermsFr() {
+  return (
+    <>
+      <Section title="1. Entente">
+        <Clause n="1.1">
+          Les présentes conditions d&rsquo;utilisation (les « Conditions ») constituent une entente
+          qui vous lie à {OPERATOR_NAME} (l&rsquo;« Exploitant », « nous ») et qui régit votre accès
+          à l&rsquo;application Schedule Matcher ainsi qu&rsquo;à tout site Web ou service qui y est
+          associé (collectivement, le « Service »), de même que votre utilisation de ceux-ci.
+        </Clause>
+        <Clause n="1.2">
+          En créant un compte ou en accédant autrement au Service, vous acceptez les présentes
+          Conditions dans leur intégralité. Si vous ne les acceptez pas, vous ne devez pas accéder au
+          Service ni l&rsquo;utiliser.
+        </Clause>
+        <Clause n="1.3">
+          La collecte et l&rsquo;utilisation de renseignements personnels dans le cadre du Service
+          sont régies par notre{' '}
+          <Link to="/privacy" className="font-medium text-slate-900">
+            Politique de confidentialité
+          </Link>
+          , laquelle fait partie intégrante des présentes Conditions.
+        </Clause>
+      </Section>
+
+      <Section title="2. Définitions">
+        <Clause n="2.1">
+          <strong>« Contenu utilisateur »</strong> désigne tout renseignement que vous soumettez au
+          Service, y compris les renseignements relatifs à l&rsquo;horaire de cours, les
+          renseignements de profil et les images téléversées.
+        </Clause>
+        <Clause n="2.2">
+          <strong>« Contact »</strong> désigne un autre utilisateur du Service dont vous avez accepté
+          la demande de mise en relation, ou dont vous avez reçu l&rsquo;acceptation d&rsquo;une telle
+          demande.
+        </Clause>
+        <Clause n="2.3">
+          <strong>« Outil d&rsquo;extraction »</strong> désigne la fonction automatisée du Service qui
+          propose une transcription des renseignements relatifs à l&rsquo;horaire de cours à partir
+          d&rsquo;une image téléversée.
+        </Clause>
+      </Section>
+
+      <Section title="3. Admissibilité">
+        <Clause n="3.1">
+          Vous devez être âgé d&rsquo;au moins 14 ans pour utiliser le Service et posséder la capacité
+          juridique de conclure les présentes Conditions. Si vous êtes mineur, vous déclarez que votre
+          utilisation du Service a été consentie par le titulaire de l&rsquo;autorité parentale à
+          votre égard, dans la mesure exigée par la loi.
+        </Clause>
+        <Clause n="3.2">
+          Le Service est destiné aux étudiants d&rsquo;établissements d&rsquo;enseignement
+          postsecondaire.
+        </Clause>
+        <Clause n="3.3">Vous ne pouvez détenir qu&rsquo;un seul compte.</Clause>
+      </Section>
+
+      <Section title="4. Inscription du compte et sécurité">
+        <Clause n="4.1">
+          L&rsquo;accès au Service exige une authentification par l&rsquo;entremise d&rsquo;un
+          fournisseur d&rsquo;identité tiers. Vous êtes responsable de préserver la sécurité et la
+          confidentialité des identifiants utilisés à des fins d&rsquo;authentification.
+        </Clause>
+        <Clause n="4.2">
+          Vous êtes responsable de toute activité se produisant sous votre compte. Vous devez nous
+          aviser sans délai à {CONTACT_EMAIL} dès que vous prenez connaissance d&rsquo;une utilisation
+          non autorisée de votre compte.
+        </Clause>
+        <Clause n="4.3">
+          Vous ne devez pas transférer votre compte à une autre personne ni permettre à une autre
+          personne de l&rsquo;utiliser.
+        </Clause>
+      </Section>
+
+      <Section title="5. Licence d'utilisation du Service">
+        <Clause n="5.1">
+          Sous réserve du respect des présentes Conditions, nous vous accordons une licence limitée,
+          personnelle, non exclusive, incessible et révocable vous permettant d&rsquo;accéder au
+          Service et de l&rsquo;utiliser à des fins personnelles et non commerciales.
+        </Clause>
+        <Clause n="5.2">
+          Tous les droits, titres et intérêts afférents au Service, y compris ses logiciels, son
+          interface, sa conception et ses marques, demeurent la propriété de l&rsquo;Exploitant ou de
+          ses concédants de licence. Aucun droit n&rsquo;est accordé, sauf ceux expressément prévus à
+          la clause 5.1.
+        </Clause>
+      </Section>
+
+      <Section title="6. Contenu utilisateur">
+        <Clause n="6.1">
+          Vous conservez tous les droits, titres et intérêts afférents à votre Contenu utilisateur.
+          Les présentes Conditions ne nous transfèrent aucun droit de propriété à cet égard.
+        </Clause>
+        <Clause n="6.2">
+          Vous nous accordez une licence non exclusive, libre de redevances et mondiale nous
+          permettant d&rsquo;héberger, de conserver, de reproduire et de transmettre votre Contenu
+          utilisateur, dans la seule mesure nécessaire pour exploiter et vous fournir le Service,
+          ainsi que pour l&rsquo;afficher à vos Contacts conformément à vos paramètres. Cette licence
+          prend fin dès la suppression du Contenu utilisateur ou la suppression de votre compte, sous
+          réserve des copies conservées dans les supports de sauvegarde courants jusqu&rsquo;à leur
+          péremption prévue.
+        </Clause>
+        <Clause n="6.3">
+          Vous déclarez et garantissez que vous détenez tous les droits nécessaires pour soumettre
+          votre Contenu utilisateur et que cette soumission ne contrevient ni aux droits d&rsquo;un
+          tiers, ni aux politiques de votre établissement d&rsquo;enseignement, ni à une loi
+          applicable.
+        </Clause>
+        <Clause n="6.4">
+          Nous ne révisons pas systématiquement le Contenu utilisateur. Nous nous réservons le droit,
+          sans y être tenus, de retirer tout Contenu utilisateur que nous jugeons raisonnablement
+          contraire aux présentes Conditions.
+        </Clause>
+      </Section>
+
+      <Section title="7. Utilisation acceptable">
+        <Clause n="7.1">Vous ne devez pas, et ne devez pas tenter de :</Clause>
+        <List>
+          <li>
+            usurper l&rsquo;identité d&rsquo;une personne, ou créer un compte au nom d&rsquo;une autre
+            personne ou entité;
+          </li>
+          <li>
+            reproduire, publier, transmettre ou autrement redistribuer l&rsquo;horaire de cours
+            d&rsquo;un autre utilisateur en dehors du Service, que cet utilisateur soit ou non un
+            Contact;
+          </li>
+          <li>
+            accéder ou tenter d&rsquo;accéder à un compte, à des données ou à une partie du Service
+            auxquels l&rsquo;accès ne vous a pas été accordé;
+          </li>
+          <li>
+            contourner, désactiver ou entraver une fonction de sécurité, d&rsquo;authentification, de
+            contrôle d&rsquo;accès ou de limitation d&rsquo;utilisation du Service;
+          </li>
+          <li>
+            utiliser un moyen automatisé pour accéder au Service, en extraire des données ou créer des
+            comptes;
+          </li>
+          <li>
+            soumettre un contenu illégal, diffamatoire, harcelant, haineux, obscène ou qui porte
+            atteinte aux droits d&rsquo;une personne;
+          </li>
+          <li>imposer une charge déraisonnable ou disproportionnée à l&rsquo;infrastructure du Service; ou</li>
+          <li>utiliser le Service à des fins commerciales sans notre consentement écrit préalable.</li>
+        </List>
+        <Clause n="7.2">
+          Les renseignements relatifs à l&rsquo;horaire de cours d&rsquo;une autre personne vous sont
+          communiqués dans le seul but de vous coordonner avec cette personne. Leur communication
+          ultérieure constitue une violation des présentes Conditions et peut également engager votre
+          responsabilité en droit.
+        </Clause>
+      </Section>
+
+      <Section title="8. L'Outil d'extraction n'a pas valeur officielle">
+        <Clause n="8.1">
+          L&rsquo;Outil d&rsquo;extraction fonctionne par reconnaissance optique de caractères et au
+          moyen d&rsquo;un modèle de langage automatisé. Ces procédés sont intrinsèquement imparfaits :
+          les heures peuvent être transcrites incorrectement, des cours peuvent être omis, et les
+          noms, codes et locaux peuvent être mal interprétés.
+        </Clause>
+        <Clause n="8.2">
+          Le résultat produit par l&rsquo;Outil d&rsquo;extraction vous est présenté à titre de
+          proposition, aux fins de votre révision et de votre correction. Vous êtes seul responsable
+          de le vérifier par rapport à l&rsquo;horaire officiel délivré par votre établissement
+          d&rsquo;enseignement avant de vous y fier.
+        </Clause>
+        <Clause n="8.3">
+          <strong>
+            Le Service constitue un outil pratique et non un système de référence officiel. Il ne
+            doit pas être le seul fondement sur lequel vous vous appuyez pour déterminer la tenue
+            d&rsquo;un cours, d&rsquo;un examen ou de toute autre obligation.
+          </strong>{' '}
+          Sous réserve de la clause 13.4, nous déclinons toute responsabilité pour un cours, un
+          examen, une échéance ou une autre obligation manqués en raison d&rsquo;une confiance
+          accordée au Service.
+        </Clause>
+      </Section>
+
+      <Section title="9. Disponibilité et modification du Service">
+        <Clause n="9.1">
+          Le Service est fourni « selon sa disponibilité ». Nous ne garantissons pas qu&rsquo;il sera
+          accessible sans interruption ni exempt d&rsquo;erreurs.
+        </Clause>
+        <Clause n="9.2">
+          Nous pouvons en tout temps modifier, suspendre ou mettre fin au Service ou à l&rsquo;une de
+          ses fonctionnalités. Lorsqu&rsquo;un tel changement est important et que nous disposons
+          d&rsquo;un moyen de vous joindre, nous nous efforcerons de vous donner un préavis
+          raisonnable.
+        </Clause>
+        <Clause n="9.3">
+          Nous pouvons imposer des limites d&rsquo;utilisation à toute fonctionnalité du Service, y
+          compris des limites quant à la fréquence à laquelle l&rsquo;Outil d&rsquo;extraction peut
+          être sollicité.
+        </Clause>
+      </Section>
+
+      <Section title="10. Frais">
+        <Clause n="10.1">
+          Le Service est présentement offert sans frais. Les fonctionnalités présentement offertes
+          sans frais sont désignées comme telles au moment de leur utilisation.
+        </Clause>
+        <Clause n="10.2">
+          Nous pourrions ultérieurement offrir des fonctionnalités payantes. Aucuns frais ne vous
+          seront imposés sans votre consentement exprès préalable au prix et aux conditions
+          applicables, donné au moment de l&rsquo;achat. Rien dans les présentes Conditions
+          n&rsquo;autorise des frais auxquels vous n&rsquo;avez pas ainsi consenti.
+        </Clause>
+      </Section>
+
+      <Section title="11. Services de tiers">
+        <Clause n="11.1">
+          Le Service dépend de fournisseurs tiers pour l&rsquo;authentification, l&rsquo;hébergement
+          et l&rsquo;extraction de texte. Leurs actes et omissions échappent à notre contrôle.
+        </Clause>
+        <Clause n="11.2">
+          Votre utilisation d&rsquo;un service tiers accessible par l&rsquo;entremise du Service est
+          régie par les conditions et pratiques de confidentialité propres à ce fournisseur, et non
+          par les présentes Conditions.
+        </Clause>
+      </Section>
+
+      <Section title="12. Suspension et résiliation">
+        <Clause n="12.1">
+          Vous pouvez résilier la présente entente en tout temps en supprimant votre compte à même le
+          Service. La suppression est irréversible et s&rsquo;effectue de la manière décrite dans la
+          Politique de confidentialité.
+        </Clause>
+        <Clause n="12.2">
+          Nous pouvons suspendre ou résilier votre accès au Service, avec préavis lorsque cela est
+          possible, si vous avez contrevenu aux présentes Conditions, si la loi l&rsquo;exige, ou si
+          cela est nécessaire pour protéger le Service ou ses utilisateurs d&rsquo;un préjudice
+          important.
+        </Clause>
+        <Clause n="12.3">
+          Les clauses 6.1, 8, 13, 14, 15 et 16 survivent à la résiliation de la présente entente par
+          l&rsquo;une ou l&rsquo;autre des parties.
+        </Clause>
+      </Section>
+
+      <Section title="13. Exclusion de garanties">
+        <Clause n="13.1">
+          Dans toute la mesure permise par la loi applicable, le Service est fourni « tel quel » et «
+          selon sa disponibilité », sans garantie d&rsquo;aucune sorte, expresse, implicite ou légale.
+        </Clause>
+        <Clause n="13.2">
+          Nous ne garantissons pas que le Service répondra à vos besoins, qu&rsquo;il fonctionnera
+          sans interruption ni erreur, ou que toute défectuosité sera corrigée.
+        </Clause>
+        <Clause n="13.3">
+          Nous ne garantissons pas l&rsquo;exactitude, l&rsquo;exhaustivité ou la fiabilité d&rsquo;un
+          résultat produit par l&rsquo;Outil d&rsquo;extraction, ni des renseignements relatifs à
+          l&rsquo;horaire de cours soumis par un autre utilisateur.
+        </Clause>
+        <Clause n="13.4">
+          <strong>
+            Rien dans les présentes Conditions n&rsquo;exclut, ne restreint ni ne modifie une
+            garantie, condition, assurance, un droit ou un recours qui vous est conféré par la loi
+            applicable et qui ne peut légalement être exclu, restreint ou modifié.
+          </strong>{' '}
+          Si vous êtes un consommateur au sens de la Loi sur la protection du consommateur (Québec),
+          la garantie légale prévue par cette loi s&rsquo;applique malgré toute disposition des
+          présentes Conditions, et les clauses 13 et 14 ne s&rsquo;appliquent que dans la mesure
+          permise par cette loi.
+        </Clause>
+      </Section>
+
+      <Section title="14. Limitation de responsabilité">
+        <Clause n="14.1">
+          Sous réserve en tout temps de la clause 13.4, et dans toute la mesure permise par la loi
+          applicable, l&rsquo;Exploitant ne peut être tenu responsable de dommages indirects,
+          accessoires, particuliers, consécutifs, exemplaires ou punitifs, ni d&rsquo;une perte de
+          profits, de revenus, de données, d&rsquo;achalandage ou d&rsquo;occasions d&rsquo;affaires,
+          peu importe la manière dont ils surviennent et que nous ayons ou non été informés de la
+          possibilité d&rsquo;une telle perte.
+        </Clause>
+        <Clause n="14.2">
+          Sous réserve en tout temps de la clause 13.4, la responsabilité totale de l&rsquo;Exploitant
+          découlant des présentes Conditions ou du Service, ou s&rsquo;y rapportant, que ce soit sur
+          le plan contractuel, extracontractuel ou autre, ne peut excéder le plus élevé des montants
+          suivants : le total des sommes que vous nous avez versées au cours des douze mois précédant
+          l&rsquo;événement à l&rsquo;origine de la réclamation, ou cinquante dollars canadiens
+          (50 $ CA).
+        </Clause>
+        <Clause n="14.3">
+          La répartition des risques prévue à la présente clause 14 constitue un élément essentiel du
+          fondement sur lequel le Service est offert sans frais.
+        </Clause>
+      </Section>
+
+      <Section title="15. Indemnisation">
+        <Clause n="15.1">
+          Dans la mesure permise par la loi applicable, vous acceptez d&rsquo;indemniser
+          l&rsquo;Exploitant et de le tenir à couvert de toute réclamation, demande, perte ou dépense,
+          y compris les frais juridiques raisonnables, découlant de votre contravention aux présentes
+          Conditions, de votre Contenu utilisateur, ou de votre atteinte aux droits d&rsquo;un tiers.
+        </Clause>
+        <Clause n="15.2">
+          La présente clause ne s&rsquo;applique pas à une responsabilité découlant de notre propre
+          faute, ni dans la mesure où vous êtes un consommateur et où la loi applicable en matière de
+          protection du consommateur interdit une telle indemnisation.
+        </Clause>
+      </Section>
+
+      <Section title="16. Droit applicable et tribunal compétent">
+        <Clause n="16.1">
+          Les présentes Conditions sont régies et interprétées conformément aux lois de{' '}
+          {JURISDICTION_FR}, sans égard aux principes relatifs aux conflits de lois.
+        </Clause>
+        <Clause n="16.2">
+          Tout différend découlant des présentes Conditions ou s&rsquo;y rapportant sera soumis à la
+          compétence exclusive des tribunaux du district de Montréal, province de Québec.
+        </Clause>
+        <Clause n="16.3">
+          Si vous êtes un consommateur, rien à la clause 16.2 ne vous prive du droit d&rsquo;intenter
+          une procédure devant le tribunal du district de votre propre domicile, ce droit vous étant
+          conféré par la loi applicable en matière de protection du consommateur.
+        </Clause>
+      </Section>
+
+      <Section title="17. Modification des présentes Conditions">
+        <Clause n="17.1">
+          Nous pouvons modifier les présentes Conditions de temps à autre. La date de la plus récente
+          modification figure au haut du présent document.
+        </Clause>
+        <Clause n="17.2">
+          Lorsqu&rsquo;une modification touche de façon importante vos droits ou obligations, nous en
+          donnerons avis à même le Service avant son entrée en vigueur. La poursuite de votre
+          utilisation du Service après cette date constitue une acceptation des Conditions modifiées.
+          Si vous ne les acceptez pas, votre seul recours consiste à cesser d&rsquo;utiliser le
+          Service et à supprimer votre compte.
+        </Clause>
+      </Section>
+
+      <Section title="18. Langue">
+        <Clause n="18.1">
+          Les présentes Conditions sont disponibles en anglais et en français. En cas
+          d&rsquo;incohérence ou de divergence entre les deux versions, la version française prévaut,
+          conformément à la Charte de la langue française.
+        </Clause>
+        <Clause n="18.2">
+          Vous pouvez passer de la version anglaise à la version française des présentes Conditions,
+          et inversement, en tout temps au moyen du sélecteur de langue situé au haut de cette page.
+          Rien dans la présente clause ne porte atteinte à un droit dont vous bénéficiez en vertu de
+          la Charte de la langue française.
+        </Clause>
+      </Section>
+
+      <Section title="19. Dispositions générales">
+        <Clause n="19.1">
+          <strong>Divisibilité.</strong> Si une disposition des présentes Conditions est jugée
+          invalide ou inapplicable, cette disposition sera dissociée et les autres dispositions
+          demeureront pleinement en vigueur.
+        </Clause>
+        <Clause n="19.2">
+          <strong>Absence de renonciation.</strong> Le fait pour nous de ne pas exiger
+          l&rsquo;exécution d&rsquo;une disposition ne constitue pas une renonciation à celle-ci ni à
+          toute autre disposition.
+        </Clause>
+        <Clause n="19.3">
+          <strong>Cession.</strong> Vous ne pouvez céder les présentes Conditions. Nous pouvons les
+          céder dans le cadre d&rsquo;une réorganisation, d&rsquo;une fusion ou d&rsquo;un transfert
+          du Service, à condition que le cessionnaire soit lié par des obligations offrant une
+          protection au moins équivalente à la vôtre.
+        </Clause>
+        <Clause n="19.4">
+          <strong>Entente complète.</strong> Les présentes Conditions, avec la Politique de
+          confidentialité, constituent l&rsquo;entente complète entre vous et l&rsquo;Exploitant à
+          l&rsquo;égard du Service et remplacent toute communication antérieure portant sur son objet.
+        </Clause>
+      </Section>
+
+      <Section title="20. Coordonnées">
+        <P>
+          Tout avis ou toute demande de renseignements relatif aux présentes Conditions doit être
+          adressé à {OPERATOR_NAME}, à {CONTACT_EMAIL}.
+        </P>
+      </Section>
+    </>
+  );
+}
+
+export default function TermsPage() {
+  return (
+    <LegalLayout titleEn="Terms of Service" titleFr="Conditions d'utilisation">
+      {(lang) => (lang === 'fr' ? <TermsFr /> : <TermsEn />)}
     </LegalLayout>
   );
 }

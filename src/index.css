@@ -186,6 +186,52 @@
 }
 
 /**
+ * The shiny-gold username (src/features/friends/ProfileCard.tsx), awarded for
+ * purchasing a cosmetic. A gradient sweeping across the text via
+ * `background-clip: text`, the same travelling-gradient trick as the banner
+ * strip above — same 200%-size/200%-travel ratio too, which is what makes the
+ * wrap seamless (see card-strip-drift's comment: it only tiles cleanly when
+ * the position sweep covers exactly one background-size width, and the first
+ * and last gradient stops match). `color: transparent` plus the `-webkit-*`
+ * pair is what actually clips the gradient to the glyphs in Safari/iOS, which
+ * this app's install base skews heavily toward.
+ */
+.shiny-username {
+  /* The hold position always shows exactly the 0%-50% slice (see the
+     keyframes below), so that slice is a real brown-to-gold gradient rather
+     than one flat colour — the username still reads as gradient text at rest,
+     not solid. It stops at gold, short of the bright cream peak, which lives
+     entirely past 50% — that is what stops the tail of the username sitting
+     on the bright peak while at rest; the peak only exists somewhere the hold
+     position never looks, and only shows up while the sweep is moving. */
+  background-image: linear-gradient(100deg, #92400e 0%, #fbbf24 50%, #fbbf24 62%, #fffbeb 75%, #fbbf24 88%, #92400e 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: shiny-username-shine 3s linear infinite;
+}
+
+/* Quick pass, then a hold: the sweep itself covers the full 0%-200% travel by
+   the ~2s mark (66.6667% of the 3s cycle) and sits still for the remainder, so the gap
+   between sweeps stays the same 3s cadence while the sweep itself is snappier
+   than a sweep stretched across the whole cycle. The hold sits at 200% rather
+   than back at 0%, so nothing jumps when the next cycle's 0% picks up exactly
+   where this one's hold left off. */
+@keyframes shiny-username-shine {
+  0% {
+    background-position: 0% 50%;
+  }
+  66.6667% {
+    background-position: 200% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+/**
  * Reduced motion stops the cosmetics dead rather than slowing them down.
  * Unlike the intro's progress bar these convey nothing — they are decoration a
  * student chose — so no information is lost by freezing them, and a friends
@@ -199,7 +245,8 @@
  */
 @media (prefers-reduced-motion: reduce) {
   .card-strip,
-  .effect-mark {
+  .effect-mark,
+  .shiny-username {
     animation: none !important;
   }
   .effect-mark-rain,
@@ -209,5 +256,12 @@
   .effect-mark-sparkle {
     transform: scale(1) rotate(45deg);
     opacity: 1;
+  }
+  /* Same 0% position the sweep holds at — the resting brown-to-gold slice,
+     short of the bright peak — not the 50% mark, which would freeze on the
+     peak itself. The shine carries no information, same reasoning as the
+     banner strip; it just should not be a stuck-on highlight either. */
+  .shiny-username {
+    background-position: 0% 50%;
   }
 }

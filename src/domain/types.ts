@@ -48,4 +48,10 @@ export interface Profile {
   banner: string | null;
   /** Effect id from `domain/effects`, or null for no effect band. */
   effect: string | null;
+  /**
+   * Looped shiny-gold username animation, awarded for purchasing a cosmetic.
+   * Not client-settable — see migration 0011 — so unlike cosmetic/banner/
+   * effect there is no matching "null means default" picker state here.
+   */
+  shinyUsername: boolean;
 }

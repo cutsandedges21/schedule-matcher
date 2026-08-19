@@ -43,7 +43,9 @@ export default function ProfileCard({ profile, nameHref, action }: Props) {
 
   const names = (
     <>
-      <p className="font-semibold">@{profile.username}</p>
+      <p className={`font-semibold ${profile.shinyUsername ? 'shiny-username' : ''}`}>
+        @{profile.username}
+      </p>
       {profile.displayName && (
         // The muted slate is dropped on a themed card rather than kept: it
         // clears AA on white by a hair and fails it on every tint we ship.

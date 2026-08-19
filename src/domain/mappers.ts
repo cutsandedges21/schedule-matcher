@@ -25,6 +25,7 @@ export interface ProfileRow {
   cosmetic: string | null;
   banner: string | null;
   effect: string | null;
+  shiny_username: boolean;
 }
 
 /**
@@ -37,7 +38,7 @@ export interface ProfileRow {
  * the same fact stated twice, and they have to change together.
  */
 export const PROFILE_COLUMNS =
-  'id, username, display_name, avatar_url, invite_code, school, cosmetic, banner, effect';
+  'id, username, display_name, avatar_url, invite_code, school, cosmetic, banner, effect, shiny_username';
 
 export function rowToMeeting(row: ClassRow): ClassMeeting {
   return {
@@ -65,5 +66,6 @@ export function rowToProfile(row: ProfileRow): Profile {
     cosmetic: row.cosmetic,
     banner: row.banner,
     effect: row.effect,
+    shinyUsername: row.shiny_username,
   };
 }

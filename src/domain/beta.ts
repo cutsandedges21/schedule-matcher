@@ -20,8 +20,7 @@
  */
 const BETA_EMAILS: readonly string[] = [
   'andreas.retsinas70@gmail.com',
-  'cutsandedges21@gmail.com',
-  'rachel.retsinas@gmail.com',
+  'schedulematcher.info@gmail.com',
   'sportsdude3133@gmail.com',
 ];
 

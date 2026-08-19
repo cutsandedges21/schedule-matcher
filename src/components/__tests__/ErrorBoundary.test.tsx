@@ -3,6 +3,9 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, cleanup } from '@testing-library/react';
 import ErrorBoundary from '../ErrorBoundary';
+import { reportClientError } from '@/lib/errorLog';
+
+vi.mock('@/lib/errorLog', () => ({ reportClientError: vi.fn() }));
 
 /** Throws during render, the only place a class error boundary can catch. */
 function Bomb(): never {
@@ -50,6 +53,23 @@ describe('ErrorBoundary', () => {
     expect(screen.getByRole('button', { name: 'Reload' })).toBeDefined();
     const home = screen.getByRole('link', { name: 'Go home' });
     expect(home.getAttribute('href')).toBe('/');
+
+    spy.mockRestore();
+  });
+
+  it('reports the crash to errorLog with source "render"', () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.mocked(reportClientError).mockClear();
+
+    render(
+      <ErrorBoundary>
+        <Bomb />
+      </ErrorBoundary>
+    );
+
+    expect(reportClientError).toHaveBeenCalledWith(
+      expect.objectContaining({ message: 'boom', source: 'render' })
+    );
 
     spy.mockRestore();
   });

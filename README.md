@@ -341,9 +341,14 @@ Nothing in the app performs an entitlement check.
 
 ## Onboarding intro
 
-After the install step comes a three-beat sequence — text plus image, each
+After the install step comes a four-beat sequence — text plus image, each
 fading in, holding, and fading out — that plays itself and then moves on to the
 username step (`src/features/auth/AboutIntro.tsx`).
+
+It opens on a real group chat (`public/about/real-proof.jpg`): somebody asking
+when everyone is free, answered with "if only there was a way to check free
+time through our schedule". That beat is the reason the app exists, and it is
+the one claim no student needs persuading of.
 
 **There are no controls.** No next, no back, no skip, and tapping does
 nothing; a hairline progress bar at the top is the only affordance. That is
@@ -351,7 +356,14 @@ deliberate, and it is why `slideshow.test.ts` asserts that `advance()` always
 terminates and that the whole sequence stays under 12 seconds — with no escape
 hatch, a beat that never ends is a student stuck on the first screen of the
 app. Pace lives in `BEAT_TIMING` in `src/domain/slideshow.ts` (currently
-8.85s end to end).
+**11.8s end to end, against a 12s ceiling**). A fifth beat does not fit without
+shortening `hold`, and that ceiling is a hard requirement rather than a
+preference — there is no skip button behind it.
+
+Each beat declares its own `width` and `height`. The illustrations are 4:3 and
+the opening screenshot is portrait, and a browser derives `aspect-ratio` from
+those attributes when CSS sets only a width — so a single hard-coded pair
+would squash the photo into landscape.
 
 It runs once per account by construction: onboarding only mounts when the
 signed-in user has no `profiles` row, and finishing it creates one. No flag,

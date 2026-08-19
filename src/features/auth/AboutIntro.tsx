@@ -78,7 +78,16 @@ export default function AboutIntro({ onDone }: { onDone: () => void }) {
           } as CSSProperties
         }
       >
-        <img src={beat.image} alt={beat.alt} width={320} height={240} className="w-full max-w-xs" />
+        <img
+          src={beat.image}
+          alt={beat.alt}
+          width={beat.width}
+          height={beat.height}
+          // max-h-[52vh] is what keeps a portrait beat from pushing its own
+          // caption off the bottom of a short phone; the landscape beats never
+          // reach it. object-contain so the crop is never silently changed.
+          className="w-full max-w-xs max-h-[52vh] rounded-xl object-contain"
+        />
         <p className="max-w-xs text-center text-2xl font-bold leading-snug">{beat.text}</p>
       </div>
     </main>

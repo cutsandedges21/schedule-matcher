@@ -7,6 +7,10 @@ import { configError } from './lib/supabase';
 // so onboarding can offer a real install button. Must run at startup — the
 // event fires long before the onboarding screen mounts.
 import './lib/installPrompt';
+// Side effect only: registers window 'error' and 'unhandledrejection'
+// listeners. Must run before React mounts, so a crash during the very first
+// render is still caught.
+import './lib/errorLog';
 import './index.css';
 
 /**

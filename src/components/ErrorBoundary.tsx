@@ -2,6 +2,7 @@
 import { Component, type ReactNode } from 'react';
 import ErrorPage from './ErrorPage';
 import { buttonClassName } from './Button';
+import { reportClientError } from '@/lib/errorLog';
 
 interface Props {
   children: ReactNode;
@@ -29,6 +30,11 @@ export default class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: unknown) {
     console.error('Uncaught render error:', error);
+    reportClientError({
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      source: 'render',
+    });
   }
 
   render() {

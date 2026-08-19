@@ -11,15 +11,19 @@ import {
 } from '../slideshow';
 
 describe('ABOUT_BEATS', () => {
-  it('is the three beats the design calls for', () => {
-    expect(ABOUT_BEATS).toHaveLength(3);
+  it('is the four beats the design calls for', () => {
+    expect(ABOUT_BEATS).toHaveLength(4);
   });
 
   it('gives every beat text, an image and alt text', () => {
     for (const beat of ABOUT_BEATS) {
       expect(beat.text.trim().length).toBeGreaterThan(0);
       expect(beat.alt.trim().length).toBeGreaterThan(0);
-      expect(beat.image).toMatch(/^\/about\/.+\.svg$/);
+      expect(beat.image).toMatch(/^\/about\/.+\.(svg|jpg|png)$/);
+      // Declared so the browser reserves the right box and does not derive a
+      // wrong aspect ratio for the portrait beat.
+      expect(beat.width).toBeGreaterThan(0);
+      expect(beat.height).toBeGreaterThan(0);
     }
   });
 });

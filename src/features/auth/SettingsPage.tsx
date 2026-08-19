@@ -3,7 +3,6 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { DEFAULT_SCHOOL_ID } from '@/domain/schools';
-import { canPickCosmetics } from '@/domain/beta';
 import { useAuth } from './AuthProvider';
 import { deleteAccount } from './deleteAccount';
 import SchoolSelect from './SchoolSelect';
@@ -25,7 +24,7 @@ function NavRow({ to, label }: { to: string; label: string }) {
 }
 
 export default function SettingsPage() {
-  const { session, profile, patchProfile, signOut } = useAuth();
+  const { profile, patchProfile, signOut } = useAuth();
   const [confirming, setConfirming] = useState(false);
   const [typed, setTyped] = useState('');
   const [deleting, setDeleting] = useState(false);
@@ -35,8 +34,6 @@ export default function SettingsPage() {
   const username = profile?.username ?? '';
   const canDelete = typed.trim().toLowerCase() === username && !deleting;
   const selectedSchoolId = profile?.school ?? DEFAULT_SCHOOL_ID;
-  // Private beta. Hides the link only — see the warning in domain/beta.ts.
-  const showCosmetics = canPickCosmetics(session?.user.email);
 
   /**
    * Optimistic: patch the cached profile first so the accent flips under the
@@ -99,16 +96,14 @@ export default function SettingsPage() {
         {schoolError && <p className="mt-2 text-sm text-rose-600">{schoolError}</p>}
       </section>
 
-      {showCosmetics && (
-        <section>
-          <h2 className="text-sm font-semibold text-slate-500">Appearance</h2>
-          <ul className="mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white">
-            <li>
-              <NavRow to="/settings/customization" label="Customization" />
-            </li>
-          </ul>
-        </section>
-      )}
+      <section>
+        <h2 className="text-sm font-semibold text-slate-500">Appearance</h2>
+        <ul className="mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+          <li>
+            <NavRow to="/settings/customization" label="Customization" />
+          </li>
+        </ul>
+      </section>
 
       <section>
         <h2 className="text-sm font-semibold text-slate-500">Legal</h2>

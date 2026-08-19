@@ -1,6 +1,5 @@
 // src/features/auth/CustomizationPage.tsx
 import { useState } from 'react';
-import { Navigate } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { cosmeticForHue } from '@/domain/cosmetics';
 import { bannerForHue, bannerGradient } from '@/domain/banners';
@@ -16,6 +15,7 @@ import { canPickCosmetics } from '@/domain/beta';
 import CardEffect from '@/features/friends/CardEffect';
 import ProfileCard from '@/features/friends/ProfileCard';
 import BackButton from '@/components/BackButton';
+import EmptyState from '@/components/EmptyState';
 import SwatchPicker, { type SwatchOption } from './SwatchPicker';
 import { useAuth } from './AuthProvider';
 
@@ -26,10 +26,22 @@ export default function CustomizationPage() {
   const { session, profile, patchProfile } = useAuth();
   const [errors, setErrors] = useState<Record<string, string | null>>({});
 
-  // Private beta. The Settings link is hidden for everyone else, but the route
-  // is guessable, so it is checked here too. Both are UI gates and neither is
-  // enforcement — profiles_update still permits the write. See domain/beta.ts.
-  if (!canPickCosmetics(session?.user.email)) return <Navigate to="/settings" replace />;
+  // Private beta. The nav row on Settings is visible to everyone now, so
+  // anyone can land here — testers get the real picker below, everyone else
+  // gets a "coming soon" placeholder instead of a silent bounce back to
+  // Settings. This is still only a UI gate, not enforcement — profiles_update
+  // still permits the write. See domain/beta.ts.
+  if (!canPickCosmetics(session?.user.email)) {
+    return (
+      <main className="flex flex-col gap-6 p-4 pb-6">
+        <BackButton to="/settings" />
+        <EmptyState
+          title="Coming soon"
+          body="Card colours, banners and effects for your friend card aren't open to everyone yet. Check back soon."
+        />
+      </main>
+    );
+  }
 
   /**
    * Optimistic: patch the cached profile first so the swatch rings under the

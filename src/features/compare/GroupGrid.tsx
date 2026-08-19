@@ -24,6 +24,25 @@ interface Selection {
   meeting: ClassMeeting;
 }
 
+/**
+ * Splits lane indices into runs of adjacent lanes: [0,1,3] -> [[0,1],[3,3]].
+ *
+ * This is what lets a shared class span its members' lanes at any group size
+ * without lying. Three of five people sharing a class is common, and if those
+ * three sit in lanes 0, 1 and 3 then one wide block from 0 to 3 would paint
+ * over lane 2 — announcing that a fourth person is in a class they are not in.
+ * Two blocks say the same true thing and cover nobody else.
+ */
+function contiguousRuns(indices: number[]): Array<[number, number]> {
+  const runs: Array<[number, number]> = [];
+  for (const index of [...indices].sort((a, b) => a - b)) {
+    const last = runs[runs.length - 1];
+    if (last && index === last[1] + 1) last[1] = index;
+    else runs.push([index, index]);
+  }
+  return runs;
+}
+
 export default function GroupGrid({
   people, classesByPerson, shared, days, freeByDay, selectedDay, onSelectDay,
 }: Props) {
@@ -41,18 +60,6 @@ export default function GroupGrid({
 
   const laneWidth = 100 / people.length;
 
-  // Which individual meeting rows are part of a shared class *on this day*.
-  // Keying on meeting id + day rather than name keeps a Monday-only overlap
-  // from marking the same course's Thursday block as shared too.
-  const sharedMeetingIds = useMemo(() => {
-    const ids = new Set<string>();
-    for (const entry of shared) {
-      if (entry.day !== selectedDay) continue;
-      for (const id of entry.meetingIds) ids.add(id);
-    }
-    return ids;
-  }, [shared, selectedDay]);
-
   const sharersOf = (meetingId: string): string[] => {
     const entry = shared.find((s) => s.day === selectedDay && s.meetingIds.includes(meetingId));
     return entry ? entry.memberIds : [];
@@ -64,20 +71,25 @@ export default function GroupGrid({
   const dense = people.length >= 4;
 
   /**
-   * Classes *everyone* has, drawn once across the whole width instead of as one
-   * block per lane — the treatment the 1:1 view uses.
+   * Every shared class on this day, drawn once as a span across its members'
+   * lanes rather than as a separate block in each — the treatment the 1:1 view
+   * gives shared classes, generalised to any group size.
    *
-   * Only when every member shares it. A class shared by two of four people
-   * cannot span the full width without painting over the lanes of the two who
-   * are not in it, and if those two members are not adjacent it cannot span
-   * them contiguously either. Those stay per-lane, where the ring already marks
-   * them and the detail panel names who is in them.
+   * A class everyone has spans the full width. A class some of them have spans
+   * just their lanes, split into contiguous runs so nobody outside it is
+   * covered.
    */
-  const everyoneShared = useMemo(
-    () =>
-      shared.filter((s) => s.day === selectedDay && s.memberIds.length === people.length),
-    [shared, selectedDay, people.length]
-  );
+  const daySpans = useMemo(() => {
+    const laneOf = new Map(people.map((p, index) => [p.id, index]));
+    return shared
+      .filter((s) => s.day === selectedDay)
+      .map((entry) => ({
+        entry,
+        runs: contiguousRuns(
+          entry.memberIds.map((id) => laneOf.get(id)).filter((i): i is number => i !== undefined)
+        ),
+      }));
+  }, [shared, selectedDay, people]);
 
   const meetingsById = useMemo(() => {
     const map = new Map<string, ClassMeeting>();
@@ -89,16 +101,17 @@ export default function GroupGrid({
 
   // Their per-lane copies are suppressed so the full-width block is not drawn
   // on top of them.
-  const fullWidthMeetingIds = useMemo(
-    () => new Set(everyoneShared.flatMap((s) => s.meetingIds)),
-    [everyoneShared]
+  const spannedMeetingIds = useMemo(
+    () => new Set(daySpans.flatMap(({ entry }) => entry.meetingIds)),
+    [daySpans]
   );
 
   function renderBlock(block: PositionedBlock, person: GroupPerson, laneIndex: number) {
     const styles = CLASS_COLORS[block.meeting.color] ?? CLASS_COLORS.indigo;
     const widthPct = laneWidth / block.laneCount;
     const leftPct = laneIndex * laneWidth + block.lane * widthPct;
-    const isShared = sharedMeetingIds.has(block.meeting.id);
+    // Never a shared class: those are drawn as spans below and removed from
+    // this list, so anything reaching here belongs to one person only.
     const isSelected = selection?.meeting.id === block.meeting.id;
 
     return (
@@ -106,10 +119,10 @@ export default function GroupGrid({
         key={`${person.id}-${block.meeting.id}`}
         type="button"
         onClick={() => setSelection(isSelected ? null : { personId: person.id, meeting: block.meeting })}
-        aria-label={`${person.label}: ${block.meeting.name}, ${formatMinutes(block.meeting.startMinute)} to ${formatMinutes(block.meeting.endMinute)}${isShared ? ', shared' : ''}`}
+        aria-label={`${person.label}: ${block.meeting.name}, ${formatMinutes(block.meeting.startMinute)} to ${formatMinutes(block.meeting.endMinute)}`}
         className={`absolute overflow-hidden rounded-md border px-1 py-0.5 text-left ${styles.block} ${styles.text} ${
-          isShared ? 'ring-2 ring-inset ring-slate-900/40' : ''
-        } ${isSelected ? 'ring-2 ring-inset ring-slate-900' : ''}`}
+          isSelected ? 'ring-2 ring-inset ring-slate-900' : ''
+        }`}
         style={{
           top: `${block.topPct}%`,
           height: `${block.heightPct}%`,
@@ -181,28 +194,29 @@ export default function GroupGrid({
           <div className="absolute inset-0">
             {people.map((person, laneIndex) =>
               computeLayout(
-                (classesByPerson[person.id] ?? []).filter((c) => !fullWidthMeetingIds.has(c.id)),
+                (classesByPerson[person.id] ?? []).filter((c) => !spannedMeetingIds.has(c.id)),
                 [selectedDay],
                 axis
               ).map((block) => renderBlock(block, person, laneIndex))
             )}
 
-            {everyoneShared.map((entry) => {
+            {daySpans.flatMap(({ entry, runs }) => {
               const anchor = meetingsById.get(entry.meetingIds[0]);
-              if (!anchor) return null;
+              if (!anchor) return [];
               const styles = CLASS_COLORS[anchor.color] ?? CLASS_COLORS.indigo;
               const isSelected = selection?.meeting.id === anchor.id;
+              const everyone = entry.memberIds.length === people.length;
 
-              return (
+              return runs.map(([from, to]) => (
                 <button
-                  key={`shared-${entry.name}-${entry.classStartMinute}`}
+                  key={`shared-${entry.name}-${entry.classStartMinute}-${from}`}
                   type="button"
                   onClick={() =>
-                    setSelection(isSelected ? null : { personId: people[0].id, meeting: anchor })
+                    setSelection(isSelected ? null : { personId: entry.memberIds[0], meeting: anchor })
                   }
-                  aria-label={`${entry.name}, shared by everyone, ${formatMinutes(entry.classStartMinute)} to ${formatMinutes(entry.classEndMinute)}`}
-                  className={`absolute inset-x-0 overflow-hidden rounded-md border px-1 py-0.5 text-left ring-2 ring-inset ring-slate-900/40 ${styles.block} ${styles.text} ${
-                    isSelected ? 'ring-slate-900' : ''
+                  aria-label={`${entry.name}, shared, ${formatMinutes(entry.classStartMinute)} to ${formatMinutes(entry.classEndMinute)}`}
+                  className={`absolute overflow-hidden rounded-md border px-1 py-0.5 text-left ring-2 ring-inset ${styles.block} ${styles.text} ${
+                    isSelected ? 'ring-slate-900' : 'ring-slate-900/40'
                   }`}
                   style={{
                     // classStartMinute, not startMinute — the latter is the
@@ -210,12 +224,15 @@ export default function GroupGrid({
                     // class whenever somebody's copy was read wrong.
                     top: `${((entry.classStartMinute - axis.startMinute) / span) * 100}%`,
                     height: `${((entry.classEndMinute - entry.classStartMinute) / span) * 100}%`,
+                    left: `${from * laneWidth}%`,
+                    width: `${(to - from + 1) * laneWidth}%`,
                   }}
                 >
                   <span
                     className={`block truncate font-semibold leading-tight ${dense ? 'text-[9px]' : 'text-[11px]'}`}
                   >
-                    {entry.name} · shared
+                    {entry.name}
+                    {everyone ? ' · shared' : ''}
                   </span>
                   {!dense && (
                     <span className="block truncate text-[10px] opacity-80">
@@ -223,7 +240,7 @@ export default function GroupGrid({
                     </span>
                   )}
                 </button>
-              );
+              ));
             })}
           </div>
         </div>

@@ -19,10 +19,10 @@ Apply the migrations in `supabase/migrations/` in numeric order — either via
 ```bash
 export SUPABASE_ACCESS_TOKEN=sbp_...          # account/tokens in the dashboard
 
-# Vision keys. GEMINI_API_KEYS is a comma-separated pool: the Edge Function
-# tries each in turn and advances only on a 429, so one key hitting its
-# free-tier daily cap at term start does not take extraction down.
-npx supabase secrets set --project-ref <ref> GEMINI_API_KEYS=key1,key2,key3
+# Vision keys. A comma-separated pool, tried in turn, advancing only on a 429.
+# One key per Google Cloud PROJECT — see "Gemini keys" below. Several keys from
+# the same project share one quota and buy you nothing.
+npx supabase secrets set --project-ref <ref> GEMINI_API_KEYS=projA,projB,projC,projD
 npx supabase functions deploy extract-schedule --project-ref <ref>
 
 # Account deletion, route 2 of 2 (optional if migration 0005 is applied —
@@ -36,6 +36,41 @@ node scripts/run-sql.mjs <ref> supabase/tests/rls_check.sql
 
 `scripts/run-sql.mjs` goes through the Management API, so it needs only the
 access token — no database password and no local `psql`.
+
+### Gemini keys
+
+`GEMINI_API_KEYS` is a comma-separated pool. `extractScheduleWithKeys` in
+`supabase/functions/extract-schedule/gemini.ts` tries each key in turn and
+advances **only** on a 429 — any other error throws immediately. So key 1
+serves every request until it hits a cap, and the rest are pure standby.
+
+**One key per Google Cloud project.** Free-tier limits are enforced per
+*project*, not per key: every key minted inside one project draws on the same
+RPM/RPD bucket. Three keys from one project are not three buckets. When key 1
+is capped, keys 2 and 3 are already capped, the loop burns through all of them
+in milliseconds and throws `PROVIDER_RATE_LIMITED` anyway. That was the
+original configuration here and it provided no redundancy whatsoever — the
+fallback chain was decorative. Extra keys inside a project are wasted slots.
+
+**Validate every key individually before a term starts.** The chain only ever
+reaches keys 2+ during a 429, which is precisely the moment you cannot afford
+to find a dead one:
+
+```bash
+curl -s -o /dev/null -w "%{http_code}\n" \
+  -H "x-goog-api-key: <key>" \
+  https://generativelanguage.googleapis.com/v1beta/models
+```
+
+`200` is good; `400` or `403` means that key is dead and the app has no way to
+tell you. Drop the `-o /dev/null` and the same endpoint returns the model list
+— worth diffing against `MODELS` in `gemini.ts`, since a key whose project
+cannot see `gemini-3-flash-preview` is a standby that will not behave like the
+primary.
+
+Check the secret string itself too: N keys means N−1 commas and no spaces. A
+missing comma fuses two keys into one invalid string, and because key 1 does
+all the work, a fused key 1 takes extraction down for everybody at once.
 
 ### Google auth
 

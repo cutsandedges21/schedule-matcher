@@ -45,6 +45,22 @@ export function P({ children }: { children: ReactNode }) {
   return <p className="text-sm leading-relaxed text-slate-700">{children}</p>;
 }
 
+/**
+ * A numbered clause with a hanging indent, so the number sits in its own
+ * column and wrapped lines align under the text rather than under the number.
+ * Numbering is written out by hand rather than generated: these are cited in
+ * correspondence ("clause 9.2"), so a number must never move because a
+ * paragraph was inserted above it.
+ */
+export function Clause({ n, children }: { n: string; children: ReactNode }) {
+  return (
+    <p className="grid grid-cols-[2.5rem_1fr] text-sm leading-relaxed text-slate-700">
+      <span className="font-semibold tabular-nums text-slate-500">{n}</span>
+      <span>{children}</span>
+    </p>
+  );
+}
+
 export function List({ children }: { children: ReactNode }) {
   return (
     <ul className="flex list-disc flex-col gap-1.5 pl-5 text-sm leading-relaxed text-slate-700">
@@ -68,7 +84,7 @@ export default function LegalLayout({ title, children }: Props) {
   return (
     <main className="mx-auto flex min-h-dvh max-w-2xl flex-col gap-6 p-6 pb-24">
       <header className="flex flex-col gap-1">
-        <Link to="/settings" className="text-sm font-medium text-slate-500 underline underline-offset-4">
+        <Link to="/settings" className="text-sm font-medium text-slate-500">
           ← Back
         </Link>
         <h1 className="mt-2 text-2xl font-bold">{title}</h1>

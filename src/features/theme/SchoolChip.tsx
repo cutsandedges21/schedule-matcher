@@ -18,7 +18,12 @@ export default function SchoolChip({ school }: { school: string | null }) {
 
   return (
     <span
-      className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold"
+      // `self-start` matters: the chip's parent on a profile card is a flex
+      // column, and a flex child stretches to the full width of the column by
+      // default. Without it the "pill" is a full-width bar reaching the far
+      // edge of the card. `inline-flex` alone does not save it — an inline-flex
+      // element used as a flex item is still stretched by align-items.
+      className="inline-flex self-start items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold"
       style={{ backgroundColor: found.accentSoft, color: found.accentStrong }}
     >
       <span

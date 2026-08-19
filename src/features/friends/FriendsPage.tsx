@@ -50,8 +50,22 @@ export default function FriendsPage() {
 
   const inviteUrl = `${window.location.origin}/invite/${profile?.inviteCode}`;
 
-  async function copyInvite() {
+  async function shareInvite() {
     setCopyFailed(false);
+    const text = 'Add me on Schedule Matcher so we can compare schedules and find time to hang out.';
+
+    // The native share sheet is the better invite path on a phone — texting
+    // or AirDropping the link beats copying it and switching apps to paste
+    // it. Falls back to the clipboard on desktop and browsers without support.
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: 'Schedule Matcher', text, url: inviteUrl });
+      } catch {
+        // The student closed the share sheet — not a failure.
+      }
+      return;
+    }
+
     try {
       await copyToClipboard(inviteUrl);
       setCopied(true);
@@ -68,14 +82,21 @@ export default function FriendsPage() {
       </header>
 
       <section className="px-4">
-        <Button variant="secondary" onClick={() => void copyInvite()} className="w-full">
-          {copied ? 'Link copied' : 'Copy my invite link'}
-        </Button>
-        {copyFailed && (
-          <p className="mt-2 text-sm text-rose-600">
-            Could not copy automatically. Your link: <span className="break-all font-medium">{inviteUrl}</span>
+        <h2 className="text-sm font-semibold text-slate-500">Invite a friend</h2>
+        <div className="mt-2 rounded-2xl border border-slate-200 bg-white p-4">
+          <p className="text-sm text-slate-600">
+            Send your link to a friend — once they add you back, you can compare schedules.
           </p>
-        )}
+          <Button variant="secondary" onClick={() => void shareInvite()} className="mt-3 w-full">
+            {copied ? 'Link copied' : 'Share invite link'}
+          </Button>
+          {copyFailed && (
+            <p className="mt-2 text-sm text-rose-600">
+              Could not share automatically. Your link:{' '}
+              <span className="break-all font-medium">{inviteUrl}</span>
+            </p>
+          )}
+        </div>
       </section>
 
       {error && <p className="px-4 text-sm text-rose-600">{error}</p>}

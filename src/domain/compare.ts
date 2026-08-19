@@ -117,9 +117,28 @@ export interface GroupMember {
 export interface GroupSharedClass {
   name: string;
   day: number;
-  /** The window every listed member is actually in the room together. */
+  /**
+   * The window every listed member is actually in the room together — the
+   * intersection of their copies, not the class's time.
+   *
+   * These two are only equal when every member's stored copy agrees to the
+   * minute, which is not guaranteed: each schedule is extracted from that
+   * student's own screenshot, and `isSameClass` matches on overlap precisely
+   * because two extractions of one course often disagree slightly. **Never
+   * display these as the time a class starts** — a 14:00 class that one member
+   * stored as 14:30 would be reported to everybody as a 14:30 class. Use
+   * `classStartMinute` for that.
+   */
   startMinute: number;
   endMinute: number;
+  /**
+   * The class's own time, taken from the cluster's anchor. Members are scanned
+   * in the order given and the caller passes the viewer first, so this is the
+   * viewer's own copy whenever they are in the cluster — which is the same
+   * value the 1:1 compare view shows, so the two screens agree.
+   */
+  classStartMinute: number;
+  classEndMinute: number;
   /** Ids of the members who share it, in the order they were passed in. */
   memberIds: string[];
   /** The individual meeting rows behind it, so a grid can mark exactly those blocks. */
@@ -199,6 +218,8 @@ export function findGroupSharedClasses(members: GroupMember[]): GroupSharedClass
         day,
         startMinute: start,
         endMinute: end,
+        classStartMinute: anchor.meeting.startMinute,
+        classEndMinute: anchor.meeting.endMinute,
         memberIds: cluster
           .slice()
           .sort((a, b) => a.memberIndex - b.memberIndex)

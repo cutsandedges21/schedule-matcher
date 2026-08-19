@@ -8,7 +8,7 @@ import { useGroupSchedules } from './useGroupSchedules';
 import { computeGroupFree, findGroupSharedClasses, type GroupMember } from '@/domain/compare';
 import { MAX_GROUP_FRIENDS, WEEKDAYS } from '@/domain/constants';
 import { todayWeekday } from '@/features/schedule/ScheduleGrid';
-import Button, { buttonClassName } from '@/components/Button';
+import { buttonClassName } from '@/components/Button';
 import Spinner from '@/components/Spinner';
 import EmptyState from '@/components/EmptyState';
 import BackButton from '@/components/BackButton';
@@ -35,7 +35,6 @@ export default function GroupComparePage() {
   const { session } = useAuth();
   const { friends, loading: friendsLoading, error: friendsError } = useFriends(session?.user.id);
   const [params, setParams] = useSearchParams();
-  const [pickerOpen, setPickerOpen] = useState(false);
   const [selectedDay, setSelectedDay] = useState(todayWeekday);
 
   const requested = useMemo(() => {
@@ -129,9 +128,6 @@ export default function GroupComparePage() {
       : [...selectedUsernames, username].slice(0, MAX_GROUP_FRIENDS);
 
     setParams(next.length > 0 ? { with: next.join(',') } : {}, { replace: false });
-    // Picking your first friend must not slam the picker shut on you — you are
-    // usually about to pick a second. It closes on "Done", not on selection.
-    setPickerOpen(true);
   }
 
   if (friendsLoading) return <Spinner label="Loading friends" />;
@@ -150,33 +146,22 @@ export default function GroupComparePage() {
     );
   }
 
-  const showPicker = pickerOpen || selectedFriends.length === 0;
-
   return (
     <main className="flex flex-col gap-4 pb-6">
       <div className="px-4 pt-4">
         <BackButton to="/friends" />
       </div>
 
-      <header className="flex items-start justify-between gap-3 px-4">
-        <div className="min-w-0">
-          <h1 className="text-2xl font-bold">Compare</h1>
-          <p className="truncate text-sm text-slate-500">
-            {selectedFriends.length === 0
-              ? `Pick up to ${MAX_GROUP_FRIENDS} friends`
-              : `You and ${selectedUsernames.map((u) => `@${u}`).join(', ')}`}
-          </p>
-        </div>
-        {selectedFriends.length > 0 && (
-          <Button size="sm" variant="secondary" onClick={() => setPickerOpen((open) => !open)}>
-            {pickerOpen ? 'Done' : 'Edit'}
-          </Button>
-        )}
+      <header className="px-4">
+        <h1 className="text-2xl font-bold">Compare</h1>
+        <p className="truncate text-sm text-slate-500">
+          {selectedFriends.length === 0
+            ? `Pick up to ${MAX_GROUP_FRIENDS} friends`
+            : `You and ${selectedUsernames.map((u) => `@${u}`).join(', ')}`}
+        </p>
       </header>
 
-      {showPicker && (
-        <GroupPicker friends={friends} selected={selectedUsernames} onToggle={toggle} />
-      )}
+      <GroupPicker friends={friends} selected={selectedUsernames} onToggle={toggle} />
 
       {selectedFriends.length === 0 ? null : schedulesLoading ? (
         <Spinner label="Comparing schedules" />

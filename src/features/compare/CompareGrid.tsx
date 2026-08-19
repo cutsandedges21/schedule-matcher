@@ -80,6 +80,28 @@ export default function CompareGrid({ mine, theirs, days, freeByDay, theirUserna
     <>
       <DaySelector days={days} selected={selectedDay} onSelect={setSelectedDay} />
 
+      {/*
+        Lane headers, and the reason the 08:00 label is no longer clipped.
+        DaySelector above is `sticky top-0 z-10` over a near-opaque background,
+        and the first hour label sits at `top: 0` with `-translate-y-1/2` — so
+        half of it renders above the grid and used to slide underneath that bar.
+        This row gives the overhang somewhere to land. The w-12 spacer matches
+        HourLabels so each name sits over its own lane.
+      */}
+      <div className="flex px-4">
+        <div className="w-12 shrink-0" />
+        <div className="flex flex-1">
+          <div className="min-w-0 px-0.5" style={{ width: '50%' }}>
+            <p className="truncate text-center text-[10px] font-semibold text-slate-500">You</p>
+          </div>
+          <div className="min-w-0 px-0.5" style={{ width: '50%' }}>
+            <p className="truncate text-center text-[10px] font-semibold text-slate-500">
+              @{theirUsername}
+            </p>
+          </div>
+        </div>
+      </div>
+
       <div className="flex px-4 pb-6">
         <HourLabels hours={hours} gridHeight={gridHeight} formatLabel={formatHourLabel} />
 

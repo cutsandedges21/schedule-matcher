@@ -72,11 +72,15 @@ export default function GroupSummary({ people, shared, freeByDay, days }: Props)
             )}
             {some.length > 0 && (
               <ul className="mt-1 flex flex-col gap-1 text-sm text-slate-600">
+                {/* classStartMinute, not startMinute: the latter is the window
+                    these members overlap, and printing it here announced a 2:00
+                    class as a 2:30 one whenever somebody's stored copy ran
+                    late. See GroupSharedClass. */}
                 {some.map((entry) => (
-                  <li key={`${entry.name}-${entry.day}-${entry.startMinute}`}>
+                  <li key={`${entry.name}-${entry.day}-${entry.classStartMinute}`}>
                     <span className="font-medium text-slate-900">{entry.name}</span>
                     {' · '}
-                    {WEEKDAY_LABELS[entry.day]} {formatMinutes(entry.startMinute)}
+                    {WEEKDAY_LABELS[entry.day]} {formatMinutes(entry.classStartMinute)}
                     {' · '}
                     {labelsFor(people, entry.memberIds)}
                   </li>

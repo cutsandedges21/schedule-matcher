@@ -1,7 +1,7 @@
 // src/components/HourGrid.tsx
 //
 // Shared rendering for the hour gutter/rules used by both ScheduleGrid and
-// CompareGrid. `axisHours` is inclusive of both endpoints (11 marks for an
+// GroupGrid. `axisHours` is inclusive of both endpoints (11 marks for an
 // 08:00-18:00 axis), while the grid itself only has 10 rows of height. These
 // components position every mark absolutely, by pixel offset, inside a
 // container sized to exactly `gridHeight` — so all the marks (including the

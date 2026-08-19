@@ -149,3 +149,14 @@ export async function findProfileByInviteCode(code: string): Promise<Profile | n
   if (error) throw new Error('Could not check that invite link.');
   return data ? rowToProfile(data as ProfileRow) : null;
 }
+
+/**
+ * Opening an invite link is instant, mutual consent — unlike sendFriendRequest,
+ * this skips the pending/accept step entirely. See migration 0010: the
+ * `accept_invite` RPC runs security definer so it can write an already-
+ * accepted row that a direct insert would be rejected for.
+ */
+export async function acceptInvite(code: string): Promise<void> {
+  const { error } = await supabase.rpc('accept_invite', { p_code: code });
+  if (error) throw new Error(error.message || 'Could not use that invite link.');
+}

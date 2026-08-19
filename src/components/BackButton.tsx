@@ -3,24 +3,21 @@ import { useNavigate } from 'react-router-dom';
 import Button from './Button';
 
 /**
- * Prefers real browser history over the fixed `to` route: react-router
- * stamps `history.state.idx` on every in-app navigation, so `idx > 0` means
- * this page was actually reached by clicking through the app (e.g. Compare
- * opened from a friend's card, or from the group picker) and going back
- * lands wherever that was. A shared link opened fresh has no such history,
- * so `idx` is 0 and `to` is used instead.
+ * Always goes to the fixed parent route, never `navigate(-1)`. Browser
+ * history depends on how the student got here — a few taps in, or straight
+ * from a shared link — and back has to land in the same place either way, so
+ * it is keyed to the page's logical parent instead of the tab's history.
  */
 export default function BackButton({ to, label = '← Back' }: { to: string; label?: string }) {
   const navigate = useNavigate();
 
-  function handleClick() {
-    const idx = (window.history.state as { idx?: number } | null)?.idx ?? 0;
-    if (idx > 0) navigate(-1);
-    else navigate(to);
-  }
-
   return (
-    <Button variant="ghost" onClick={handleClick} aria-label="Go back" className="-ml-3 px-3">
+    <Button
+      variant="ghost"
+      onClick={() => navigate(to)}
+      aria-label="Go back"
+      className="-ml-3 px-3"
+    >
       {label}
     </Button>
   );

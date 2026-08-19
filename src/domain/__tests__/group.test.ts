@@ -189,3 +189,64 @@ describe('findGroupSharedClasses', () => {
     expect(findGroupSharedClasses([member('me', [meeting()])])).toEqual([]);
   });
 });
+
+/**
+ * The regression behind the "same class, two different times" report.
+ *
+ * `isSameClass` matches on *overlap*, not on equal times, so two students'
+ * stored copies of one course legitimately disagree — each is extracted from
+ * that student's own screenshot, and one extraction can read 14:00 where the
+ * other reads 14:30.
+ *
+ * When that happens the shared record keeps **both** meeting ids and the
+ * intersected window, which is what lets the group grid draw each person's own
+ * stored time in their own lane.
+ *
+ * The 1:1 grid deliberately does not: it draws a shared class once, from the
+ * viewer's copy, spanning both lanes. That is a display choice, not an
+ * oversight — but it does mean the two compare screens show different times for
+ * the same class whenever the two stored copies disagree, which is exactly the
+ * case pinned below.
+ */
+describe('findGroupSharedClasses when two copies disagree', () => {
+  const mine = {
+    id: 'mine-greek', name: 'Greek Mythology', instructor: null, room: null,
+    courseCode: null, section: null,
+    days: [1], startMinute: 840, endMinute: 930, color: 'indigo',
+  };
+  const theirs = { ...mine, id: 'theirs-greek', startMinute: 870, endMinute: 960 };
+
+  const result = findGroupSharedClasses([
+    { id: 'me', classes: [mine] },
+    { id: 'rets', classes: [theirs] },
+  ]);
+
+  it('still recognises it as one shared class', () => {
+    expect(result).toHaveLength(1);
+    expect(result[0].memberIds).toEqual(['me', 'rets']);
+  });
+
+  it('keeps both meetings so each lane can show its own true time', () => {
+    expect(result[0].meetingIds).toHaveLength(2);
+    expect(result[0].meetingIds).toContain('mine-greek');
+    expect(result[0].meetingIds).toContain('theirs-greek');
+  });
+
+  it('reports the window they are actually in the room together', () => {
+    expect(result[0].startMinute).toBe(870);
+    expect(result[0].endMinute).toBe(930);
+  });
+
+  /**
+   * The together-window is not the class's time, and a summary that prints one
+   * as the other tells the student their 2:00 class is at 2:30. The anchor's
+   * own times are carried separately for display; members are scanned with the
+   * viewer first, so the anchor is the viewer's own copy whenever they are in
+   * the cluster — which is also what the 1:1 view shows, so the two screens
+   * agree.
+   */
+  it('carries the class own time separately from the overlap', () => {
+    expect(result[0].classStartMinute).toBe(840);
+    expect(result[0].classEndMinute).toBe(930);
+  });
+});

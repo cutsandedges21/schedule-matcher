@@ -31,7 +31,11 @@ export default function ScheduleGrid({ classes }: { classes: ClassMeeting[] }) {
     <>
       <DaySelector days={days} selected={selectedDay} onSelect={setSelectedDay} />
 
-      <div className="flex px-4 pb-6">
+      {/* pt-2 keeps the 8 AM label's own -translate-y-1/2 centring (HourGrid)
+          from bleeding up into DaySelector's sticky, z-10 box above it — with
+          no gap, that half-line-height rise landed the label's top behind the
+          selector's background and clipped it. */}
+      <div className="flex px-4 pb-6 pt-2">
         <HourLabels hours={hours} gridHeight={gridHeight} formatLabel={formatHourLabel} />
 
         {/* Mobile: one day */}

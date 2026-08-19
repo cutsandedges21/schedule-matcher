@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '@/features/auth/AuthProvider';
-import { findProfileByInviteCode, sendFriendRequest } from './useFriends';
+import { findProfileByInviteCode, acceptInvite } from './useFriends';
 import Spinner from '@/components/Spinner';
 import Button from '@/components/Button';
 import type { Profile } from '@/domain/types';
@@ -11,7 +11,7 @@ export default function InvitePage() {
   const { code } = useParams<{ code: string }>();
   const { session, profile } = useAuth();
   const [target, setTarget] = useState<Profile | null>(null);
-  const [status, setStatus] = useState<'loading' | 'ready' | 'sent' | 'error'>('loading');
+  const [status, setStatus] = useState<'loading' | 'ready' | 'accepted' | 'error'>('loading');
   const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -38,12 +38,12 @@ export default function InvitePage() {
     void run();
   }, [code, session?.user.id]);
 
-  async function handleSend() {
+  async function handleAccept() {
     try {
-      await sendFriendRequest(session!.user.id, target!.id);
-      setStatus('sent');
+      await acceptInvite(code!);
+      setStatus('accepted');
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'Could not send that request.');
+      setMessage(error instanceof Error ? error.message : 'Could not use that invite link.');
       setStatus('error');
     }
   }
@@ -59,12 +59,12 @@ export default function InvitePage() {
           <p className="text-lg">
             Connect with <span className="font-bold">@{target.username}</span>?
           </p>
-          <Button onClick={() => void handleSend()}>Send request</Button>
+          <Button onClick={() => void handleAccept()}>Add friend</Button>
         </>
       )}
 
-      {status === 'sent' && target && (
-        <p className="text-lg">Request sent to @{target.username}.</p>
+      {status === 'accepted' && target && (
+        <p className="text-lg">You and @{target.username} are now friends.</p>
       )}
 
       <Link

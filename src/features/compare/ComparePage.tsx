@@ -142,7 +142,14 @@ export default function ComparePage() {
   }
 
   if (theirs.length === 0) {
-    return <EmptyState title={`@${profile!.username}`} body="They haven't added their schedule yet." />;
+    return (
+      <main>
+        <div className="px-4 pt-4">
+          <BackButton to="/friends" />
+        </div>
+        <EmptyState title={`@${profile!.username}`} body="They haven't added their schedule yet." />
+      </main>
+    );
   }
 
   return (

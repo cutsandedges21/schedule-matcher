@@ -2,10 +2,11 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
-import { DEFAULT_SCHOOL_ID, SCHOOLS, schoolById } from '@/domain/schools';
+import { DEFAULT_SCHOOL_ID } from '@/domain/schools';
 import { canPickCosmetics } from '@/domain/beta';
 import { useAuth } from './AuthProvider';
 import { deleteAccount } from './deleteAccount';
+import SchoolSelect from './SchoolSelect';
 import Button from '@/components/Button';
 
 /** One row in a grouped list: a label, a chevron, and a whole-row tap target. */
@@ -90,46 +91,10 @@ export default function SettingsPage() {
           Sets the app&rsquo;s colour. Friends can see which school you&rsquo;re at.
         </p>
 
-        {/*
-          A native <select>, so iOS and Android give their own picker rather than
-          a bespoke menu that has to reimplement scrolling, dismissal and
-          keyboard focus. `appearance-none` drops the platform arrow, and the
-          chevron below replaces it — without one the control reads as a text
-          field on Android, which is the thing that makes a dropdown
-          non-obvious. The swatch keeps the colour visible: an <option> cannot
-          carry one, so the current school's accent is drawn beside the label.
-        */}
-        <div className="relative mt-2">
-          <span
-            aria-hidden
-            className="pointer-events-none absolute inset-y-0 left-4 flex items-center"
-          >
-            <span
-              className="h-5 w-5 rounded-full border border-black/10"
-              style={{ backgroundColor: schoolById(selectedSchoolId).accent }}
-            />
-          </span>
-
-          <select
-            aria-label="School"
-            value={selectedSchoolId}
-            onChange={(event) => void chooseSchool(event.target.value)}
-            className="min-h-touch w-full appearance-none rounded-2xl border border-slate-300 bg-white py-3 pl-12 pr-11 text-sm font-medium text-slate-900"
-          >
-            {SCHOOLS.map((school) => (
-              <option key={school.id} value={school.id}>
-                {school.name}
-              </option>
-            ))}
-          </select>
-
-          <span
-            aria-hidden
-            className="pointer-events-none absolute inset-y-0 right-4 flex items-center text-base text-slate-500"
-          >
-            ▾
-          </span>
-        </div>
+        <SchoolSelect
+          selectedId={selectedSchoolId}
+          onChoose={(id) => void chooseSchool(id)}
+        />
 
         {schoolError && <p className="mt-2 text-sm text-rose-600">{schoolError}</p>}
       </section>

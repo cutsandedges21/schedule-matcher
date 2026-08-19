@@ -14,6 +14,7 @@ import {
 import { HUE_STEPS } from '@/domain/hue';
 import { canPickCosmetics } from '@/domain/beta';
 import CardEffect from '@/features/friends/CardEffect';
+import ProfileCard from '@/features/friends/ProfileCard';
 import BackButton from '@/components/BackButton';
 import SwatchPicker, { type SwatchOption } from './SwatchPicker';
 import { useAuth } from './AuthProvider';
@@ -184,9 +185,22 @@ export default function CustomizationPage() {
         <h1 className="mt-1 text-2xl font-bold">Customization</h1>
       </div>
 
-      <section className="rounded-2xl border border-slate-200 bg-white p-4">
-        <p className="font-semibold">@{profile?.username}</p>
-        {profile?.displayName && <p className="text-sm text-slate-500">{profile.displayName}</p>}
+      {/*
+        The real thing, not a mock-up: the same ProfileCard the Friends page
+        renders, fed the student's own profile. It updates as each swatch is
+        tapped because `patchProfile` writes to the cached profile first, so
+        the preview moves under the finger rather than after the round trip.
+
+        No Compare button and no link — comparing your schedule with your own
+        is not a thing, and a link out of the page you are editing is a trap.
+      */}
+      <section>
+        <h2 className="text-sm font-semibold text-slate-500">What your friends see</h2>
+        {profile && (
+          <div className="mt-2">
+            <ProfileCard profile={profile} />
+          </div>
+        )}
       </section>
 
       <SwatchPicker

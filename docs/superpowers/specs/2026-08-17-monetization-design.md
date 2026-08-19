@@ -287,21 +287,19 @@ that it is a placeholder.
 
 ### 8.2 To investigate — not legal advice
 
-Three items that genuinely apply and need a qualified answer before money
-changes hands:
+Two items that genuinely apply and need a qualified answer:
 
 1. **Quebec Law 25** (formerly Bill 64), fully in force. Applies to private
-   enterprises handling Quebec residents' personal information. Requires a
-   designated **Privacy Officer** — defaulting to the operator — plus
-   plain-language policies, breach notification, and data portability. This app
-   stores class schedules and a friend graph belonging partly to minors. It
-   applies.
+   enterprises handling Quebec residents' personal information — **from launch,
+   not from first payment.** An earlier draft filed this under "before it is a
+   paid service", which was wrong: the trigger is collecting the data, and this
+   app stores class schedules and a friend graph belonging partly to minors on
+   day one. Requires a designated **Privacy Officer** — defaulting to the
+   operator — plus plain-language policies, breach notification, and data
+   portability.
 2. **Bill 96 / Charter of the French Language.** Commercial services offered to
    Quebec consumers generally need French availability, and the obligation
    sharpens once payment is involved.
-3. **Business name registration.** Taking payment as "Schedule Matcher" rather
-   than under a personal name generally requires a declaration with the
-   Registraire des entreprises. Incorporation is *not* required.
 
 ### 8.3 A note on French, which is strategy and not only compliance
 

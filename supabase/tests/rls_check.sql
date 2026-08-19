@@ -7,8 +7,8 @@
 -- Management API or the SQL Editor. It raises on failure and leaves no rows
 -- behind on success. Safe to re-run.
 --
---   FAIL "LEAK:"   -> a non-friend could read another student's schedule
---   FAIL "BROKEN:" -> an accepted friend could NOT read the schedule
+--   FAIL "LEAK:"   -> private data was readable, or writable, by the wrong student
+--   FAIL "BROKEN:" -> a legitimate read or write was refused
 --   FAIL "RPC:"    -> are_friends is callable by authenticated users
 
 do $$
@@ -16,6 +16,7 @@ declare
   uid_a uuid := '11111111-1111-1111-1111-111111111111';
   uid_b uuid := '22222222-2222-2222-2222-222222222222';
   visible int;
+  forged boolean := false;
 begin
   -- Clean slate (cascades to profiles/classes/friendships).
   delete from auth.users where id in (uid_a, uid_b);
@@ -76,6 +77,51 @@ begin
   end if;
 
   ------------------------------------------------------------------
+  -- app_events (migration 0009). Insert-your-own, read nothing.
+  --
+  -- The table has an insert policy and deliberately no select policy, so
+  -- `authenticated` can read nothing at all — not even its own rows. That is
+  -- an unusual shape and worth proving rather than assuming: a stray select
+  -- policy added later would turn a counting table into a log of who compares
+  -- schedules with whom and how often.
+  ------------------------------------------------------------------
+  insert into public.app_events (user_id, kind) values (uid_a, 'open');
+
+  perform set_config('request.jwt.claims',
+    json_build_object('sub', uid_b, 'role', 'authenticated')::text, true);
+  execute 'set local role authenticated';
+
+  select count(*) into visible from public.app_events;
+  if visible <> 0 then
+    execute 'reset role';
+    raise exception 'LEAK: an authenticated student read % app_events rows', visible;
+  end if;
+
+  -- Recording your own event must work, or the whole Phase 0 dataset is empty
+  -- and nothing says so — the client swallows write errors by design.
+  begin
+    insert into public.app_events (user_id, kind, friend_count)
+    values (uid_b, 'compare_group', 3);
+  exception when others then
+    execute 'reset role';
+    raise exception 'BROKEN: a student could not record their own event (%)', sqlerrm;
+  end;
+
+  -- Attributing an event to somebody else must not.
+  begin
+    insert into public.app_events (user_id, kind) values (uid_a, 'open');
+    forged := true;
+  exception when insufficient_privilege then
+    null;  -- expected: with check (user_id = auth.uid())
+  end;
+
+  execute 'reset role';
+
+  if forged then
+    raise exception 'LEAK: a student wrote an app_event attributed to another user';
+  end if;
+
+  ------------------------------------------------------------------
   delete from auth.users where id in (uid_a, uid_b);
-  raise notice 'RLS CHECK PASSED: non-friend blocked, friend allowed, are_friends not exposed';
+  raise notice 'RLS CHECK PASSED: non-friend blocked, friend allowed, are_friends not exposed, app_events write-only and self-scoped';
 end $$;

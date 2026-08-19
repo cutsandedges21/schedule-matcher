@@ -6,6 +6,7 @@ import {
   BEAT_TIMING,
   FIRST_POSITION,
   advance,
+  type Beat,
   type BeatPosition,
 } from '@/domain/slideshow';
 
@@ -17,6 +18,55 @@ import {
  * nothing. The progress hairline is the only affordance, and its only job is
  * to tell someone with no way out that this is finite.
  */
+/**
+ * Deterministic tilts for a fanned stack, so the pile looks thrown down rather
+ * than laid out — and looks the same on every render, because a beat that
+ * reshuffles itself mid-fade reads as a glitch.
+ */
+const FAN_TILT = [-7, 5, -3, 8, -5];
+
+function BeatImages({ beat }: { beat: Beat }) {
+  const [first, ...rest] = beat.images;
+
+  // max-h-[52vh] is what keeps a portrait beat from pushing its own caption off
+  // the bottom of a short phone; the landscape beats never reach it.
+  // object-contain so the crop is never silently changed.
+  if (rest.length === 0) {
+    return (
+      <img
+        src={first.src}
+        alt={first.alt}
+        width={first.width}
+        height={first.height}
+        className="max-h-[52vh] w-full max-w-xs rounded-xl object-contain"
+      />
+    );
+  }
+
+  return (
+    <div className="flex w-full max-w-xs items-center justify-center">
+      {beat.images.map((image, index) => (
+        <img
+          key={image.src}
+          src={image.src}
+          alt={image.alt}
+          width={image.width}
+          height={image.height}
+          // Negative margins pull each one over the last so they overlap like a
+          // pile of receipts. Later images sit on top, which is what makes the
+          // stack read as accumulating rather than as a neat row.
+          className="max-h-[46vh] w-3/5 shrink-0 rounded-xl border border-slate-200 bg-white object-contain shadow-md"
+          style={{
+            transform: `rotate(${FAN_TILT[index % FAN_TILT.length]}deg)`,
+            marginLeft: index === 0 ? 0 : '-28%',
+            zIndex: index,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
 export default function AboutIntro({ onDone }: { onDone: () => void }) {
   const [position, setPosition] = useState<BeatPosition>(FIRST_POSITION);
 
@@ -78,16 +128,7 @@ export default function AboutIntro({ onDone }: { onDone: () => void }) {
           } as CSSProperties
         }
       >
-        <img
-          src={beat.image}
-          alt={beat.alt}
-          width={beat.width}
-          height={beat.height}
-          // max-h-[52vh] is what keeps a portrait beat from pushing its own
-          // caption off the bottom of a short phone; the landscape beats never
-          // reach it. object-contain so the crop is never silently changed.
-          className="w-full max-w-xs max-h-[52vh] rounded-xl object-contain"
-        />
+        <BeatImages beat={beat} />
         <p className="max-w-xs text-center text-2xl font-bold leading-snug">{beat.text}</p>
       </div>
     </main>

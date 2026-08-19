@@ -1,4 +1,4 @@
-import { lazy, Suspense, type ReactNode } from 'react';
+import { lazy, Suspense, useState, type ReactNode } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from '@/features/auth/AuthProvider';
 import RequireAuth from '@/features/auth/RequireAuth';
@@ -20,6 +20,24 @@ const ComparePage = lazy(() => import('@/features/compare/ComparePage'));
 const GroupComparePage = lazy(() => import('@/features/compare/GroupComparePage'));
 const PrivacyPage = lazy(() => import('@/features/legal/PrivacyPage'));
 const TermsPage = lazy(() => import('@/features/legal/TermsPage'));
+const AboutIntro = lazy(() => import('@/features/auth/AboutIntro'));
+
+/**
+ * Dev-only viewer for the onboarding intro.
+ *
+ * The intro is otherwise unreachable without a fresh account — it mounts only
+ * while a signed-in user has no `profiles` row — so there is no way to look at
+ * a change to it short of deleting your account. Loops instead of calling on
+ * to the username step, because the point is to watch it more than once.
+ *
+ * Guarded by `import.meta.env.DEV`, so it is not in the production bundle. The
+ * previous route of this kind (`/__preview-upload`) was deleted once it had
+ * done its job; do the same with this one.
+ */
+function IntroPreview() {
+  const [run, setRun] = useState(0);
+  return <AboutIntro key={run} onDone={() => setRun((n) => n + 1)} />;
+}
 
 const shell = (element: ReactNode) => (
   <RequireAuth><AppShell>{element}</AppShell></RequireAuth>
@@ -61,6 +79,9 @@ export default function App() {
     <BrowserRouter>
       <Suspense fallback={<Spinner />}>
         <Routes>
+          {import.meta.env.DEV && (
+            <Route path="/__preview-intro" element={<IntroPreview />} />
+          )}
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/*" element={<AppRoutes />} />

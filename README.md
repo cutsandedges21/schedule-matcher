@@ -355,10 +355,19 @@ nothing; a hairline progress bar at the top is the only affordance. That is
 deliberate, and it is why `slideshow.test.ts` asserts that `advance()` always
 terminates and that the whole sequence stays under 12 seconds — with no escape
 hatch, a beat that never ends is a student stuck on the first screen of the
-app. Pace lives in `BEAT_TIMING` in `src/domain/slideshow.ts` (currently
-**11.8s end to end, against a 12s ceiling**). A fifth beat does not fit without
-shortening `hold`, and that ceiling is a hard requirement rather than a
-preference — there is no skip button behind it.
+app. Pace lives in `BEAT_TIMING` in `src/domain/slideshow.ts` — currently **5s
+a beat, 20s end to end**.
+
+That ceiling was 12s and was raised deliberately, because four beats at a
+readable pace did not fit under it. The reason for the cap did not go away when
+the number moved: with no controls on the screen, all 20s are time a student
+cannot escape, and it is the first thing they see after installing. The
+assertion in `slideshow.test.ts` is kept at the new figure so the next increase
+has to be a decision rather than a drift.
+
+The fix that would take the pressure off is **letting a tap advance the beat** —
+still unskippable, but a fast reader moves on and a slow one lingers, which
+turns the total into a ceiling rather than a sentence.
 
 Each beat declares its own `width` and `height`. The illustrations are 4:3 and
 the opening screenshot is portrait, and a browser derives `aspect-ratio` from

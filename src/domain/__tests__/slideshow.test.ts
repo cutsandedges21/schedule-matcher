@@ -15,15 +15,30 @@ describe('ABOUT_BEATS', () => {
     expect(ABOUT_BEATS).toHaveLength(4);
   });
 
-  it('gives every beat text, an image and alt text', () => {
+  it('gives every beat text and at least one image', () => {
     for (const beat of ABOUT_BEATS) {
       expect(beat.text.trim().length).toBeGreaterThan(0);
-      expect(beat.alt.trim().length).toBeGreaterThan(0);
-      expect(beat.image).toMatch(/^\/about\/.+\.(svg|jpg|png)$/);
-      // Declared so the browser reserves the right box and does not derive a
-      // wrong aspect ratio for the portrait beat.
-      expect(beat.width).toBeGreaterThan(0);
-      expect(beat.height).toBeGreaterThan(0);
+      expect(beat.images.length).toBeGreaterThan(0);
+
+      for (const image of beat.images) {
+        expect(image.src).toMatch(/^\/about\/.+\.(svg|jpg|png)$/);
+        // Alt text carries the beat for anyone who cannot see it, and the
+        // opening beat's whole content is inside the screenshot.
+        expect(image.alt.trim().length).toBeGreaterThan(0);
+        // Declared so the browser reserves the right box and does not derive a
+        // wrong aspect ratio for the portrait beats.
+        expect(image.width).toBeGreaterThan(0);
+        expect(image.height).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  // A fan needs distinct files: the same src twice would collide on the React
+  // key and render one image where two were intended.
+  it('never repeats an image inside one beat', () => {
+    for (const beat of ABOUT_BEATS) {
+      const sources = beat.images.map((i) => i.src);
+      expect(new Set(sources).size, beat.text).toBe(sources.length);
     }
   });
 });
@@ -65,8 +80,15 @@ describe('timing', () => {
 
   // No skip button means the whole thing is compulsory. Keep it short enough
   // that it stays a pitch rather than a toll booth.
-  it('keeps the compulsory sequence under 12 seconds', () => {
-    expect(SEQUENCE_DURATION).toBeLessThanOrEqual(12_000);
+  /**
+   * Raised from 12s to 20s when the beats went to 5s each so the opening
+   * screenshot could actually be read. The assertion is kept rather than
+   * deleted because the risk it guards has not gone anywhere: with no controls
+   * on this screen, this number is time a student cannot escape. It exists to
+   * make the next increase a decision rather than a drift.
+   */
+  it('keeps the compulsory sequence within its budget', () => {
+    expect(SEQUENCE_DURATION).toBeLessThanOrEqual(20_000);
   });
 
   it('gives every phase a positive duration', () => {

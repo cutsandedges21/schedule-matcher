@@ -7,6 +7,7 @@ import SchoolThemeEffect from '@/features/theme/SchoolThemeEffect';
 import Spinner from '@/components/Spinner';
 import LoginPage from '@/features/auth/LoginPage';
 import SchedulePage from '@/features/schedule/SchedulePage';
+import NotFoundPage from '@/features/error/NotFoundPage';
 
 const OnboardingPage = lazy(() => import('@/features/auth/OnboardingPage'));
 const SettingsPage = lazy(() => import('@/features/auth/SettingsPage'));
@@ -45,7 +46,7 @@ function AppRoutes() {
           <Route path="/u/:username" element={shell(<FriendSchedulePage />)} />
           <Route path="/compare" element={shell(<GroupComparePage />)} />
           <Route path="/compare/:username" element={shell(<ComparePage />)} />
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </Suspense>
     </AuthProvider>

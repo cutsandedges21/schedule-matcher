@@ -3,7 +3,8 @@ import { useEffect, type ReactNode } from 'react';
 import { useAuth } from './AuthProvider';
 import { consumeRedirect, rememberRedirect } from './redirect';
 import Spinner from '@/components/Spinner';
-import Button from '@/components/Button';
+import ErrorPage from '@/components/ErrorPage';
+import { buttonClassName } from '@/components/Button';
 
 export default function RequireAuth({ children }: { children: ReactNode }) {
   const { session, profile, profileError, loading, refreshProfile } = useAuth();
@@ -26,10 +27,19 @@ export default function RequireAuth({ children }: { children: ReactNode }) {
 
   if (profileError) {
     return (
-      <div className="flex min-h-dvh flex-col items-center justify-center gap-4 p-6 text-center">
-        <p className="text-slate-700">We couldn't load your profile. Check your connection and try again.</p>
-        <Button onClick={() => void refreshProfile()}>Try again</Button>
-      </div>
+      <ErrorPage
+        title="Couldn't load your profile"
+        body="Check your connection and try again."
+        extraAction={
+          <button
+            type="button"
+            onClick={() => void refreshProfile()}
+            className={buttonClassName('secondary')}
+          >
+            Try again
+          </button>
+        }
+      />
     );
   }
 

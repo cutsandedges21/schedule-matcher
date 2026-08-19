@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
+import ErrorBoundary from './components/ErrorBoundary';
 import { configError } from './lib/supabase';
 // Side effect only: catches Chrome's `beforeinstallprompt` before it is lost,
 // so onboarding can offer a real install button. Must run at startup — the
@@ -27,6 +28,12 @@ function ConfigError({ message }: { message: string }) {
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    {configError ? <ConfigError message={configError} /> : <App />}
+    {configError ? (
+      <ConfigError message={configError} />
+    ) : (
+      <ErrorBoundary>
+        <App />
+      </ErrorBoundary>
+    )}
   </StrictMode>
 );

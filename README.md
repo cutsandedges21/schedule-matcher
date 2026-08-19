@@ -203,8 +203,30 @@ format check in migration `0007_cosmetic.sql` is duplicated there as
 `COSMETIC_ID_PATTERN`, and `cosmetics.test.ts` asserts they agree, exactly as
 schools do.
 
-A curated preset list rather than a colour picker: presets are contrast-tested
-in CI, cannot be set to white-on-white, and keep the app looking like one app.
+Students pick **any hue**, and the app picks the lightness. §5.1 of the
+monetization design rules out a free colour input on the grounds that
+"somebody will pick white-on-white" — correct about a hex field, wrong about
+colour choice in general. The part students want to control is the hue, and hue
+has no bearing on contrast, so `src/domain/hue.ts` bisects HSL lightness until
+the colour lands on a target *relative luminance*. Every one of the 360 hues
+therefore clears its bar by construction; an illegible card is unreachable
+rather than merely discouraged.
+
+That distinction matters because yellow and blue need very different
+lightnesses to be equally bright. Asking for a luminance instead of a lightness
+is the whole mechanism, and it is why `hue.test.ts` walks all 360 hues at five
+targets. Its tolerance is 8-bit quantisation (~0.008 near the top of the range),
+not slack — nothing can land closer, and every contrast bar in the suite is
+measured on the quantised colour.
+
+The hand-picked tables in `cosmetics.ts`, `banners.ts` and `effects.ts` survive
+as named starting points and for back-compat with ids already in the database.
+
+**No migration was needed for any of this.** A hue id (`hue-210`, `rain-210`)
+already satisfies the `^[a-z0-9-]{2,32}$` check constraint. That constraint also
+admits `hue-360`, `hue-007` and `hue--1`, so `parseHueId` is strict and returns
+null for all of them — a hand-edited or stale row degrades to no cosmetic
+instead of rendering an arbitrary colour.
 
 Applied with **inline styles** in `FriendCard.tsx`, for the same two reasons as
 `SchoolChip` — the `accent` Tailwind family holds the *viewer's* school, and a
@@ -232,10 +254,19 @@ marks below it, `src/domain/effects.ts`). All three slots are independent and
 may be null in any combination; the two do not co-ordinate, so a green effect
 under a red strip is allowed.
 
-An effect preset bakes **shape and colour together** — `Downpour` is rain in
-tide blue, and there is no second rain a shade away. One colour per shape,
-asserted in `effects.test.ts`: two near-identical presets are not two products,
-they are one product and a support question.
+An effect is **shape and hue in one column** — `rain-210`. Both halves are one
+choice: a shape with no colour does not render, and a colour with no shape is
+not an effect, so splitting them across two nullable columns would leave three
+meaningless combinations out of four. The shape name doubles as the id prefix,
+which is what keeps the format inside the existing check constraint.
+
+Changing one half preserves the other, so picking a colour does not silently
+reset the shape a student just chose. The colour wheel only appears in Settings
+once a shape is set.
+
+The named presets ship one colour per shape, asserted in `effects.test.ts`: two
+near-identical presets are not two products, they are one product and a support
+question.
 
 Both bands are fixed-height boxes in **normal flow**, never overlays, and they
 clip their own contents. That single fact is why nothing in `effects.ts` needs

@@ -17,7 +17,7 @@ export default function BottomNav() {
               to={tab.to}
               end={tab.to === '/'}
               className={({ isActive }) =>
-                `flex min-h-touch items-center justify-center py-3 text-sm font-medium ${
+                `flex min-h-touch items-center justify-center py-3 text-[15px] font-medium ${
                   isActive ? 'text-accent' : 'text-slate-400'
                 }`
               }

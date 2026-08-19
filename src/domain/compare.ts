@@ -8,6 +8,19 @@ export interface SharedClass {
   day: number;
   startMinute: number;
   endMinute: number;
+  /**
+   * False when the two students' stored copies of this class disagree about
+   * when it runs.
+   *
+   * `isSameClass` matches on overlap rather than on equal times, deliberately:
+   * each schedule is extracted from that student's own screenshot and two
+   * readings of one course often differ by a few minutes. That tolerance is
+   * what makes the feature work, and it is also what lets a genuinely bad
+   * extraction hide — the 1:1 grid draws a shared class once from the viewer's
+   * copy, so the other student's wrong time is never rendered. Surfacing this
+   * flag is the only thing that tells either of them to go and look.
+   */
+  timesMatch: boolean;
 }
 
 function normalizeCode(value: string | null): string {
@@ -52,6 +65,7 @@ export function findSharedClasses(
           day,
           startMinute: Math.max(a.startMinute, b.startMinute),
           endMinute: Math.min(a.endMinute, b.endMinute),
+          timesMatch: a.startMinute === b.startMinute && a.endMinute === b.endMinute,
         });
       }
     }
@@ -139,6 +153,12 @@ export interface GroupSharedClass {
    */
   classStartMinute: number;
   classEndMinute: number;
+  /**
+   * False when the members' stored copies disagree about when this class runs.
+   * See the note on SharedClass.timesMatch — the same tolerance applies here,
+   * and the same silent failure follows from not surfacing it.
+   */
+  timesMatch: boolean;
   /** Ids of the members who share it, in the order they were passed in. */
   memberIds: string[];
   /** The individual meeting rows behind it, so a grid can mark exactly those blocks. */
@@ -220,6 +240,11 @@ export function findGroupSharedClasses(members: GroupMember[]): GroupSharedClass
         endMinute: end,
         classStartMinute: anchor.meeting.startMinute,
         classEndMinute: anchor.meeting.endMinute,
+        timesMatch: cluster.every(
+          (o) =>
+            o.meeting.startMinute === anchor.meeting.startMinute &&
+            o.meeting.endMinute === anchor.meeting.endMinute
+        ),
         memberIds: cluster
           .slice()
           .sort((a, b) => a.memberIndex - b.memberIndex)

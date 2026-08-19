@@ -63,6 +63,37 @@ export default function GroupGrid({
   // the grid covers the rest.
   const dense = people.length >= 4;
 
+  /**
+   * Classes *everyone* has, drawn once across the whole width instead of as one
+   * block per lane — the treatment the 1:1 view uses.
+   *
+   * Only when every member shares it. A class shared by two of four people
+   * cannot span the full width without painting over the lanes of the two who
+   * are not in it, and if those two members are not adjacent it cannot span
+   * them contiguously either. Those stay per-lane, where the ring already marks
+   * them and the detail panel names who is in them.
+   */
+  const everyoneShared = useMemo(
+    () =>
+      shared.filter((s) => s.day === selectedDay && s.memberIds.length === people.length),
+    [shared, selectedDay, people.length]
+  );
+
+  const meetingsById = useMemo(() => {
+    const map = new Map<string, ClassMeeting>();
+    for (const list of Object.values(classesByPerson)) {
+      for (const meeting of list) map.set(meeting.id, meeting);
+    }
+    return map;
+  }, [classesByPerson]);
+
+  // Their per-lane copies are suppressed so the full-width block is not drawn
+  // on top of them.
+  const fullWidthMeetingIds = useMemo(
+    () => new Set(everyoneShared.flatMap((s) => s.meetingIds)),
+    [everyoneShared]
+  );
+
   function renderBlock(block: PositionedBlock, person: GroupPerson, laneIndex: number) {
     const styles = CLASS_COLORS[block.meeting.color] ?? CLASS_COLORS.indigo;
     const widthPct = laneWidth / block.laneCount;
@@ -149,10 +180,51 @@ export default function GroupGrid({
 
           <div className="absolute inset-0">
             {people.map((person, laneIndex) =>
-              computeLayout(classesByPerson[person.id] ?? [], [selectedDay], axis).map((block) =>
-                renderBlock(block, person, laneIndex)
-              )
+              computeLayout(
+                (classesByPerson[person.id] ?? []).filter((c) => !fullWidthMeetingIds.has(c.id)),
+                [selectedDay],
+                axis
+              ).map((block) => renderBlock(block, person, laneIndex))
             )}
+
+            {everyoneShared.map((entry) => {
+              const anchor = meetingsById.get(entry.meetingIds[0]);
+              if (!anchor) return null;
+              const styles = CLASS_COLORS[anchor.color] ?? CLASS_COLORS.indigo;
+              const isSelected = selection?.meeting.id === anchor.id;
+
+              return (
+                <button
+                  key={`shared-${entry.name}-${entry.classStartMinute}`}
+                  type="button"
+                  onClick={() =>
+                    setSelection(isSelected ? null : { personId: people[0].id, meeting: anchor })
+                  }
+                  aria-label={`${entry.name}, shared by everyone, ${formatMinutes(entry.classStartMinute)} to ${formatMinutes(entry.classEndMinute)}`}
+                  className={`absolute inset-x-0 overflow-hidden rounded-md border px-1 py-0.5 text-left ring-2 ring-inset ring-slate-900/40 ${styles.block} ${styles.text} ${
+                    isSelected ? 'ring-slate-900' : ''
+                  }`}
+                  style={{
+                    // classStartMinute, not startMinute — the latter is the
+                    // window the members overlap, which sits later than the
+                    // class whenever somebody's copy was read wrong.
+                    top: `${((entry.classStartMinute - axis.startMinute) / span) * 100}%`,
+                    height: `${((entry.classEndMinute - entry.classStartMinute) / span) * 100}%`,
+                  }}
+                >
+                  <span
+                    className={`block truncate font-semibold leading-tight ${dense ? 'text-[9px]' : 'text-[11px]'}`}
+                  >
+                    {entry.name} · shared
+                  </span>
+                  {!dense && (
+                    <span className="block truncate text-[10px] opacity-80">
+                      {formatMinutes(entry.classStartMinute)}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>

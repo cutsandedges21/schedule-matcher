@@ -249,4 +249,26 @@ describe('findGroupSharedClasses when two copies disagree', () => {
     expect(result[0].classStartMinute).toBe(840);
     expect(result[0].classEndMinute).toBe(930);
   });
+
+  it('reports that the copies disagree', () => {
+    expect(result[0].timesMatch).toBe(false);
+  });
+});
+
+describe('findGroupSharedClasses when the copies agree', () => {
+  const mine = {
+    id: 'mine-bio', name: 'BIO 101', instructor: null, room: null,
+    courseCode: null, section: null,
+    days: [1], startMinute: 600, endMinute: 690, color: 'indigo',
+  };
+
+  it('reports matching times, and the overlap equals the class time', () => {
+    const [entry] = findGroupSharedClasses([
+      { id: 'me', classes: [mine] },
+      { id: 'rets', classes: [{ ...mine, id: 'theirs-bio' }] },
+    ]);
+    expect(entry.timesMatch).toBe(true);
+    expect(entry.startMinute).toBe(entry.classStartMinute);
+    expect(entry.endMinute).toBe(entry.classEndMinute);
+  });
 });

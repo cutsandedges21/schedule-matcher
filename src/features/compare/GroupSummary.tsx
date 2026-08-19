@@ -31,6 +31,17 @@ export default function GroupSummary({ people, shared, freeByDay, days }: Props)
 
   const anyFree = days.some((day) => (freeByDay[day] ?? []).length > 0);
 
+  /**
+   * Classes a group shares but stored at different times. Grouped by the set of
+   * people involved, so "You, @rets" is named once rather than per weekday.
+   *
+   * Worth surfacing precisely because the grid *looks* fine: each lane draws its
+   * own copy, so two blocks at different heights read as two different classes
+   * rather than as one class somebody typed in wrong.
+   */
+  const mismatched = shared.filter((s) => !s.timesMatch);
+  const mismatchedNames = [...new Set(mismatched.map((s) => s.name))];
+
   return (
     <section className="mx-4 flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-4">
       <div>
@@ -58,6 +69,15 @@ export default function GroupSummary({ people, shared, freeByDay, days }: Props)
           })}
         </ul>
       </div>
+
+      {mismatchedNames.length > 0 && (
+        <p className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
+          Different times saved for{' '}
+          <span className="font-semibold">{mismatchedNames.join(', ')}</span> — the copies held by{' '}
+          {labelsFor(people, [...new Set(mismatched.flatMap((s) => s.memberIds))])} disagree about
+          when it runs. One of those schedules was read wrong and needs correcting.
+        </p>
+      )}
 
       <div>
         <h2 className="text-sm font-semibold text-slate-500">Classes together</h2>

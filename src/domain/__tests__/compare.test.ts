@@ -100,6 +100,21 @@ describe('findSharedClasses', () => {
   });
 });
 
+describe('findSharedClasses time agreement', () => {
+  it('flags copies that disagree about when the class runs', () => {
+    const [entry] = findSharedClasses(
+      [meeting({ id: 'a', startMinute: 840, endMinute: 930 })],
+      [meeting({ id: 'b', startMinute: 870, endMinute: 960 })]
+    );
+    expect(entry.timesMatch).toBe(false);
+  });
+
+  it('does not flag copies that agree', () => {
+    const [entry] = findSharedClasses([meeting({ id: 'a' })], [meeting({ id: 'b' })]);
+    expect(entry.timesMatch).toBe(true);
+  });
+});
+
 describe('computeMutualFree', () => {
   it('returns the whole window when neither student has a class', () => {
     expect(computeMutualFree([], [], 1)).toEqual([

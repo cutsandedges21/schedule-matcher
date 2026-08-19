@@ -131,9 +131,6 @@ export default function CompareGrid({ mine, theirs, days, freeByDay, theirUserna
         </div>
       </div>
 
-      <p className="px-4 pb-4 text-xs text-slate-500">
-        Left lane: you. Right lane: @{theirUsername}. Full width: shared.
-      </p>
     </>
   );
 }

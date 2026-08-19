@@ -163,7 +163,12 @@ export default function ComparePage() {
       </header>
 
       <div className="mt-4">
-        <CompareSummary shared={shared} freeByDay={freeByDay} days={days} />
+        <CompareSummary
+          shared={shared}
+          freeByDay={freeByDay}
+          days={days}
+          theirUsername={profile!.username}
+        />
       </div>
 
       <div className="mt-4">

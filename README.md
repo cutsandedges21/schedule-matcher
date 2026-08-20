@@ -381,8 +381,17 @@ nothing to keep in sync.
 `prefers-reduced-motion: reduce` swaps the keyframes for an opacity-only
 crossfade at the same pace (see the bottom of `src/index.css`).
 
-`public/about/team-placeholder.svg` is a **placeholder** and says so on its
-face. Replace it with a real photo of the team before launch.
+The closing beat is a real photo of the two founders
+(`public/about/intro-us.jpg`), which is what makes "we got tired of asking"
+land as a claim rather than a slogan. It replaced a placeholder that said
+"team photo goes here" on its face.
+
+It is a **960px JPEG at ~143 KB**, downscaled and re-encoded from a 1254px PNG
+that was 2.39 MB. Onboarding runs on a phone, often on cellular, and the beat
+is five seconds long — an image that has not arrived by then is a blank square
+where the founders should be. 960px covers a 3x device pixel ratio at the
+320px the intro renders at; past that it is bytes nobody can see. Any photo
+added here should get the same treatment.
 
 ## Legal pages
 

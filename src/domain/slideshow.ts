@@ -110,10 +110,10 @@ export const ABOUT_BEATS: readonly Beat[] = [
     text: 'We got tired of asking. So we built this.',
     images: [
       {
-        src: '/about/team-placeholder.svg',
-        alt: 'Placeholder for a photo of the people who built this',
-        width: 320,
-        height: 240,
+        src: '/about/intro-us.jpg',
+        alt: 'The two students who built Schedule Matcher, on a street outside campus',
+        width: 960,
+        height: 960,
       },
     ],
   },

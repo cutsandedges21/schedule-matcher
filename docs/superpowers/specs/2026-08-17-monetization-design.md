@@ -282,8 +282,9 @@ anything. Credit belongs in About; the legal operator field is not credit.
 `CONTACT_EMAIL` must not be a personal address, and **must be monitored** —
 privacy law obliges an actual response to data requests.
 
-Also outstanding: `public/about/team-placeholder.svg` still says on its face
-that it is a placeholder.
+~~Also outstanding: `public/about/team-placeholder.svg` still says on its face
+that it is a placeholder.~~ Done — replaced by a real founder photo,
+`public/about/intro-us.jpg`.
 
 ### 8.2 To investigate — not legal advice
 

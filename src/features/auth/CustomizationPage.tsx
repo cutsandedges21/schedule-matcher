@@ -18,9 +18,30 @@ import BackButton from '@/components/BackButton';
 import EmptyState from '@/components/EmptyState';
 import SwatchPicker, { type SwatchOption } from './SwatchPicker';
 import { useAuth } from './AuthProvider';
+import type { Profile } from '@/domain/types';
 
 /** Where the effect colour wheel starts before a student has moved it. */
 const DEFAULT_EFFECT_HUE = 210;
+
+/**
+ * Fed to ProfileCard so a student who can't pick cosmetics yet still sees
+ * what one looks like, next to their own plain card — a teaser, not a
+ * real account. lavender/nebula/stardust are hand-picked presets
+ * (cosmetics.ts, banners.ts, effects.ts) chosen only to read as obviously
+ * nicer than blank, not as a recommendation of that particular combination.
+ */
+const TEASER_PROFILE: Profile = {
+  id: 'teaser',
+  username: 'you',
+  displayName: null,
+  avatarUrl: null,
+  inviteCode: '',
+  school: null,
+  cosmetic: 'lavender',
+  banner: 'nebula',
+  effect: 'stardust',
+  shinyUsername: true,
+};
 
 export default function CustomizationPage() {
   const { session, profile, patchProfile } = useAuth();
@@ -37,8 +58,32 @@ export default function CustomizationPage() {
         <BackButton to="/settings" />
         <EmptyState
           title="Coming soon"
-          body="Card colours, banners and effects for your friend card aren't open to everyone yet. Check back soon."
+          body="Card colours, banners and effects for your friend card aren't open to everyone yet — here's a taste of what's coming."
         />
+
+        {/*
+          The same ProfileCard everywhere else, fed a real profile and a
+          made-up one, so "blank" and "customized" sit side by side instead of
+          asking a student to imagine the difference. TEASER_PROFILE is not an
+          account — it never round-trips through Supabase.
+        */}
+        <div className="flex flex-col gap-4">
+          <section>
+            <h2 className="text-sm font-semibold text-slate-500">You, right now</h2>
+            {profile && (
+              <div className="mt-2">
+                <ProfileCard profile={profile} />
+              </div>
+            )}
+          </section>
+
+          <section>
+            <h2 className="text-sm font-semibold text-slate-500">What&rsquo;s coming</h2>
+            <div className="mt-2">
+              <ProfileCard profile={TEASER_PROFILE} />
+            </div>
+          </section>
+        </div>
       </main>
     );
   }

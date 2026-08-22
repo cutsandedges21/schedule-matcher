@@ -554,9 +554,14 @@ export function useLongPress(onLongPress: (offsetY: number) => void) {
 
       const rect = event.currentTarget.getBoundingClientRect();
       const offsetY = event.clientY - rect.top;
+
+      // Clear any stale press *before* recording this one. `cancel` nulls
+      // `origin`, so calling it afterwards would wipe the origin this press
+      // depends on — leaving onPointerMove with nothing to measure drift
+      // against, and a scroll indistinguishable from a held finger.
+      cancel();
       origin.current = { x: event.clientX, y: event.clientY };
 
-      cancel();
       timer.current = setTimeout(() => {
         timer.current = null;
         origin.current = null;

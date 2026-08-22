@@ -31,7 +31,7 @@ loading each URL, not guessed):
 
 | Name | URL | Description |
 |---|---|---|
-| LifeOS | `https://lifeos-daily.vercel.app` | Habits, health, and money — my daily operating system |
+| LifeOS | `https://lifeos-daily.vercel.app` | Track your goals, health, and money in one place |
 | Summit Sites | `https://summit-sites.vercel.app` | Web design for businesses across Canada |
 | Cuts & Edges | `https://cutsandedges.vercel.app` | Lawn care in RDP, Anjou & Saint-Léonard |
 

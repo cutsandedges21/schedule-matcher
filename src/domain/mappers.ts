@@ -123,3 +123,16 @@ export function extractedToPreviewMeetings(classes: ExtractedClass[]): ClassMeet
     color: colorForClass(c.name),
   }));
 }
+
+/**
+ * The inverse of the id `extractedToPreviewMeetings` assigns.
+ *
+ * Lives here rather than at the call site so the preview-id format is written
+ * down exactly once. Returns null for anything else — a saved class carries a
+ * real uuid, and the mobile editor uses that to tell "tapped a live draft
+ * block" from "tapped a block rendered off the database".
+ */
+export function previewIndexOf(meeting: ClassMeeting): number | null {
+  const match = /^preview-(\d+)$/.exec(meeting.id);
+  return match ? Number(match[1]) : null;
+}

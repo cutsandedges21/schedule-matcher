@@ -232,14 +232,19 @@ closing the tab — are both covered. Adding the router blocker later is a conta
 Edit mode is `lg:grid lg:grid-cols-2 lg:gap-6` inside the existing `AppShell` container
 (`lg:max-w-5xl`), giving each column roughly 450px.
 
-**Known risk: the grid at half width.** `ScheduleGrid`'s desktop branch renders Mon–Fri (plus any
-weekend day in use) alongside the hour-label gutter. At ~450px that is roughly 85px per column.
-`WEEKDAY_LABELS` is already three-letter ("Mon", "Tue"), so the headers themselves fit; the
-pressure is on `ClassBlock`'s contents — class name, room, time — which already truncate on a
-phone-width column, so the failure mode is aggressive truncation rather than overflow. Settle
-this against the real rendered page; no layout change is planned up front. The mobile
-single-day branch is not reused here — a day selector inside a desktop editor would hide the
-classes being edited.
+**Known risk: the grid at half width — resolved, no change needed.** `ScheduleGrid`'s desktop
+branch renders Mon–Fri (plus any weekend day in use) alongside the hour-label gutter. At ~450px
+that is roughly 85px per column.
+
+Checked against the real rendered page at 1440×900 with a four-class schedule. Day headers fit
+(`WEEKDAY_LABELS` is already three-letter). Class names truncate — "Programming Development II"
+renders as "Program…", "Linear Algebra" as "Linear Al…" — but blocks stay distinguishable by
+position and colour, and start time, room, and instructor all remain legible. The full name is
+always visible in the form in the other column, which is the thing being edited. Acceptable as
+built; no layout change.
+
+The mobile single-day branch is not reused here — a day selector inside a desktop editor would
+hide the classes being edited.
 
 The right column scrolls with the page. With a dozen classes it is long; that is acceptable and
 matches the upload review flow. The Save/Cancel row sits at the end of the column in normal flow,

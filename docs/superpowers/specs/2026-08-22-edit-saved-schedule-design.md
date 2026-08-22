@@ -233,11 +233,13 @@ Edit mode is `lg:grid lg:grid-cols-2 lg:gap-6` inside the existing `AppShell` co
 (`lg:max-w-5xl`), giving each column roughly 450px.
 
 **Known risk: the grid at half width.** `ScheduleGrid`'s desktop branch renders Mon–Fri (plus any
-weekend day in use) with full day names from `WEEKDAY_LABELS` — "Monday", "Tuesday" — alongside
-the hour-label gutter. At ~450px that is about 85px per column and the headers will likely need
-abbreviating. This is a CSS detail to settle against the real rendered page, not a spec decision.
-Fallback if it stays cramped: short day labels in edit mode. The mobile single-day branch is not
-reused here — a day selector inside a desktop editor would hide the classes being edited.
+weekend day in use) alongside the hour-label gutter. At ~450px that is roughly 85px per column.
+`WEEKDAY_LABELS` is already three-letter ("Mon", "Tue"), so the headers themselves fit; the
+pressure is on `ClassBlock`'s contents — class name, room, time — which already truncate on a
+phone-width column, so the failure mode is aggressive truncation rather than overflow. Settle
+this against the real rendered page; no layout change is planned up front. The mobile
+single-day branch is not reused here — a day selector inside a desktop editor would hide the
+classes being edited.
 
 The right column scrolls with the page. With a dozen classes it is long; that is acceptable and
 matches the upload review flow. The Save/Cancel row sits at the end of the column in normal flow,

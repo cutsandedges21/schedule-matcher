@@ -8,7 +8,11 @@ interface Props {
   value: ExtractedClass;
   index: number;
   onChange: (next: ExtractedClass) => void;
-  onRemove: () => void;
+  /**
+   * Omitted by the mobile sheet, which puts deletion in its own header so the
+   * card can be short enough to fit on screen without scrolling.
+   */
+  onRemove?: () => void;
 }
 
 export default function ClassCard({ value, index, onChange, onRemove }: Props) {
@@ -27,8 +31,8 @@ export default function ClassCard({ value, index, onChange, onRemove }: Props) {
   }
 
   return (
-    <li className="rounded-2xl border border-slate-200 bg-white p-4">
-      <label className="text-xs font-medium text-slate-500" htmlFor={`name-${index}`}>Class</label>
+    <li className="rounded-2xl border border-slate-200 bg-white p-3">
+      <label className="text-xs font-medium leading-tight text-slate-500" htmlFor={`name-${index}`}>Class</label>
       <input
         id={`name-${index}`}
         value={value.name}
@@ -37,7 +41,7 @@ export default function ClassCard({ value, index, onChange, onRemove }: Props) {
         className="min-h-touch w-full rounded-lg border border-slate-300 px-3"
       />
 
-      <p className="mt-3 text-xs font-medium text-slate-500">Days</p>
+      <p className="mt-2 text-xs font-medium leading-tight text-slate-500">Days</p>
       <div className="mt-1 flex gap-1.5">
         {ALL_WEEKDAYS.map((day) => (
           <button
@@ -66,9 +70,9 @@ export default function ClassCard({ value, index, onChange, onRemove }: Props) {
         <p className="mt-1 text-xs text-rose-600">Pick at least one day.</p>
       )}
 
-      <div className="mt-3 flex gap-3">
+      <div className="mt-2 flex gap-3">
         <div className="flex-1">
-          <label className="text-xs font-medium text-slate-500" htmlFor={`start-${index}`}>Starts</label>
+          <label className="text-xs font-medium leading-tight text-slate-500" htmlFor={`start-${index}`}>Starts</label>
           <input
             id={`start-${index}`}
             type="time"
@@ -78,7 +82,7 @@ export default function ClassCard({ value, index, onChange, onRemove }: Props) {
           />
         </div>
         <div className="flex-1">
-          <label className="text-xs font-medium text-slate-500" htmlFor={`end-${index}`}>Ends</label>
+          <label className="text-xs font-medium leading-tight text-slate-500" htmlFor={`end-${index}`}>Ends</label>
           <input
             id={`end-${index}`}
             type="time"
@@ -90,9 +94,9 @@ export default function ClassCard({ value, index, onChange, onRemove }: Props) {
       </div>
       {invalidTime && <p className="mt-1 text-xs text-rose-600">End time must be after the start.</p>}
 
-      <div className="mt-3 flex gap-3">
+      <div className="mt-2 flex gap-3">
         <div className="flex-1">
-          <label className="text-xs font-medium text-slate-500" htmlFor={`code-${index}`}>Course code</label>
+          <label className="text-xs font-medium leading-tight text-slate-500" htmlFor={`code-${index}`}>Course code</label>
           <input
             id={`code-${index}`}
             value={value.courseCode ?? ''}
@@ -104,7 +108,7 @@ export default function ClassCard({ value, index, onChange, onRemove }: Props) {
           />
         </div>
         <div className="flex-1">
-          <label className="text-xs font-medium text-slate-500" htmlFor={`section-${index}`}>Section</label>
+          <label className="text-xs font-medium leading-tight text-slate-500" htmlFor={`section-${index}`}>Section</label>
           <input
             id={`section-${index}`}
             value={value.section ?? ''}
@@ -117,9 +121,9 @@ export default function ClassCard({ value, index, onChange, onRemove }: Props) {
         </div>
       </div>
 
-      <div className="mt-3 flex gap-3">
+      <div className="mt-2 flex gap-3">
         <div className="flex-1">
-          <label className="text-xs font-medium text-slate-500" htmlFor={`room-${index}`}>Room</label>
+          <label className="text-xs font-medium leading-tight text-slate-500" htmlFor={`room-${index}`}>Room</label>
           <input
             id={`room-${index}`}
             value={value.room ?? ''}
@@ -131,7 +135,7 @@ export default function ClassCard({ value, index, onChange, onRemove }: Props) {
           />
         </div>
         <div className="flex-1">
-          <label className="text-xs font-medium text-slate-500" htmlFor={`instructor-${index}`}>Instructor</label>
+          <label className="text-xs font-medium leading-tight text-slate-500" htmlFor={`instructor-${index}`}>Instructor</label>
           <input
             id={`instructor-${index}`}
             value={value.instructor ?? ''}
@@ -144,9 +148,11 @@ export default function ClassCard({ value, index, onChange, onRemove }: Props) {
         </div>
       </div>
 
-      <Button variant="ghost" onClick={onRemove} className="mt-2 w-full text-rose-600">
-        Remove class
-      </Button>
+      {onRemove && (
+        <Button variant="ghost" onClick={onRemove} className="mt-2 w-full text-rose-600">
+          Remove class
+        </Button>
+      )}
     </li>
   );
 }

@@ -1,4 +1,4 @@
-import type { ClassMeeting, Profile } from './types';
+import type { ClassMeeting, ExtractedClass, Profile } from './types';
 
 export interface ClassRow {
   id: string;
@@ -67,5 +67,31 @@ export function rowToProfile(row: ProfileRow): Profile {
     banner: row.banner,
     effect: row.effect,
     shinyUsername: row.shiny_username,
+  };
+}
+
+/**
+ * A saved class → an editable form value.
+ *
+ * `id` and `color` are dropped rather than carried: `saveSchedule` assigns
+ * colour from the class name and lets Postgres assign ids, so keeping either
+ * one here would create a second source of truth that silently goes stale the
+ * moment a student renames a class.
+ *
+ * `days` is copied. Nothing in the edit path mutates arrays in place today,
+ * but aliasing the loaded schedule's array into the draft would make the
+ * dirty check (domain/scheduleEdit.ts) compare an array against itself and
+ * always report "no changes" if that ever stopped being true.
+ */
+export function meetingToExtracted(meeting: ClassMeeting): ExtractedClass {
+  return {
+    name: meeting.name,
+    instructor: meeting.instructor,
+    room: meeting.room,
+    courseCode: meeting.courseCode,
+    section: meeting.section,
+    days: [...meeting.days],
+    startMinute: meeting.startMinute,
+    endMinute: meeting.endMinute,
   };
 }

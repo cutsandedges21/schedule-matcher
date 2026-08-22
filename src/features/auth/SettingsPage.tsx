@@ -91,18 +91,6 @@ export default function SettingsPage() {
       </section>
 
       <section>
-        <h2 className="text-sm font-semibold text-slate-500">Legal</h2>
-        <ul className="mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white">
-          <li>
-            <NavRow to="/privacy" label="Privacy Policy" />
-          </li>
-          <li className="border-t border-slate-200">
-            <NavRow to="/terms" label="Terms of Service" />
-          </li>
-        </ul>
-      </section>
-
-      <section>
         <h2 className="text-sm font-bold text-slate-900">More from me</h2>
         <p className="mt-1 text-xs text-slate-500">
           I also run a few other things outside of class:
@@ -128,6 +116,18 @@ export default function SettingsPage() {
               label="Cuts & Edges"
               description="Lawn care in RDP, Anjou & Saint-Léonard"
             />
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 className="text-sm font-semibold text-slate-500">Legal</h2>
+        <ul className="mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+          <li>
+            <NavRow to="/privacy" label="Privacy Policy" />
+          </li>
+          <li className="border-t border-slate-200">
+            <NavRow to="/terms" label="Terms of Service" />
           </li>
         </ul>
       </section>

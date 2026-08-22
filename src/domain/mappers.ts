@@ -1,4 +1,5 @@
-import type { ClassMeeting, Profile } from './types';
+import { colorForClass } from './color';
+import type { ClassMeeting, ExtractedClass, Profile } from './types';
 
 export interface ClassRow {
   id: string;
@@ -68,4 +69,57 @@ export function rowToProfile(row: ProfileRow): Profile {
     effect: row.effect,
     shinyUsername: row.shiny_username,
   };
+}
+
+/**
+ * A saved class → an editable form value.
+ *
+ * `id` and `color` are dropped rather than carried: `saveSchedule` assigns
+ * colour from the class name and lets Postgres assign ids, so keeping either
+ * one here would create a second source of truth that silently goes stale the
+ * moment a student renames a class.
+ *
+ * `days` is copied. Nothing in the edit path mutates arrays in place today,
+ * but aliasing the loaded schedule's array into the draft would make the
+ * dirty check (domain/scheduleEdit.ts) compare an array against itself and
+ * always report "no changes" if that ever stopped being true.
+ */
+export function meetingToExtracted(meeting: ClassMeeting): ExtractedClass {
+  return {
+    name: meeting.name,
+    instructor: meeting.instructor,
+    room: meeting.room,
+    courseCode: meeting.courseCode,
+    section: meeting.section,
+    days: [...meeting.days],
+    startMinute: meeting.startMinute,
+    endMinute: meeting.endMinute,
+  };
+}
+
+/**
+ * In-progress edit state → meetings the grid can render, for the live preview.
+ *
+ * Colour comes from `colorForClass`, the same deterministic name hash
+ * `saveSchedule` uses, so the colour a student sees while editing is the
+ * colour the block will actually have once saved — including when renaming a
+ * class moves it to a different palette entry.
+ *
+ * `id` is positional and exists only to key the React list. It never reaches
+ * the database: saving goes through `saveSchedule`, which builds its own rows
+ * and lets Postgres assign real ids.
+ */
+export function extractedToPreviewMeetings(classes: ExtractedClass[]): ClassMeeting[] {
+  return classes.map((c, index) => ({
+    id: `preview-${index}`,
+    name: c.name,
+    instructor: c.instructor,
+    room: c.room,
+    courseCode: c.courseCode,
+    section: c.section,
+    days: c.days,
+    startMinute: c.startMinute,
+    endMinute: c.endMinute,
+    color: colorForClass(c.name),
+  }));
 }

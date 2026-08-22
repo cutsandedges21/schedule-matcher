@@ -264,7 +264,8 @@ export default function UploadPage() {
       ) : (
         <div className="mt-4">
           <ReviewForm
-            initial={stage.classes}
+            value={stage.classes}
+            onChange={(next) => setStage({ ...stage, classes: next })}
             warnings={stage.warnings}
             saving={saving}
             onSave={handleSave}

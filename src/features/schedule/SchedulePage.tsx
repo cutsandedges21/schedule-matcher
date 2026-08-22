@@ -1,5 +1,5 @@
 // src/features/schedule/SchedulePage.tsx
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { useSchedule, saveSchedule } from './useSchedule';
@@ -25,6 +25,24 @@ export default function SchedulePage() {
   const [saveError, setSaveError] = useState<string | null>(null);
 
   const dirty = editing && hasUnsavedChanges(draft, baseline);
+
+  /**
+   * Native "leave site?" prompt while there are unsaved edits.
+   *
+   * Keyed on `dirty` and cleaned up on every change, because a listener left
+   * registered after a successful save would warn on every page close for the
+   * rest of the session.
+   *
+   * This covers closing and reloading the tab. It does not cover in-app
+   * navigation — clicking Friends mid-edit still discards silently. That gap
+   * is accepted in the spec (§8); closing it needs a router-level blocker.
+   */
+  useEffect(() => {
+    if (!dirty) return;
+    const warn = (event: BeforeUnloadEvent) => event.preventDefault();
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, [dirty]);
 
   function startEditing() {
     // `draft` and `baseline` start as the same array. Safe because every edit

@@ -192,3 +192,60 @@ describe('SchedulePage edit mode', () => {
     expect((screen.getByRole('button', { name: 'Save changes' }) as HTMLButtonElement).disabled).toBe(true);
   });
 });
+
+/**
+ * `beforeunload` is cancelled by calling preventDefault, so asking whether the
+ * browser would warn is asking whether a dispatched cancelable event comes
+ * back defaultPrevented.
+ */
+function unloadWouldWarn(): boolean {
+  const event = new Event('beforeunload', { cancelable: true });
+  window.dispatchEvent(event);
+  return event.defaultPrevented;
+}
+
+describe('SchedulePage unsaved-changes warning', () => {
+  it('does not warn when not editing', () => {
+    renderPage();
+    expect(unloadWouldWarn()).toBe(false);
+  });
+
+  it('does not warn in edit mode before anything is changed', () => {
+    renderPage();
+    fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
+
+    expect(unloadWouldWarn()).toBe(false);
+  });
+
+  it('warns once edits are unsaved', () => {
+    renderPage();
+    fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
+    fireEvent.change(screen.getByDisplayValue('BIO 101'), { target: { value: 'BIO 102' } });
+
+    expect(unloadWouldWarn()).toBe(true);
+  });
+
+  it('stops warning after a successful save', async () => {
+    renderPage();
+    fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
+    fireEvent.change(screen.getByDisplayValue('BIO 101'), { target: { value: 'BIO 102' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Save changes' }));
+
+    await waitFor(() => expect(screen.getByRole('heading', { name: 'My schedule' })).toBeDefined());
+
+    // A listener left registered here would warn on every page close for the
+    // rest of the session.
+    expect(unloadWouldWarn()).toBe(false);
+  });
+
+  it('stops warning after edits are discarded', () => {
+    vi.stubGlobal('confirm', vi.fn(() => true));
+
+    renderPage();
+    fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
+    fireEvent.change(screen.getByDisplayValue('BIO 101'), { target: { value: 'BIO 102' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+
+    expect(unloadWouldWarn()).toBe(false);
+  });
+});

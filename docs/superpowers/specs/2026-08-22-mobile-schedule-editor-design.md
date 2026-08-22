@@ -116,10 +116,16 @@ out explicitly:
 **Contents:** a header (class name, trash icon, close button), the tightened `ClassCard`, and a
 full-width **Done**.
 
-**Done applies the edit to `draft` and closes. It does not touch the network.** Persistence stays
-where the desktop editor put it — a fixed bottom bar on the edit screen with **Save changes** and
-**Cancel**, going through `saveSchedule` → `replace_schedule` in one round trip however many
-classes were touched. The sheet overlays that bar while open.
+**Done applies the edit to `draft` and closes. It does not touch the network.** Persistence goes
+through `saveSchedule` → `replace_schedule` in one round trip however many classes were touched.
+
+**Save and Cancel live in the edit-mode header, not a bottom bar.** The desktop editor puts them
+at the end of the column, but a fixed bottom bar on mobile would sit directly above `AppShell`'s
+`BottomNav` — two stacked bars, ~140px of permanent chrome on the screen whose whole problem is
+vertical space. A header row (`Cancel · Edit schedule · Save`) costs nothing beyond the heading
+already there. Save and Cancel are pressed once per session, so trading thumb reach for 68px of
+grid is the right way round; the sheet's Done, which is pressed repeatedly, stays thumb-level at
+the bottom of the sheet.
 
 Two commit steps (Done, then Save changes) is a real cost. It buys consistency with desktop, one
 network round trip, and reuse of the dirty-tracking and `beforeunload` logic already shipped.
@@ -203,15 +209,26 @@ New to this document:
 | New-class sheet dismissed without Done | Nothing appended; dirty flag untouched. |
 | Sheet open on a viewport crossing 1024px | Sheet closes and the desktop panel takes over; `draft` is preserved, so no edit is lost. |
 
-## 10. Known risk
+## 10. Known risks
 
 **The sheet hides the bottom 56% of the grid.** Editing a 4 PM class means its own block sits
 behind the sheet, so the live preview — the feature the desktop editor was built around — is
-invisible for exactly the class being edited.
+invisible for exactly the class being edited. Page scroll is locked while the sheet is open, as
+a modal requires, so it cannot be scrolled into view either.
 
 Mitigating it means auto-scrolling the grid to lift the edited block above the sheet, which
 brings its own scroll-position management. Deliberately deferred: the preview still helps for
 morning classes, and this may prove not to matter. If it does, it is a contained follow-up.
+
+**Losing edits to the nav bar is more likely here than on desktop.** The parent spec (§8) accepts
+that in-app navigation is unguarded — only Cancel and tab-close warn. On desktop that means
+clicking a header link. On mobile `BottomNav` is permanently on screen, thumb-adjacent, and one
+tap from discarding an unsaved schedule.
+
+This spec does not fix it, because the fix is the router-level navigation blocker the parent spec
+already deferred, and doing it properly covers both surfaces at once. Recording it because the
+same accepted risk carries materially more weight on a phone. Hiding `BottomNav` during edit mode
+is the cheaper half-measure if this proves painful in use.
 
 ## 11. Testing
 

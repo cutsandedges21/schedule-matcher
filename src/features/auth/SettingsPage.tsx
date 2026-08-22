@@ -1,27 +1,12 @@
 // src/features/auth/SettingsPage.tsx
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 import { DEFAULT_SCHOOL_ID } from '@/domain/schools';
 import { useAuth } from './AuthProvider';
 import { deleteAccount } from './deleteAccount';
 import SchoolSelect from './SchoolSelect';
 import Button from '@/components/Button';
-
-/** One row in a grouped list: a label, a chevron, and a whole-row tap target. */
-function NavRow({ to, label }: { to: string; label: string }) {
-  return (
-    <Link
-      to={to}
-      className="flex min-h-touch items-center justify-between px-4 py-3 text-sm font-medium active:bg-slate-100"
-    >
-      {label}
-      <span aria-hidden className="text-slate-400">
-        ›
-      </span>
-    </Link>
-  );
-}
+import NavRow from '@/components/NavRow';
 
 export default function SettingsPage() {
   const { profile, patchProfile, signOut } = useAuth();
@@ -113,6 +98,36 @@ export default function SettingsPage() {
           </li>
           <li className="border-t border-slate-200">
             <NavRow to="/terms" label="Terms of Service" />
+          </li>
+        </ul>
+      </section>
+
+      <section>
+        <h2 className="text-sm font-bold text-slate-900">More from me</h2>
+        <p className="mt-1 text-xs text-slate-500">
+          I also run a few other things outside of class:
+        </p>
+        <ul className="mt-2 overflow-hidden rounded-2xl border-2 border-accent bg-white">
+          <li>
+            <NavRow
+              href="https://lifeos-daily.vercel.app"
+              label="LifeOS"
+              description="Track your goals, health, and money in one place"
+            />
+          </li>
+          <li className="border-t border-slate-200">
+            <NavRow
+              href="https://summit-sites.vercel.app"
+              label="Summit Sites"
+              description="Web design for businesses across Canada"
+            />
+          </li>
+          <li className="border-t border-slate-200">
+            <NavRow
+              href="https://cutsandedges.vercel.app"
+              label="Cuts & Edges"
+              description="Lawn care in RDP, Anjou & Saint-Léonard"
+            />
           </li>
         </ul>
       </section>

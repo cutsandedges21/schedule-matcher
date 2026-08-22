@@ -81,8 +81,14 @@ interactive element") is not negotiable and is not a source of savings. Five row
 | Remove button leaves the card for a trash icon in the sheet header | 52px |
 | `leading-tight` on the field labels | ~38px |
 
-**470px → ~356px, with nothing hidden.** Sheet chrome adds a 48px header and a 68px Done row, so
-the sheet is **~472px** — 56% of a 390×844 screen, leaving 372px of grid visible above it.
+**470px → 393px, with nothing hidden**, measured against the built components at 390×844. The
+sheet comes to **533px** — 63% of the screen, leaving 311px of grid visible above it, and it
+does **not** scroll internally. All eight fields are reachable without moving the sheet.
+
+The estimate while designing was 356px and a 472px sheet. The gap is almost entirely the
+line-height row of the table above: `leading-tight` on a 12px label saves far less than the 38px
+guessed. The padding, margin, and remove-button savings landed as predicted. The goal that
+mattered — a whole card on screen at once — holds with 311px to spare.
 
 ### 5.1 `ClassCard` is tightened globally
 

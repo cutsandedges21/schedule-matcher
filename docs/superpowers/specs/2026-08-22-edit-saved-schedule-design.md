@@ -42,6 +42,8 @@ once this works.
   existing `replace_schedule` RPC.
 - **Conflict detection between tabs.** Last write wins, exactly as re-uploading behaves today.
 - **Undo / edit history.**
+- **Analytics.** No usage event is recorded for editing. This is deliberate, not an oversight —
+  see §10.3.
 
 ## 4. Architecture
 
@@ -241,7 +243,65 @@ The right column scrolls with the page. With a dozen classes it is long; that is
 matches the upload review flow. The Save/Cancel row sits at the end of the column in normal flow,
 not fixed to the viewport.
 
-## 10. Testing
+## 10. Legal and privacy
+
+**Conclusion: no change to `PrivacyPage.tsx` or `TermsPage.tsx` is required.** The reasoning is
+recorded here so it does not have to be re-derived at review time.
+
+### 10.1 Why nothing changes
+
+The privacy policy is drafted to Quebec's Law 25 and PIPEDA, and its header states that every
+factual assertion describes the system as built. This feature does not alter any of those facts:
+
+| Question | Answer |
+|---|---|
+| New categories of personal information? | No. The editor writes the same `classes` columns already disclosed in clause 3. |
+| New processing? | No. Editing is manual. No OCR, no language model, no automated decision. Clause 4.4 concerns image extraction only and is untouched. |
+| New communication to a third party? | No. Save is a Postgres write through the existing `replace_schedule` RPC. No Gemini call, no processor. |
+| Change to retention? | No. `replace_schedule` deletes and re-inserts as it does today. |
+| Change to who can see the data? | No. Friend visibility is governed by the unchanged `classes` RLS policies. |
+| New usage events recorded? | No — deliberately. See §10.3. |
+
+The purpose is also already disclosed. Clause 6.1 states that personal information is used to
+"enable you to record, **correct** and display your course schedule". Correction is an
+already-declared purpose; this feature is the first proper implementation of it, not a new one.
+
+### 10.2 The feature strengthens an existing commitment
+
+Clause 10.1 grants the right to **rectify** personal information that is "inaccurate, incomplete
+or equivocal", and clause 10.2 states those rights "may be exercised **directly within the
+Service**".
+
+Today the only in-Service way to correct a saved schedule is to replace it wholesale from a new
+screenshot. That is a thin reading of a commitment already made in writing: a student who needs
+to fix one wrong room number has no proportionate way to do it. A real editor makes clause 10.2
+straightforwardly true rather than technically arguable.
+
+This is worth stating plainly: the compliance value here runs the other way from usual. The
+feature is not a new legal exposure to be papered over — it closes a gap between what the policy
+promises and what the software offers.
+
+**Do not bump `LAST_UPDATED_EN` / `LAST_UPDATED_FR`.** No clause wording changes, and under
+clause 14.2 a moved amendment date signals an amendment to students. Bumping it for a release
+that amends nothing is itself misleading. Those two constants move only when clause text moves,
+and always together.
+
+### 10.3 Guardrail: do not add an analytics event
+
+Instrumenting the editor would be a natural reflex and is out of scope. It is not free:
+
+- `app_events.kind` carries a database CHECK constraint,
+  `check (kind in ('open', 'compare_pair', 'compare_group'))` (migration `0009_app_events.sql`),
+  and `EventKind` in `src/lib/analytics.ts` mirrors it. A new kind needs a migration, not just a
+  string literal.
+- `PrivacyPage.tsx`'s header binds clause 5 to what `analytics.ts` and `0009` actually record. A
+  new event type is a privacy-document question, not only a code question — which means clause 5
+  review, French translation, and the `LAST_UPDATED` bump §10.2 otherwise forbids.
+
+None of that is warranted to count edits. If instrumentation is wanted later, it is its own
+change with its own legal review.
+
+## 11. Testing
 
 **Unit (Vitest), on the pure logic:**
 

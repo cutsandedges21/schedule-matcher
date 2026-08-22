@@ -1,3 +1,4 @@
+import { colorForClass } from './color';
 import type { ClassMeeting, ExtractedClass, Profile } from './types';
 
 export interface ClassRow {
@@ -94,4 +95,31 @@ export function meetingToExtracted(meeting: ClassMeeting): ExtractedClass {
     startMinute: meeting.startMinute,
     endMinute: meeting.endMinute,
   };
+}
+
+/**
+ * In-progress edit state → meetings the grid can render, for the live preview.
+ *
+ * Colour comes from `colorForClass`, the same deterministic name hash
+ * `saveSchedule` uses, so the colour a student sees while editing is the
+ * colour the block will actually have once saved — including when renaming a
+ * class moves it to a different palette entry.
+ *
+ * `id` is positional and exists only to key the React list. It never reaches
+ * the database: saving goes through `saveSchedule`, which builds its own rows
+ * and lets Postgres assign real ids.
+ */
+export function extractedToPreviewMeetings(classes: ExtractedClass[]): ClassMeeting[] {
+  return classes.map((c, index) => ({
+    id: `preview-${index}`,
+    name: c.name,
+    instructor: c.instructor,
+    room: c.room,
+    courseCode: c.courseCode,
+    section: c.section,
+    days: c.days,
+    startMinute: c.startMinute,
+    endMinute: c.endMinute,
+    color: colorForClass(c.name),
+  }));
 }

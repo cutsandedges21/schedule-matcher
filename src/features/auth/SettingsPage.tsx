@@ -68,6 +68,19 @@ export default function SettingsPage() {
       <h1 className="text-2xl font-bold">Settings</h1>
 
       <section>
+        <h2 className="text-sm font-semibold text-slate-500">Follow us</h2>
+        <ul className="mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+          <li>
+            <NavRow
+              href="https://www.instagram.com/schedulematcher.app/"
+              label="Instagram"
+              description="@schedulematcher.app"
+            />
+          </li>
+        </ul>
+      </section>
+
+      <section>
         <h2 className="text-sm font-semibold text-slate-500">School</h2>
         <p className="mt-1 text-xs text-slate-500">
           Sets the app&rsquo;s colour. Friends can see which school you&rsquo;re at.

@@ -9,6 +9,32 @@
       content="Share your class schedule and find the hours you and your friends are both free."
     />
 
+    <!-- Link-preview cards (iMessage, WhatsApp, Slack, etc.) when an invite or
+         a schedule link gets shared. These crawlers fetch the raw HTML and do
+         not run JS, so this only works as static tags here — not anything
+         rendered by React — and the image URL has to be absolute; a relative
+         one is unreliable across crawlers. icon-512.png is square, hence
+         "summary" rather than "summary_large_image" on the Twitter tags,
+         which expects a wide banner and would crop a square image oddly. -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://schedulematcher.app/" />
+    <meta property="og:title" content="Schedule Matcher" />
+    <meta
+      property="og:description"
+      content="Share your class schedule and find the hours you and your friends are both free."
+    />
+    <meta property="og:image" content="https://schedulematcher.app/icon-512.png" />
+    <meta property="og:image:width" content="512" />
+    <meta property="og:image:height" content="512" />
+    <meta property="og:image:type" content="image/png" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Schedule Matcher" />
+    <meta
+      name="twitter:description"
+      content="Share your class schedule and find the hours you and your friends are both free."
+    />
+    <meta name="twitter:image" content="https://schedulematcher.app/icon-512.png" />
+
     <!-- Home-screen install. The manifest is what makes Android offer a real
          install (rather than a bookmark); the apple-* tags are the iOS
          equivalent, since Safari ignores the manifest's display and name. -->

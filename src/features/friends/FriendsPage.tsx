@@ -48,7 +48,7 @@ export default function FriendsPage() {
 
   if (loading) return <Spinner label="Loading friends" />;
 
-  const inviteUrl = `${window.location.origin}/invite/${profile?.inviteCode}`;
+  const inviteUrl = `${window.location.origin}/invite/${profile?.username}`;
 
   async function shareInvite() {
     setCopyFailed(false);

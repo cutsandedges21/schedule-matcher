@@ -2,13 +2,13 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAuth } from '@/features/auth/AuthProvider';
-import { findProfileByInviteCode, acceptInvite } from './useFriends';
+import { findProfileByUsername, acceptInvite } from './useFriends';
 import Spinner from '@/components/Spinner';
 import Button from '@/components/Button';
 import type { Profile } from '@/domain/types';
 
 export default function InvitePage() {
-  const { code } = useParams<{ code: string }>();
+  const { username } = useParams<{ username: string }>();
   const { session, profile } = useAuth();
   const [target, setTarget] = useState<Profile | null>(null);
   const [status, setStatus] = useState<'loading' | 'ready' | 'accepted' | 'error'>('loading');
@@ -17,9 +17,9 @@ export default function InvitePage() {
   useEffect(() => {
     async function run() {
       try {
-        const found = await findProfileByInviteCode(code!);
+        const found = await findProfileByUsername(username!);
         if (!found) {
-          setMessage('That invite link is not valid.');
+          setMessage('No student with that username.');
           setStatus('error');
           return;
         }
@@ -36,11 +36,11 @@ export default function InvitePage() {
       }
     }
     void run();
-  }, [code, session?.user.id]);
+  }, [username, session?.user.id]);
 
   async function handleAccept() {
     try {
-      await acceptInvite(code!);
+      await acceptInvite(username!);
       setStatus('accepted');
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Could not use that invite link.');

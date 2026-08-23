@@ -52,7 +52,7 @@ function AppRoutes() {
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/onboarding" element={<RequireAuth><OnboardingPage /></RequireAuth>} />
-          <Route path="/invite/:code" element={<RequireAuth><InvitePage /></RequireAuth>} />
+          <Route path="/invite/:username" element={<RequireAuth><InvitePage /></RequireAuth>} />
           <Route path="/" element={shell(<SchedulePage />)} />
           <Route path="/upload" element={<RequireAuth><UploadPage /></RequireAuth>} />
           <Route path="/friends" element={shell(<FriendsPage />)} />

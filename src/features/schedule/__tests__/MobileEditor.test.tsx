@@ -85,6 +85,11 @@ function openFirstClass() {
   fireEvent.click(screen.getByRole('button', { name: 'Edit BIO 101' }));
 }
 
+/** Queries scoped inside the card, away from the page header and the grid. */
+function sheet() {
+  return within(screen.getByRole('dialog'));
+}
+
 /**
  * The long-press fires from a setTimeout, so the state update it triggers
  * lands outside React's batching — fireEvent wraps itself in act(), but
@@ -138,10 +143,34 @@ describe('MobileEditor', () => {
     const { onChange } = renderEditor([draft()]);
     openFirstClass();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Delete class' }));
 
     expect(onChange.mock.calls[0][0]).toHaveLength(0);
     expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('closes the sheet from Cancel without touching the draft', () => {
+    const { onChange } = renderEditor([draft()]);
+    openFirstClass();
+
+    // Scoped: the page header carries its own Cancel for the whole schedule.
+    // The card covers it while open, and aria-modal hides it from assistive
+    // tech, but both are in the DOM.
+    fireEvent.click(sheet().getByRole('button', { name: 'Cancel' }));
+
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it('does not print the class name as a heading — it is only in the field', () => {
+    renderEditor([draft()]);
+    openFirstClass();
+
+    // Scoped to the sheet: the grid block behind it legitimately shows the name.
+    // getByText does not match input values, so this asserts the name appears
+    // nowhere as static text inside the card.
+    expect(sheet().queryByText('BIO 101')).toBeNull();
+    expect((sheet().getByDisplayValue('BIO 101') as HTMLInputElement).value).toBe('BIO 101');
   });
 
   it('closes the sheet on Escape', () => {

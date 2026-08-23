@@ -58,11 +58,15 @@ function renderPage() {
   );
 }
 
-/** The desktop week grid is `hidden lg:flex`, so scope queries to it. */
+/**
+ * The desktop week grid is `hidden lg:flex`, so scope queries to it — and to
+ * blocks within it, since the weekday header row above the columns is styled
+ * the same way as a block's name and would otherwise be counted as one.
+ */
 function desktopBlockNames(): string[] {
-  return Array.from(document.querySelectorAll('.lg\\:flex .truncate.font-semibold')).map(
-    (el) => el.textContent ?? ''
-  );
+  return Array.from(
+    document.querySelectorAll('.lg\\:flex [data-class-block] .truncate.font-semibold')
+  ).map((el) => el.textContent ?? '');
 }
 
 beforeEach(() => {

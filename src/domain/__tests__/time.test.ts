@@ -1,6 +1,11 @@
 // src/domain/__tests__/time.test.ts
 import { describe, it, expect } from 'vitest';
-import { parseTimeToMinutes, formatMinutes, formatHourLabel } from '../time';
+import {
+  parseTimeToMinutes,
+  formatMinutes,
+  formatMinutesCompact,
+  formatHourLabel,
+} from '../time';
 
 describe('parseTimeToMinutes', () => {
   it('parses 12-hour times with a meridiem', () => {
@@ -40,6 +45,19 @@ describe('formatMinutes', () => {
     expect(formatMinutes(0)).toBe('12:00 AM');
     expect(formatMinutes(720)).toBe('12:00 PM');
     expect(formatMinutes(1440)).toBe('12:00 AM');
+  });
+});
+
+describe('formatMinutesCompact', () => {
+  it('renders clock time without the meridiem', () => {
+    expect(formatMinutesCompact(600)).toBe('10:00');
+    expect(formatMinutesCompact(795)).toBe('1:15');
+  });
+
+  it('keeps both noon and midnight as 12, never 0', () => {
+    expect(formatMinutesCompact(0)).toBe('12:00');
+    expect(formatMinutesCompact(720)).toBe('12:00');
+    expect(formatMinutesCompact(1440)).toBe('12:00');
   });
 });
 

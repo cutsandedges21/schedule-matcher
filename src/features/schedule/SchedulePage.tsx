@@ -15,7 +15,7 @@ import { hasUnsavedChanges } from '@/domain/scheduleEdit';
 import type { ExtractedClass } from '@/domain/types';
 
 export default function SchedulePage() {
-  const { session, profile } = useAuth();
+  const { session } = useAuth();
   const { classes, loading, error, reload } = useSchedule(session?.user.id);
 
   // Every hook stays above the `loading` early return below — a hook declared
@@ -135,10 +135,7 @@ export default function SchedulePage() {
   return (
     <main>
       <header className="flex items-center justify-between px-4 pt-4">
-        <div>
-          <h1 className="text-2xl font-bold">My schedule</h1>
-          <p className="text-sm text-slate-500">@{profile?.username}</p>
-        </div>
+        <h1 className="text-2xl font-bold">My schedule</h1>
         <div className="flex items-center gap-2">
           {classes.length > 0 && (
             <Button variant="secondary" onClick={startEditing}>

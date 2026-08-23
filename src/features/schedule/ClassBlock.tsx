@@ -1,6 +1,7 @@
 // src/features/schedule/ClassBlock.tsx
 import { CLASS_COLORS } from '@/domain/color';
-import { formatMinutes } from '@/domain/time';
+import { formatMinutes, formatMinutesCompact } from '@/domain/time';
+import { WEEKDAY_LABELS } from '@/domain/constants';
 import { HOUR_HEIGHT_PX } from '@/components/HourGrid';
 import type { PositionedBlock } from '@/domain/layout';
 
@@ -16,10 +17,21 @@ interface Props {
   block: PositionedBlock;
   /** Edit mode only. When given, the block becomes a real button. */
   onSelect?: () => void;
+  /**
+   * Which grid this block is sitting in.
+   *
+   * 'week' is the every-day-at-once layout, where a column is around 55px wide
+   * on a phone. Below `lg` that variant shrinks its type and drops room and
+   * instructor entirely: at that width they truncate to two or three characters,
+   * which is noise rather than detail. At `lg` a week column is wide again and
+   * the two variants render identically.
+   */
+  variant?: 'day' | 'week';
 }
 
-export default function ClassBlock({ block, onSelect }: Props) {
+export default function ClassBlock({ block, onSelect, variant = 'day' }: Props) {
   const styles = CLASS_COLORS[block.meeting.color] ?? CLASS_COLORS.indigo;
+  const week = variant === 'week';
   const widthPct = 100 / block.laneCount;
 
   // Block height in px depends only on the meeting's own duration (see
@@ -45,35 +57,67 @@ export default function ClassBlock({ block, onSelect }: Props) {
   };
 
   // One constant, so the div and button branches cannot drift apart.
-  const className = `absolute overflow-hidden rounded-lg border px-2 py-1 text-left ${styles.block} ${styles.text}`;
+  const className = `absolute overflow-hidden rounded-lg border text-left ${
+    week ? 'px-1 py-0.5 lg:px-2 lg:py-1' : 'px-2 py-1'
+  } ${styles.block} ${styles.text}`;
+
+  // The narrow-week sizes only ever shrink what the day variant shows, so the
+  // vertical fit computed above still holds.
+  const detailClass = `truncate leading-tight opacity-80 ${
+    week ? 'text-[9px] lg:text-[10px]' : 'text-[10px]'
+  }`;
 
   const content = (
     <>
-      <p className="truncate text-xs font-semibold leading-tight">{block.meeting.name}</p>
-      <p className="truncate text-[10px] leading-tight opacity-80">
-        {formatMinutes(block.meeting.startMinute)}
+      <p
+        className={`truncate font-semibold leading-tight ${week ? 'text-[10px] lg:text-xs' : 'text-xs'}`}
+      >
+        {block.meeting.name}
+      </p>
+      <p className={detailClass}>
+        {week ? (
+          <>
+            <span className="lg:hidden">
+              {formatMinutesCompact(block.meeting.startMinute)}
+            </span>
+            <span className="hidden lg:inline">{formatMinutes(block.meeting.startMinute)}</span>
+          </>
+        ) : (
+          formatMinutes(block.meeting.startMinute)
+        )}
       </p>
       {showRoom && (
-        <p className="truncate text-[10px] leading-tight opacity-80">{block.meeting.room}</p>
+        <p className={`${detailClass} ${week ? 'hidden lg:block' : ''}`}>{block.meeting.room}</p>
       )}
       {showInstructor && (
-        <p className="truncate text-[10px] leading-tight opacity-80">{block.meeting.instructor}</p>
+        <p className={`${detailClass} ${week ? 'hidden lg:block' : ''}`}>
+          {block.meeting.instructor}
+        </p>
       )}
     </>
   );
 
+  // `data-class-block` marks a block whether or not it is interactive. It is
+  // read by ScheduleGrid's long-press handler to tell "pressed a class" from
+  // "pressed empty space" — a distinction that does not depend on whether this
+  // particular block happens to be tappable.
   if (!onSelect) {
-    return <div className={className} style={positioning}>{content}</div>;
+    return <div data-class-block="" className={className} style={positioning}>{content}</div>;
   }
 
   return (
     <button
       type="button"
-      // Read by ScheduleGrid's long-press handler to tell "pressed a class"
-      // from "pressed empty space".
       data-class-block=""
       onClick={onSelect}
-      aria-label={`Edit ${block.meeting.name}`}
+      // A class meeting twice a week puts two identical blocks on screen at
+      // once in the week grid, so the day is what tells them apart. The day
+      // grid shows one day at a time and has nothing to disambiguate against.
+      aria-label={
+        week
+          ? `Edit ${block.meeting.name}, ${WEEKDAY_LABELS[block.day]}`
+          : `Edit ${block.meeting.name}`
+      }
       className={className}
       style={positioning}
     >

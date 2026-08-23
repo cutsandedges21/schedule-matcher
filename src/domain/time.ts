@@ -38,6 +38,19 @@ export function formatMinutes(total: number): string {
   return `${hour12}:${String(minute).padStart(2, '0')} ${meridiem}`;
 }
 
+/**
+ * Clock time with the meridiem left off, for blocks in the week grid on a
+ * phone. The hour axis those blocks sit against already says which half of the
+ * day it is, and at seven columns on a 390px screen the full form truncates to
+ * "10:00 …" — which reads as broken rather than as brief.
+ */
+export function formatMinutesCompact(total: number): string {
+  const hour24 = Math.floor(total / 60) % 24;
+  const minute = total % 60;
+  const hour12 = hour24 % 12 === 0 ? 12 : hour24 % 12;
+  return `${hour12}:${String(minute).padStart(2, '0')}`;
+}
+
 export function formatHourLabel(total: number): string {
   const hour24 = Math.floor(total / 60) % 24;
   const meridiem = hour24 < 12 ? 'AM' : 'PM';

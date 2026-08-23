@@ -66,6 +66,14 @@ function desktopBlockNames(): string[] {
 }
 
 beforeEach(() => {
+  // jsdom has no matchMedia. These tests cover the desktop editor, so report
+  // a match for the `lg` breakpoint; MobileEditor has its own test file.
+  vi.stubGlobal('matchMedia', () => ({
+    matches: true,
+    addEventListener: () => {},
+    removeEventListener: () => {},
+  }));
+
   currentClasses = [meeting()];
   saveSchedule.mockReset().mockResolvedValue(undefined);
   reload.mockReset().mockResolvedValue(undefined);

@@ -5,6 +5,8 @@ import { useAuth } from '@/features/auth/AuthProvider';
 import { useSchedule, saveSchedule } from './useSchedule';
 import ScheduleGrid from './ScheduleGrid';
 import EditPanel from './EditPanel';
+import MobileEditor from './MobileEditor';
+import { useMediaQuery } from '@/lib/useMediaQuery';
 import EmptyState from '@/components/EmptyState';
 import Spinner from '@/components/Spinner';
 import Button, { buttonClassName } from '@/components/Button';
@@ -23,6 +25,10 @@ export default function SchedulePage() {
   const [baseline, setBaseline] = useState<ExtractedClass[]>([]);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+
+  // Desktop and mobile render structurally different editors — a panel of every
+  // class versus a sheet holding one — so this branch cannot be pure CSS.
+  const isDesktop = useMediaQuery('(min-width: 1024px)');
 
   const dirty = editing && hasUnsavedChanges(draft, baseline);
 
@@ -81,6 +87,19 @@ export default function SchedulePage() {
 
   if (loading) return <Spinner label="Loading your schedule" />;
 
+  if (editing && !isDesktop) {
+    return (
+      <MobileEditor
+        value={draft}
+        onChange={setDraft}
+        saving={saving}
+        error={saveError}
+        onSave={handleSave}
+        onCancel={cancelEditing}
+      />
+    );
+  }
+
   if (editing) {
     return (
       <main>
@@ -122,10 +141,7 @@ export default function SchedulePage() {
         </div>
         <div className="flex items-center gap-2">
           {classes.length > 0 && (
-            /* Desktop only for now — the split-screen editor has no mobile
-               layout yet. `hidden lg:inline-flex` overrides the `inline-flex`
-               that buttonClassName sets at the base breakpoint. */
-            <Button variant="secondary" onClick={startEditing} className="hidden lg:inline-flex">
+            <Button variant="secondary" onClick={startEditing}>
               Edit
             </Button>
           )}

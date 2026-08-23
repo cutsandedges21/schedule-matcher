@@ -12,7 +12,13 @@ const NAME_LINE_PX = 15; // text-xs leading-tight
 const DETAIL_LINE_PX = 13; // text-[10px] leading-tight
 const BLOCK_CHROME_PX = 10; // py-1 padding + border, top and bottom
 
-export default function ClassBlock({ block }: { block: PositionedBlock }) {
+interface Props {
+  block: PositionedBlock;
+  /** Edit mode only. When given, the block becomes a real button. */
+  onSelect?: () => void;
+}
+
+export default function ClassBlock({ block, onSelect }: Props) {
   const styles = CLASS_COLORS[block.meeting.color] ?? CLASS_COLORS.indigo;
   const widthPct = 100 / block.laneCount;
 
@@ -31,16 +37,18 @@ export default function ClassBlock({ block }: { block: PositionedBlock }) {
   const showRoom =
     !!block.meeting.room && (extraLines >= 2 || (extraLines >= 1 && !block.meeting.instructor));
 
-  return (
-    <div
-      className={`absolute overflow-hidden rounded-lg border px-2 py-1 ${styles.block} ${styles.text}`}
-      style={{
-        top: `${block.topPct}%`,
-        height: `${block.heightPct}%`,
-        left: `${block.lane * widthPct}%`,
-        width: `${widthPct}%`,
-      }}
-    >
+  const positioning = {
+    top: `${block.topPct}%`,
+    height: `${block.heightPct}%`,
+    left: `${block.lane * widthPct}%`,
+    width: `${widthPct}%`,
+  };
+
+  // One constant, so the div and button branches cannot drift apart.
+  const className = `absolute overflow-hidden rounded-lg border px-2 py-1 text-left ${styles.block} ${styles.text}`;
+
+  const content = (
+    <>
       <p className="truncate text-xs font-semibold leading-tight">{block.meeting.name}</p>
       <p className="truncate text-[10px] leading-tight opacity-80">
         {formatMinutes(block.meeting.startMinute)}
@@ -51,6 +59,25 @@ export default function ClassBlock({ block }: { block: PositionedBlock }) {
       {showInstructor && (
         <p className="truncate text-[10px] leading-tight opacity-80">{block.meeting.instructor}</p>
       )}
-    </div>
+    </>
+  );
+
+  if (!onSelect) {
+    return <div className={className} style={positioning}>{content}</div>;
+  }
+
+  return (
+    <button
+      type="button"
+      // Read by ScheduleGrid's long-press handler to tell "pressed a class"
+      // from "pressed empty space".
+      data-class-block=""
+      onClick={onSelect}
+      aria-label={`Edit ${block.meeting.name}`}
+      className={className}
+      style={positioning}
+    >
+      {content}
+    </button>
   );
 }

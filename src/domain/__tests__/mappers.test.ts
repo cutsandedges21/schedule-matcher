@@ -1,6 +1,6 @@
 // src/domain/__tests__/mappers.test.ts
 import { describe, it, expect } from 'vitest';
-import { extractedToPreviewMeetings, meetingToExtracted } from '../mappers';
+import { extractedToPreviewMeetings, meetingToExtracted, previewIndexOf } from '../mappers';
 import { colorForClass } from '../color';
 import type { ClassMeeting } from '../types';
 
@@ -91,5 +91,24 @@ describe('extractedToPreviewMeetings', () => {
     expect(preview.days).toEqual(source.days);
     expect(preview.startMinute).toBe(source.startMinute);
     expect(preview.endMinute).toBe(source.endMinute);
+  });
+});
+
+describe('previewIndexOf', () => {
+  it('recovers the draft index a preview meeting came from', () => {
+    const previews = extractedToPreviewMeetings([
+      meetingToExtracted(meeting({ name: 'A' })),
+      meetingToExtracted(meeting({ name: 'B' })),
+      meetingToExtracted(meeting({ name: 'C' })),
+    ]);
+    expect(previews.map(previewIndexOf)).toEqual([0, 1, 2]);
+  });
+
+  it('returns null for a saved meeting with a real database id', () => {
+    expect(previewIndexOf(meeting({ id: '7c9f1e2a-0000-4000-8000-000000000000' }))).toBeNull();
+  });
+
+  it('returns null for an id that only looks like a preview id', () => {
+    expect(previewIndexOf(meeting({ id: 'preview-x' }))).toBeNull();
   });
 });

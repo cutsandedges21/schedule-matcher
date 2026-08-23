@@ -68,8 +68,16 @@ export default function SettingsPage() {
       <h1 className="text-2xl font-bold">Settings</h1>
 
       <section>
-        <h2 className="text-sm font-semibold text-slate-500">Follow us</h2>
-        <ul className="mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+        <h2 className="text-sm font-semibold text-slate-500">Follow us!</h2>
+        <ul
+          className={`mt-2 overflow-hidden rounded-2xl border-2 bg-white ${
+            // The default theme is literally today's slate-900 chrome (schools.ts) —
+            // border-accent would be indistinguishable from a plain border, so an
+            // unthemed profile gets an Instagram-pink border instead. A themed
+            // profile matches its own school accent, same as "More from me".
+            selectedSchoolId === DEFAULT_SCHOOL_ID ? 'border-pink-400' : 'border-accent'
+          }`}
+        >
           <li>
             <NavRow
               href="https://www.instagram.com/schedulematcher.app/"

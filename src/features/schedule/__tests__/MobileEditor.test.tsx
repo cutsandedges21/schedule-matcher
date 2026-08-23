@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 // src/features/schedule/__tests__/MobileEditor.test.tsx
 import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest';
+import { useState } from 'react';
 import { render, screen, cleanup, fireEvent, act, within } from '@testing-library/react';
 import MobileEditor from '../MobileEditor';
 import { LONG_PRESS_MS } from '../useLongPress';
@@ -55,8 +56,38 @@ function renderEditor(value: ExtractedClass[], onChange = vi.fn()) {
   return { ...utils, onChange };
 }
 
+/**
+ * Renders with real parent state, so an edit actually flows back down as a new
+ * `value` and re-renders the editor — which is the condition the focus bug
+ * needed. `renderEditor`'s vi.fn() onChange never updates value, so it cannot
+ * reproduce it.
+ */
+function renderStateful(initial: ExtractedClass[]) {
+  function Wrapper() {
+    const [value, setValue] = useState<ExtractedClass[]>(initial);
+    return (
+      <MobileEditor
+        value={value}
+        onChange={setValue}
+        saving={false}
+        error={null}
+        onSave={vi.fn()}
+        onCancel={vi.fn()}
+      />
+    );
+  }
+  const utils = render(<Wrapper />);
+  pickDay('Mon');
+  return utils;
+}
+
 function openFirstClass() {
   fireEvent.click(screen.getByRole('button', { name: 'Edit BIO 101' }));
+}
+
+/** Queries scoped inside the card, away from the page header and the grid. */
+function sheet() {
+  return within(screen.getByRole('dialog'));
 }
 
 /**
@@ -112,10 +143,34 @@ describe('MobileEditor', () => {
     const { onChange } = renderEditor([draft()]);
     openFirstClass();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Delete class' }));
 
     expect(onChange.mock.calls[0][0]).toHaveLength(0);
     expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('closes the sheet from Cancel without touching the draft', () => {
+    const { onChange } = renderEditor([draft()]);
+    openFirstClass();
+
+    // Scoped: the page header carries its own Cancel for the whole schedule.
+    // The card covers it while open, and aria-modal hides it from assistive
+    // tech, but both are in the DOM.
+    fireEvent.click(sheet().getByRole('button', { name: 'Cancel' }));
+
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it('does not print the class name as a heading — it is only in the field', () => {
+    renderEditor([draft()]);
+    openFirstClass();
+
+    // Scoped to the sheet: the grid block behind it legitimately shows the name.
+    // getByText does not match input values, so this asserts the name appears
+    // nowhere as static text inside the card.
+    expect(sheet().queryByText('BIO 101')).toBeNull();
+    expect((sheet().getByDisplayValue('BIO 101') as HTMLInputElement).value).toBe('BIO 101');
   });
 
   it('closes the sheet on Escape', () => {
@@ -181,5 +236,52 @@ describe('MobileEditor', () => {
   it('disables Save when every class has been deleted', () => {
     renderEditor([]);
     expect((screen.getByRole('button', { name: 'Save' }) as HTMLButtonElement).disabled).toBe(true);
+  });
+});
+
+/**
+ * Blurring an input is what dismisses the on-screen keyboard, so "focus stays
+ * in the field across an edit" is the testable form of "the keyboard stays up".
+ */
+describe('MobileEditor keyboard stability', () => {
+  it('keeps focus in the field being typed into', () => {
+    renderStateful([draft()]);
+    openFirstClass();
+
+    const input = screen.getByDisplayValue('BIO 101') as HTMLInputElement;
+    input.focus();
+    expect(document.activeElement).toBe(input);
+
+    fireEvent.change(input, { target: { value: 'BIO 102' } });
+
+    // Same element — the field is not remounted, it is only re-rendered.
+    expect(document.activeElement).toBe(input);
+  });
+
+  it('keeps focus across several characters, not just the first', () => {
+    renderStateful([draft({ name: '' })]);
+
+    // Reach the blank class through the sheet: with no name it has no block,
+    // so open a new one by long-pressing empty space.
+    holdPress(gridColumn(), 0);
+    const input = screen.getByLabelText('Class') as HTMLInputElement;
+    input.focus();
+
+    for (const text of ['B', 'BI', 'BIO']) {
+      fireEvent.change(input, { target: { value: text } });
+      expect(document.activeElement).toBe(input);
+    }
+  });
+
+  it('still returns focus to the opening block once the sheet closes', () => {
+    renderStateful([draft()]);
+    const block = screen.getByRole('button', { name: 'Edit BIO 101' });
+    block.focus();
+    fireEvent.click(block);
+
+    fireEvent.change(screen.getByDisplayValue('BIO 101'), { target: { value: 'BIO 102' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Done' }));
+
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Edit BIO 102' }));
   });
 });

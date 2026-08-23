@@ -26,6 +26,25 @@ interface Props {
 export default function ClassSheet({ value, onChange, onDone, onDelete, onClose }: Props) {
   const panel = useRef<HTMLDivElement>(null);
 
+  /**
+   * The escape handler needs the current `onClose`, but must not make it an
+   * effect dependency.
+   *
+   * `onClose` is an inline arrow in the parent, so it has a fresh identity on
+   * every render — and the parent re-renders on every keystroke, because edits
+   * flow up to the draft and back down. Depending on it tore the effect down
+   * and set it up again mid-word, and both halves move focus: the cleanup
+   * restores it to the block that opened the sheet, the setup puts it on the
+   * panel. Either one blurs the input, and blurring an input is what dismisses
+   * the on-screen keyboard — so a student could type exactly one character per
+   * tap. Reading it from a ref keeps setup and teardown tied to the sheet
+   * opening and closing, which is what they were always meant to track.
+   */
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  });
+
   useEffect(() => {
     // Remember what opened the sheet so focus can go back on close, rather
     // than falling to the top of the document.
@@ -37,7 +56,7 @@ export default function ClassSheet({ value, onChange, onDone, onDelete, onClose 
 
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape') {
-        onClose();
+        onCloseRef.current();
         return;
       }
       if (event.key !== 'Tab' || !panel.current) return;
@@ -64,39 +83,64 @@ export default function ClassSheet({ value, onChange, onDone, onDelete, onClose 
       document.body.style.overflow = previousOverflow;
       opener?.focus?.();
     };
-  }, [onClose]);
+    // Mount and unmount only: this is sheet-open/sheet-close setup, not
+    // per-render work. See the onCloseRef note above.
+  }, []);
 
   return (
     <>
+      {/*
+        Lighter than a usual scrim. The grid below the card is a live preview of
+        the very edit being made, so dimming it to the usual /40 would obscure
+        the thing worth watching.
+      */}
       <div
-        className="fixed inset-0 z-40 bg-slate-900/40"
+        className="fixed inset-0 z-40 bg-slate-900/20"
         onClick={onClose}
         aria-hidden="true"
         data-testid="sheet-backdrop"
       />
+      {/*
+        Anchored to the top, not the bottom. An on-screen keyboard takes the
+        lower half of the screen, so a bottom sheet puts the fields being typed
+        into directly behind it. Inverted, the card stays fully visible and the
+        keyboard covers only the grid — which needs no interaction while typing.
+      */}
       <div
         ref={panel}
         role="dialog"
         aria-modal="true"
+        // The name is no longer displayed, but assistive tech still needs to
+        // know which class this is.
         aria-label={value.name ? `Edit ${value.name}` : 'Add a class'}
         tabIndex={-1}
-        className="fixed inset-x-0 bottom-0 z-50 max-h-[85dvh] overflow-y-auto rounded-t-2xl bg-white pb-[env(safe-area-inset-bottom)] shadow-2xl"
+        className="fixed inset-x-0 top-0 z-50 max-h-[92dvh] overflow-y-auto rounded-b-2xl bg-white pt-[env(safe-area-inset-top)] shadow-2xl"
       >
-        <div className="flex items-center justify-between border-b border-slate-200 px-3 py-2">
-          <Button variant="ghost" size="sm" onClick={onDelete} className="text-rose-600">
-            Delete
-          </Button>
-          <p className="truncate px-2 text-sm font-semibold">{value.name || 'New class'}</p>
-          <Button variant="ghost" size="sm" onClick={onClose} aria-label="Close">
-            Close
-          </Button>
-        </div>
-
         <div className="p-3">
-          {/* No onRemove: deletion is in the header above. */}
+          {/* No onRemove: deletion is the quiet action below the button row. */}
           <ClassCard index={0} value={value} onChange={onChange} />
-          <Button onClick={onDone} className="mt-3 w-full">
-            Done
+
+          {/* px-2 insets the pair from the card's own edges. */}
+          <div className="mt-4 flex items-center gap-3 px-2">
+            <Button
+              variant="secondary"
+              onClick={onClose}
+              className="flex-1 rounded-full border-slate-300 shadow-sm"
+            >
+              Cancel
+            </Button>
+            <Button onClick={onDone} className="flex-1 rounded-full shadow-md">
+              Done
+            </Button>
+          </div>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onDelete}
+            className="mt-1 w-full text-xs font-medium text-rose-600"
+          >
+            Delete class
           </Button>
         </div>
       </div>

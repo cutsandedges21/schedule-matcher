@@ -26,6 +26,25 @@ interface Props {
 export default function ClassSheet({ value, onChange, onDone, onDelete, onClose }: Props) {
   const panel = useRef<HTMLDivElement>(null);
 
+  /**
+   * The escape handler needs the current `onClose`, but must not make it an
+   * effect dependency.
+   *
+   * `onClose` is an inline arrow in the parent, so it has a fresh identity on
+   * every render — and the parent re-renders on every keystroke, because edits
+   * flow up to the draft and back down. Depending on it tore the effect down
+   * and set it up again mid-word, and both halves move focus: the cleanup
+   * restores it to the block that opened the sheet, the setup puts it on the
+   * panel. Either one blurs the input, and blurring an input is what dismisses
+   * the on-screen keyboard — so a student could type exactly one character per
+   * tap. Reading it from a ref keeps setup and teardown tied to the sheet
+   * opening and closing, which is what they were always meant to track.
+   */
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  });
+
   useEffect(() => {
     // Remember what opened the sheet so focus can go back on close, rather
     // than falling to the top of the document.
@@ -37,7 +56,7 @@ export default function ClassSheet({ value, onChange, onDone, onDelete, onClose 
 
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === 'Escape') {
-        onClose();
+        onCloseRef.current();
         return;
       }
       if (event.key !== 'Tab' || !panel.current) return;
@@ -64,7 +83,9 @@ export default function ClassSheet({ value, onChange, onDone, onDelete, onClose 
       document.body.style.overflow = previousOverflow;
       opener?.focus?.();
     };
-  }, [onClose]);
+    // Mount and unmount only: this is sheet-open/sheet-close setup, not
+    // per-render work. See the onCloseRef note above.
+  }, []);
 
   return (
     <>

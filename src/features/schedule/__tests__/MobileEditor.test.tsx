@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 // src/features/schedule/__tests__/MobileEditor.test.tsx
 import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest';
+import { useState } from 'react';
 import { render, screen, cleanup, fireEvent, act, within } from '@testing-library/react';
 import MobileEditor from '../MobileEditor';
 import { LONG_PRESS_MS } from '../useLongPress';
@@ -53,6 +54,31 @@ function renderEditor(value: ExtractedClass[], onChange = vi.fn()) {
   );
   pickDay('Mon');
   return { ...utils, onChange };
+}
+
+/**
+ * Renders with real parent state, so an edit actually flows back down as a new
+ * `value` and re-renders the editor — which is the condition the focus bug
+ * needed. `renderEditor`'s vi.fn() onChange never updates value, so it cannot
+ * reproduce it.
+ */
+function renderStateful(initial: ExtractedClass[]) {
+  function Wrapper() {
+    const [value, setValue] = useState<ExtractedClass[]>(initial);
+    return (
+      <MobileEditor
+        value={value}
+        onChange={setValue}
+        saving={false}
+        error={null}
+        onSave={vi.fn()}
+        onCancel={vi.fn()}
+      />
+    );
+  }
+  const utils = render(<Wrapper />);
+  pickDay('Mon');
+  return utils;
 }
 
 function openFirstClass() {
@@ -181,5 +207,52 @@ describe('MobileEditor', () => {
   it('disables Save when every class has been deleted', () => {
     renderEditor([]);
     expect((screen.getByRole('button', { name: 'Save' }) as HTMLButtonElement).disabled).toBe(true);
+  });
+});
+
+/**
+ * Blurring an input is what dismisses the on-screen keyboard, so "focus stays
+ * in the field across an edit" is the testable form of "the keyboard stays up".
+ */
+describe('MobileEditor keyboard stability', () => {
+  it('keeps focus in the field being typed into', () => {
+    renderStateful([draft()]);
+    openFirstClass();
+
+    const input = screen.getByDisplayValue('BIO 101') as HTMLInputElement;
+    input.focus();
+    expect(document.activeElement).toBe(input);
+
+    fireEvent.change(input, { target: { value: 'BIO 102' } });
+
+    // Same element — the field is not remounted, it is only re-rendered.
+    expect(document.activeElement).toBe(input);
+  });
+
+  it('keeps focus across several characters, not just the first', () => {
+    renderStateful([draft({ name: '' })]);
+
+    // Reach the blank class through the sheet: with no name it has no block,
+    // so open a new one by long-pressing empty space.
+    holdPress(gridColumn(), 0);
+    const input = screen.getByLabelText('Class') as HTMLInputElement;
+    input.focus();
+
+    for (const text of ['B', 'BI', 'BIO']) {
+      fireEvent.change(input, { target: { value: text } });
+      expect(document.activeElement).toBe(input);
+    }
+  });
+
+  it('still returns focus to the opening block once the sheet closes', () => {
+    renderStateful([draft()]);
+    const block = screen.getByRole('button', { name: 'Edit BIO 101' });
+    block.focus();
+    fireEvent.click(block);
+
+    fireEvent.change(screen.getByDisplayValue('BIO 101'), { target: { value: 'BIO 102' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Done' }));
+
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Edit BIO 102' }));
   });
 });

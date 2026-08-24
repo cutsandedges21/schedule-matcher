@@ -12,8 +12,14 @@
 -- AFTER INSERT instead). security definer for the same reason both of those
 -- already are — reading auth.users.email needs privileges `authenticated`
 -- does not have.
+--
+-- IF NOT EXISTS / DROP ... IF EXISTS throughout: this whole script is safe to
+-- paste more than once, in case a previous run got partway through before
+-- failing on something else — ADD COLUMN and CREATE TRIGGER both error on a
+-- second run otherwise, unlike CREATE OR REPLACE FUNCTION and REVOKE, which
+-- are already no-ops when re-applied.
 
-alter table public.profiles add column pinned boolean not null default false;
+alter table public.profiles add column if not exists pinned boolean not null default false;
 
 revoke update (pinned) on public.profiles from anon, authenticated;
 
@@ -34,6 +40,8 @@ begin
   return new;
 end;
 $$;
+
+drop trigger if exists profiles_grant_pinned_official on public.profiles;
 
 create trigger profiles_grant_pinned_official
   before insert on public.profiles

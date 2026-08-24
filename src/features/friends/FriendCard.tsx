@@ -42,15 +42,26 @@ export default function FriendCard({ friend, myUserId, onRemoved }: Props) {
       <ProfileCard
         profile={friend}
         nameHref={`/u/${friend.username}`}
+        // px-2.5/text-xs shrink the footprint below the shared `sm` size
+        // (px-3/text-sm) — just for this pair, not the Button component's
+        // size scale used everywhere else. min-h-touch stays untouched:
+        // Button.tsx is deliberate about never shrinking the 44px tap
+        // target itself, only the padding/type around it.
         action={
-          <div className="flex shrink-0 gap-2">
+          <div className="flex shrink-0 gap-1.5">
             <Link
               to={`/compare/${friend.username}`}
-              className={buttonClassName('secondary', undefined, 'sm')}
+              className={buttonClassName('secondary', 'px-2.5 text-xs', 'sm')}
             >
               Compare
             </Link>
-            <Button size="sm" variant="secondary" disabled={busy} onClick={() => void handleRemove()}>
+            <Button
+              size="sm"
+              variant="secondary"
+              disabled={busy}
+              onClick={() => void handleRemove()}
+              className="px-2.5 text-xs"
+            >
               {busy ? '…' : 'Remove'}
             </Button>
           </div>

@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import ProfileCard from './ProfileCard';
 import { removeFriend } from './useFriends';
-import Button, { buttonClassName } from '@/components/Button';
+import { buttonClassName } from '@/components/Button';
 import type { Profile } from '@/domain/types';
 
 interface Props {
@@ -42,28 +42,29 @@ export default function FriendCard({ friend, myUserId, onRemoved }: Props) {
       <ProfileCard
         profile={friend}
         nameHref={`/u/${friend.username}`}
-        // px-2.5/text-xs shrink the footprint below the shared `sm` size
-        // (px-3/text-sm) — just for this pair, not the Button component's
-        // size scale used everywhere else. min-h-touch stays untouched:
-        // Button.tsx is deliberate about never shrinking the 44px tap
-        // target itself, only the padding/type around it.
+        // Compare stays a real button (px-2.5/text-xs shrinks it below the
+        // shared `sm` size, just for this one, not the Button component's
+        // scale used everywhere else — min-h-touch's 44px floor is untouched).
+        // Remove is a plain underlined text link below it, the same
+        // de-emphasized-secondary-action style "Compare several" already uses
+        // on this page — deliberately smaller than Compare rather than
+        // fighting Button.tsx's touch-target floor with overrides.
         action={
-          <div className="flex shrink-0 gap-1.5">
+          <div className="flex flex-col items-center gap-1">
             <Link
               to={`/compare/${friend.username}`}
-              className={buttonClassName('secondary', 'px-2.5 text-xs', 'sm')}
+              className={buttonClassName('secondary', 'px-2 text-[11px]', 'sm')}
             >
               Compare
             </Link>
-            <Button
-              size="sm"
-              variant="secondary"
+            <button
+              type="button"
               disabled={busy}
               onClick={() => void handleRemove()}
-              className="px-2.5 text-xs"
+              className="px-1 text-xs font-medium text-slate-400 underline underline-offset-2 disabled:opacity-50"
             >
               {busy ? '…' : 'Remove'}
-            </Button>
+            </button>
           </div>
         }
       />

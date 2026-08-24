@@ -18,13 +18,6 @@ import {
  * nothing. The progress hairline is the only affordance, and its only job is
  * to tell someone with no way out that this is finite.
  */
-/**
- * Deterministic tilts for a fanned stack, so the pile looks thrown down rather
- * than laid out — and looks the same on every render, because a beat that
- * reshuffles itself mid-fade reads as a glitch.
- */
-const FAN_TILT = [-7, 5, -3, 8, -5];
-
 function BeatImages({ beat }: { beat: Beat }) {
   const [first, ...rest] = beat.images;
 
@@ -43,24 +36,25 @@ function BeatImages({ beat }: { beat: Beat }) {
     );
   }
 
+  /**
+   * Several images as a plain grid, two across.
+   *
+   * Deliberately narrower than a single-image beat (240px against 320px): four
+   * photos at full width would tower over the caption and read as four things
+   * to look at, where the point is one thing — a set. object-cover rather than
+   * contain, because the sources are already square-cropped and cover keeps the
+   * cells even if a later one is not.
+   */
   return (
-    <div className="flex w-full max-w-xs items-center justify-center">
-      {beat.images.map((image, index) => (
+    <div className="grid w-full max-w-[240px] grid-cols-2 gap-2">
+      {beat.images.map((image) => (
         <img
           key={image.src}
           src={image.src}
           alt={image.alt}
           width={image.width}
           height={image.height}
-          // Negative margins pull each one over the last so they overlap like a
-          // pile of receipts. Later images sit on top, which is what makes the
-          // stack read as accumulating rather than as a neat row.
-          className="max-h-[46vh] w-3/5 shrink-0 rounded-xl border border-slate-200 bg-white object-contain shadow-md"
-          style={{
-            transform: `rotate(${FAN_TILT[index % FAN_TILT.length]}deg)`,
-            marginLeft: index === 0 ? 0 : '-28%',
-            zIndex: index,
-          }}
+          className="aspect-square w-full rounded-lg object-cover"
         />
       ))}
     </div>

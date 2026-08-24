@@ -29,12 +29,11 @@ export interface BeatImage {
 export interface Beat {
   text: string;
   /**
-   * One image, or several shown as an overlapping fan.
+   * One image, or several laid out as a grid two across.
    *
-   * The fan is the point on the opening beat: one screenshot is an anecdote,
-   * three stacked on top of each other is the thing that happens every
-   * September. Adding another is a line in this file — the layout takes any
-   * count.
+   * More than one is its own argument: a single photo reads as a headshot,
+   * four together read as a person with a life — which is what the closing beat
+   * is actually claiming. Adding another is a line in this file.
    */
   images: readonly BeatImage[];
 }
@@ -64,13 +63,24 @@ export const BEAT_TIMING: Record<BeatPhase, number> = {
  *   1. this really happens, here is the receipt
  *   2. and the thing everyone does about it does not work
  *   3. here is what we do instead
- *   4. and we are the people it happened to
+ *   4. and I am the person it happened to
  *
  * Beat 4 closes the loop on beat 1. It used to read "We're students who got
  * tired of that", where "that" pointed at the previous beat — which is the
- * *solution*, so it said we were tired of our own app. "Tired of asking" names
- * beat 1 instead: the asking is the thing in the screenshot, and it is what
- * every student reading this has done themselves.
+ * *solution*, so it said the author was tired of their own app. "Tired of
+ * asking" names beat 1 instead: the asking is the thing in the screenshot, and
+ * it is what every student reading this has done themselves.
+ *
+ * First person singular throughout, because that is the truth — one person
+ * built this. "We" in a founder story that has no second founder is the kind
+ * of small inflation students notice, and it costs the beat exactly the
+ * credibility it exists to buy.
+ *
+ * The name is doing real work rather than being a credit. Beat 1's screenshot
+ * tags @moss.bianco, so a student who read it fifteen seconds earlier can see
+ * that the person introducing himself here is the person who was tagged in the
+ * message — the claim checks out against evidence already on screen. An
+ * anonymous "I built this" asks to be believed; this one does not have to.
  */
 export const ABOUT_BEATS: readonly Beat[] = [
   {
@@ -107,13 +117,31 @@ export const ABOUT_BEATS: readonly Beat[] = [
     ],
   },
   {
-    text: 'We got tired of asking. So we built this.',
+    text: "I'm Mossimo. I got tired of asking, so I built this.",
     images: [
       {
-        src: '/about/intro-us.jpg',
-        alt: 'The two students who built Schedule Matcher, on a street outside campus',
-        width: 960,
-        height: 960,
+        src: '/about/us-1.jpg',
+        alt: 'Me in a car',
+        width: 480,
+        height: 480,
+      },
+      {
+        src: '/about/us-2.jpg',
+        alt: 'Me on a plane',
+        width: 480,
+        height: 480,
+      },
+      {
+        src: '/about/us-3.jpg',
+        alt: 'Me in a car wearing a backwards cap',
+        width: 480,
+        height: 480,
+      },
+      {
+        src: '/about/us-4.jpg',
+        alt: 'Me at work in a black shirt',
+        width: 480,
+        height: 480,
       },
     ],
   },

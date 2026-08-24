@@ -381,17 +381,36 @@ nothing to keep in sync.
 `prefers-reduced-motion: reduce` swaps the keyframes for an opacity-only
 crossfade at the same pace (see the bottom of `src/index.css`).
 
-The closing beat is a real photo of the two founders
-(`public/about/intro-us.jpg`), which is what makes "we got tired of asking"
-land as a claim rather than a slogan. It replaced a placeholder that said
-"team photo goes here" on its face.
+The closing beat is four real photos (`public/about/us-1.jpg` … `us-4.jpg`) in
+a 2x2 grid, which is what makes "I got tired of asking" land as a claim rather
+than a slogan. One portrait would have been a headshot; four together read as a
+person with a life.
 
-It is a **960px JPEG at ~143 KB**, downscaled and re-encoded from a 1254px PNG
-that was 2.39 MB. Onboarding runs on a phone, often on cellular, and the beat
-is five seconds long — an image that has not arrived by then is a blank square
-where the founders should be. 960px covers a 3x device pixel ratio at the
-320px the intro renders at; past that it is bytes nobody can see. Any photo
-added here should get the same treatment.
+**The intro is first person singular.** One person built this, so beat 4 says
+"I". A founder story that says "we" without a second founder is the kind of
+small inflation students notice, and it costs that beat exactly the credibility
+it exists to buy.
+
+**The originals live in `assets-src/about/`, not in `public/`.** Two of the four
+are crops to one person out of a photo of two, and re-cropping from an
+already-downscaled 480px square produces a face with no chin — the full-
+resolution source is the difference. `public/` is copied verbatim into `dist/`,
+so leaving 4.8 MB of HEIC masters there would deploy them; `assets-src/` is
+outside the build. Keep them.
+
+They arrived as **HEIC**, which Chrome and Firefox cannot decode at all — an
+iPhone export dropped into `public/` renders as a broken image on every browser
+but Safari. They were converted with `pillow-heif`, EXIF orientation applied
+before re-encoding (phone photos carry a rotation flag rather than rotated
+pixels, and re-encoding without applying it bakes in the wrong way up), and
+centre-cropped square so three different source shapes make an even grid.
+
+Each is a **480px JPEG at ~35 KB, 144 KB for all four** — the same budget the
+single photo they replaced used on its own. Onboarding runs on a phone, often
+on cellular, and the beat is five seconds long; an image that has not arrived
+by then is a blank square where the photos should be. 480px covers a 4x
+device pixel ratio at the ~115px each cell renders at. Any photo added here
+should get the same treatment.
 
 ## Legal pages
 

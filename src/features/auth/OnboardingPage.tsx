@@ -120,11 +120,39 @@ export default function OnboardingPage() {
   if (step === 'install') {
     return (
       <main className="flex min-h-dvh flex-col p-6">
-        <h1 className="mt-8 text-2xl font-bold">Keep it one tap away</h1>
-        <p className="mt-2 text-sm leading-relaxed text-slate-600">
-          Add Schedule Matcher to your home screen and it opens like a normal app — no
-          browser, no typing the address, no hunting through tabs.
+        <h1 className="mt-8 text-2xl font-bold">Add it to your home screen</h1>
+        <p className="mt-2 text-sm leading-relaxed text-slate-700">
+          Schedule Matcher is built to live on your home screen, not in a browser tab. It takes
+          about ten seconds and it is worth doing now, before you go any further.
         </p>
+
+        {/*
+          Concrete consequences rather than adjectives. "Convenient" persuades
+          nobody; "you will stop opening it" is the thing that is actually true
+          of a bookmark buried in a tab list, and every student has watched it
+          happen to an app they meant to use.
+
+          Both claims are honest. What is deliberately *not* claimed is that
+          installing keeps you signed in — on iPhone the opposite is true, and
+          the panel below says so.
+        */}
+        <ul className="mt-4 flex flex-col gap-2 text-sm leading-relaxed text-slate-700">
+          <li className="flex gap-2">
+            <span aria-hidden className="text-slate-400">
+              &bull;
+            </span>
+            <span>
+              One tap to see when everyone is free. A tab you have to hunt for is a tab you stop
+              opening.
+            </span>
+          </li>
+          <li className="flex gap-2">
+            <span aria-hidden className="text-slate-400">
+              &bull;
+            </span>
+            <span>It opens full screen, so a whole week actually fits on the display.</span>
+          </li>
+        </ul>
 
         <div className="mt-6 flex-1">
           <InstallInstructions />
@@ -136,19 +164,29 @@ export default function OnboardingPage() {
             instead. Saying so turns a "wait, it lost me" moment into an
             expected one. Android shares storage with Chrome, hence "might". */}
         <p className="mt-6 rounded-xl bg-slate-100 px-4 py-3 text-xs leading-relaxed text-slate-600">
-          Added it? Open Schedule Matcher from your home screen and carry on there — you might
-          have to sign in once more.
+          Once it is added, open Schedule Matcher from your home screen and finish setting up
+          there. You might have to sign in once more.
         </p>
 
         <Button onClick={() => setStep('intro')} className="mt-4 w-full">
-          Continue
+          I&rsquo;ve added it
         </Button>
+
+        {/*
+          The escape stays, quietly. The app is a PWA and genuinely does work in
+          a browser, so a button claiming otherwise would be a lie — and on iOS
+          only Safari and Chrome can install at all, so a student in an in-app
+          browser (Instagram, Snapchat) physically cannot complete this step.
+          Removing the way out would strand exactly those people on the screen
+          before they have an account. Naming the cost is the honest way to
+          apply pressure; a dead end is not.
+        */}
         <button
           type="button"
           onClick={() => setStep('intro')}
-          className="mt-2 min-h-touch text-sm font-medium text-slate-500"
+          className="mt-3 min-h-touch text-xs font-medium text-slate-400 underline underline-offset-4"
         >
-          Skip for now
+          Skip &mdash; I&rsquo;ll use it in the browser
         </button>
       </main>
     );

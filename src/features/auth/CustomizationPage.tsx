@@ -41,6 +41,7 @@ const TEASER_PROFILE: Profile = {
   banner: 'nebula',
   effect: 'stardust',
   shinyUsername: true,
+  pinned: false,
 };
 
 export default function CustomizationPage() {

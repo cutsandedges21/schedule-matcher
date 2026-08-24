@@ -48,6 +48,11 @@ export default function FriendsPage() {
 
   if (loading) return <Spinner label="Loading friends" />;
 
+  // The one official account (migration 0015) always sorts last, regardless
+  // of when the friendship was created. `sort` is stable in every evergreen
+  // engine, so everyone else keeps whatever order the query returned them in.
+  const sortedFriends = [...friends].sort((a, b) => Number(a.pinned) - Number(b.pinned));
+
   const inviteUrl = `${window.location.origin}/invite/${profile?.username}`;
 
   async function shareInvite() {
@@ -118,8 +123,13 @@ export default function FriendsPage() {
           <EmptyState title="No friends yet" body="Search for a username or share your invite link." />
         ) : (
           <ul className="mt-2 flex flex-col gap-2">
-            {friends.map((friend) => (
-              <FriendCard key={friend.id} friend={friend} />
+            {sortedFriends.map((friend) => (
+              <FriendCard
+                key={friend.id}
+                friend={friend}
+                myUserId={session!.user.id}
+                onRemoved={reload}
+              />
             ))}
           </ul>
         )}

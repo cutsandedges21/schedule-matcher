@@ -124,6 +124,22 @@ export async function removeFriendship(friendshipId: string) {
   if (error) throw new Error('Could not update that request.');
 }
 
+/**
+ * Same delete as removeFriendship, keyed by the other person's id instead of
+ * the friendship row's own id. FriendCard only has the friend's Profile —
+ * unlike PendingRequests, which already carries the friendship id — so this
+ * looks the row up by the pair, the same `.or()` shape areFriends uses.
+ */
+export async function removeFriend(myUserId: string, otherUserId: string) {
+  const { error } = await supabase
+    .from('friendships')
+    .delete()
+    .or(
+      `and(requester_id.eq.${myUserId},addressee_id.eq.${otherUserId}),and(requester_id.eq.${otherUserId},addressee_id.eq.${myUserId})`
+    );
+  if (error) throw new Error('Could not remove that friend.');
+}
+
 export async function searchProfiles(query: string, excludeId: string): Promise<Profile[]> {
   const term = query.trim().toLowerCase();
   if (term.length < 2) return [];

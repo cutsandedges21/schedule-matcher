@@ -54,4 +54,11 @@ export interface Profile {
    * effect there is no matching "null means default" picker state here.
    */
   shinyUsername: boolean;
+  /**
+   * The one official account (schedulematcher.info@gmail.com, migration
+   * 0015) that should always render last in a friends list, regardless of
+   * when the friendship was created. Not client-settable, same reasoning as
+   * shinyUsername.
+   */
+  pinned: boolean;
 }

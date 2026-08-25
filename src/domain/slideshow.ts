@@ -43,17 +43,19 @@ export const PHASE_ORDER: readonly BeatPhase[] = ['enter', 'hold', 'exit'];
 /**
  * Milliseconds per phase. The whole pace of the intro lives here.
  *
- * Tuned so a beat is exactly 5s end to end (400 + 4250 + 350), which puts the
- * whole sequence at 20s. The fades are unchanged; all of the extra time went
- * into `hold`, because the thing that needed longer was reading — the opening
- * beat is a screenshot of two chat messages, and 2.2s was not enough to finish
- * the second one.
+ * Tuned so a beat is exactly 3.5s end to end (400 + 2750 + 350), which puts the
+ * whole sequence at 14s. Only `hold` moves when the pace changes — the fades
+ * are transitions, not reading time, and stretching them makes the intro feel
+ * sluggish rather than giving anyone longer to read.
  *
- * **20s is a long time with no way out.** See the note on SEQUENCE_DURATION.
+ * 2.75s of hold is the tight end for beat 1, which is a screenshot of two chat
+ * messages. It was 2.2s once and the second message did not land; if testing
+ * shows people still missing the punchline, that beat is the reason to reach
+ * for per-beat timing rather than to push the whole sequence back up.
  */
 export const BEAT_TIMING: Record<BeatPhase, number> = {
   enter: 400,
-  hold: 4250,
+  hold: 2750,
   exit: 350,
 };
 
@@ -158,17 +160,17 @@ export const FIRST_POSITION: BeatPosition = { index: 0, phase: 'enter' };
 export const BEAT_DURATION = PHASE_ORDER.reduce((total, phase) => total + BEAT_TIMING[phase], 0);
 
 /**
- * How long a new student is held on the intro. Currently 20s.
+ * How long a new student is held on the intro. Currently 14s.
  *
- * This used to be capped at 12s, and the cap was not arbitrary: there are no
- * controls on this screen, so every second here is a second nobody can escape.
- * Four beats at a readable pace do not fit under that cap, so the cap moved —
- * but the reason for it did not go away, it just stopped being enforced.
+ * There are no controls on this screen, so every second here is a second
+ * nobody can escape, on the first screen after installing. The assertion in
+ * slideshow.test.ts exists to make a change to this number deliberate — it has
+ * been 11.8s, then 20s, now 14s, and each move was a judgement about how much
+ * compulsory time the story is worth.
  *
- * The right fix is to let a tap advance the beat. That keeps the sequence
- * unskippable while letting a fast reader move on and a slow one linger, and it
- * would make this number a ceiling rather than a sentence. Until then, treat
- * any further growth here as a real cost.
+ * The change that would take the pressure off is letting a tap advance the
+ * beat: still unskippable, but a fast reader moves on and a slow one lingers,
+ * which turns this into a ceiling rather than a sentence.
  */
 export const SEQUENCE_DURATION = BEAT_DURATION * ABOUT_BEATS.length;
 

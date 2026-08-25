@@ -1,18 +1,34 @@
 // @vitest-environment jsdom
 // src/features/marketing/__tests__/WifiPage.test.tsx
-import { describe, it, expect, afterEach } from 'vitest';
-import { render, screen, cleanup } from '@testing-library/react';
+import { describe, it, expect, afterEach, beforeEach, vi } from 'vitest';
+import { render, screen, cleanup, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import WifiPage from '../WifiPage';
 
-afterEach(cleanup);
+const signIn = vi.fn();
 
 /**
- * MemoryRouter is the *only* context provided, deliberately. There is no
- * AuthProvider and no Supabase mock here, so if someone later makes this page
- * read session state, every test in this file throws. That is the regression
- * this file exists to catch: a cold poster scan has to paint the punchline on
- * the first frame, which it cannot do if it is waiting on a session.
+ * Mocked at the module boundary so these tests never reach Supabase. The
+ * arrow defers the reference to call time — vi.mock is hoisted above the
+ * `const` above, so a factory that named `signIn` directly would hit its TDZ.
+ */
+vi.mock('@/features/auth/signIn', () => ({
+  signInWithGoogle: () => signIn(),
+}));
+
+afterEach(cleanup);
+beforeEach(() => signIn.mockClear());
+
+/**
+ * MemoryRouter is the only React context provided, deliberately. There is no
+ * AuthProvider, so if someone later makes this page *read* session state,
+ * every test in this file throws. That is the regression worth catching: a
+ * cold poster scan has to paint the punchline on the first frame, which it
+ * cannot do while it waits on a session.
+ *
+ * Starting a sign-in is a different thing from reading one, and that is why
+ * the mocked signIn module above does not weaken this — it is reached by a
+ * tap, long after first paint.
  */
 function renderPage() {
   render(
@@ -52,14 +68,24 @@ describe('WifiPage', () => {
     expect(icon?.getAttribute('alt')).toBe('');
   });
 
-  it('sends the reader to /login rather than signing in inline', () => {
+  it('hands off straight to Google, with no login screen in between', () => {
     renderPage();
 
     // Matched loosely on purpose. The exact wording of this button is still
     // being tuned, and a test that pins the copy verbatim just breaks every
-    // time someone improves it. What must not change is where it goes.
-    const cta = screen.getByRole('link', { name: /show me/i });
-    expect(cta.getAttribute('href')).toBe('/login');
+    // time someone improves it. What must not change is what it does.
+    fireEvent.click(screen.getByRole('button', { name: /show me/i }));
+
+    expect(signIn).toHaveBeenCalledOnce();
+  });
+
+  it('offers no route to the login screen — that tap is the thing being cut', () => {
+    renderPage();
+
+    const toLogin = screen
+      .getAllByRole('link')
+      .filter((el) => el.getAttribute('href') === '/login');
+    expect(toLogin).toEqual([]);
   });
 
   it('links to the privacy policy and the terms', () => {

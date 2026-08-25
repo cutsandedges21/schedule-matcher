@@ -1,21 +1,27 @@
 // src/features/marketing/WifiPage.tsx
 import { Link } from 'react-router-dom';
-import { buttonClassName } from '@/components/Button';
+import Button from '@/components/Button';
+import { signInWithGoogle } from '@/features/auth/signIn';
 
 /**
  * The landing page for a QR code printed on posters disguised as free-wifi
  * notices. Whoever scanned it wanted a network and got this, so the first
  * line has to admit that before anything else is allowed to happen.
  *
- * Deliberately auth-free. The call to action is a link to /login rather than
- * a signInWithOAuth call, which means no session read, no loading state and
- * no async work anywhere on this page — so the punchline paints on the first
- * frame, which is the entire point on campus 4G. It costs one extra tap, and
- * that is why the button says "ok, show me" instead of impersonating the
- * Google button on the next screen: a page that opens by admitting a lie
- * cannot afford a button that misrepresents what tapping it does. LoginPage
- * already redirects a visitor who turns out to be signed in, so the "they
- * already have the app" case needs nothing here either.
+ * The call to action goes straight to Google's account chooser rather than to
+ * the login screen. That screen would only restate the pitch and offer one
+ * button, and a stranger reading this on a hallway floor does not have a
+ * spare tap to give it.
+ *
+ * Nothing on the page reads session state even so — there is no loading
+ * branch and no await before first paint, so the punchline still lands on the
+ * first frame, which is the entire point on campus 4G. The auth code is only
+ * reached by tapping.
+ *
+ * Someone who already has the app and scans a poster out of curiosity gets
+ * the Google chooser too, picks the account they are already signed into, and
+ * lands back on their schedule. One tap more than they needed, which is the
+ * right way round: the page is built for the stranger, not the regular.
  *
  * The copy decisions are recorded in
  * docs/superpowers/specs/2026-08-25-wifi-poster-landing-design.md. Two that
@@ -83,9 +89,9 @@ export default function WifiPage() {
       </div>
 
       <div className="flex flex-col items-center gap-3">
-        <Link to="/login" className={buttonClassName('primary', 'w-full')}>
+        <Button onClick={() => void signInWithGoogle()} className="w-full">
           Okay, show me! &rarr;
-        </Link>
+        </Button>
 
         <p className="text-balance text-center text-xs leading-relaxed text-slate-600">
           Built by a Vanier student. Completely free. No ads. Nothing to buy.

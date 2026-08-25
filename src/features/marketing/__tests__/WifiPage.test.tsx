@@ -53,21 +53,6 @@ describe('WifiPage', () => {
     expect(screen.getByText(/free at the same time/i)).toBeDefined();
   });
 
-  it('names the app and shows its icon at the pivot into the pitch', () => {
-    renderPage();
-
-    // Naming it matters for the scanner who does not sign up on the spot:
-    // without this the page describes an app they cannot go and look up.
-    expect(screen.getByText('Schedule Matcher')).toBeDefined();
-
-    const icon = document.querySelector('img[src="/icon.svg"]');
-    expect(icon).not.toBeNull();
-
-    // Decorative — the name sits beside it as real text, so announcing the
-    // image too would just repeat it.
-    expect(icon?.getAttribute('alt')).toBe('');
-  });
-
   it('hands off straight to Google, with no login screen in between', () => {
     renderPage();
 

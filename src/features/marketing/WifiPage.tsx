@@ -53,32 +53,6 @@ export default function WifiPage() {
           on you. This did.
         </p>
 
-        {/*
-          The lockup stands in for what used to be a plain rule, because this
-          is where the page turns from the joke to the pitch and a divider was
-          doing nothing but marking the seam.
-
-          Naming the app here is the point. Everything below describes what it
-          does without ever saying what it is called, which strands the scanner
-          who reads the whole thing, decides not to sign in on a hallway floor,
-          and then has nothing to search for later.
-
-          alt="" because the name is right there as text — captioning the image
-          too would just make a screen reader say it twice. width/height are
-          declared for the same reason slideshow.ts declares them: they reserve
-          the box before the file loads so nothing under it jumps.
-        */}
-        <div className="flex items-center justify-center gap-2.5">
-          <img
-            src="/icon.svg"
-            alt=""
-            width={40}
-            height={40}
-            className="h-10 w-10 rounded-lg"
-          />
-          <span className="text-lg font-bold tracking-tight">Schedule Matcher</span>
-        </div>
-
         <div className="mx-auto flex max-w-xs flex-col gap-3 text-balance leading-relaxed text-slate-900">
           <p>You screenshot your class schedule. It reads it for you.</p>
           <p>Then you and your friends can see every hour you&rsquo;re all free at the same time.</p>

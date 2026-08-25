@@ -8,6 +8,11 @@ import Spinner from '@/components/Spinner';
 import LoginPage from '@/features/auth/LoginPage';
 import SchedulePage from '@/features/schedule/SchedulePage';
 import NotFoundPage from '@/features/error/NotFoundPage';
+// Eager, unlike the lazy routes below: /wifi is the first paint for every
+// poster scan, and a lazy chunk costs a network round trip at exactly the
+// moment it hurts most. Static JSX with no images, so it barely moves the
+// main bundle.
+import WifiPage from '@/features/marketing/WifiPage';
 
 const OnboardingPage = lazy(() => import('@/features/auth/OnboardingPage'));
 const SettingsPage = lazy(() => import('@/features/auth/SettingsPage'));
@@ -74,7 +79,9 @@ function AppRoutes() {
 export default function App() {
   // The legal pages are deliberately outside AuthProvider: a privacy policy
   // or a set of terms has to be readable before you have an account, or it
-  // isn't much use to anyone. `/*` covers every other route.
+  // isn't much use to anyone. /wifi — the poster landing page — sits in the
+  // same bucket for the same reason, and reads no session state at all.
+  // `/*` covers every other route.
   return (
     <BrowserRouter>
       <Suspense fallback={<Spinner />}>
@@ -82,6 +89,7 @@ export default function App() {
           {import.meta.env.DEV && (
             <Route path="/__preview-intro" element={<IntroPreview />} />
           )}
+          <Route path="/wifi" element={<WifiPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/*" element={<AppRoutes />} />

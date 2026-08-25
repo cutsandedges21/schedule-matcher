@@ -79,9 +79,9 @@ onboarding. No change is required to preserve this, and the test file guards the
 future change cannot quietly bypass it.
 
 **Returning users who already have a profile do not replay the intro.** This is deliberate and
-unchanged: the intro runs 20 seconds with no skip control by design (see the warning on
-`SEQUENCE_DURATION` in `src/domain/slideshow.ts`), and replaying it on every sign-in would be
-punishing.
+unchanged: the intro plays end to end with no skip control by design (see the warning on
+`SEQUENCE_DURATION` in `src/domain/slideshow.ts` — 14 seconds at the current pacing of
+`BEAT_TIMING`, four beats at 3.5s), and replaying it on every sign-in would be punishing.
 
 ## Copy
 

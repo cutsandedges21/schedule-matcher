@@ -26,8 +26,8 @@ describe('WifiPage', () => {
   it('admits the trick in the h1, with no auth context available', () => {
     renderPage();
 
-    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('there is no wifi.');
-    expect(screen.getByText('i lied.')).toBeDefined();
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('There is no wifi.');
+    expect(screen.getByText('I lied.')).toBeDefined();
   });
 
   it('explains what the app does before asking for anything', () => {
@@ -37,10 +37,28 @@ describe('WifiPage', () => {
     expect(screen.getByText(/free at the same time/i)).toBeDefined();
   });
 
+  it('names the app and shows its icon at the pivot into the pitch', () => {
+    renderPage();
+
+    // Naming it matters for the scanner who does not sign up on the spot:
+    // without this the page describes an app they cannot go and look up.
+    expect(screen.getByText('Schedule Matcher')).toBeDefined();
+
+    const icon = document.querySelector('img[src="/icon.svg"]');
+    expect(icon).not.toBeNull();
+
+    // Decorative — the name sits beside it as real text, so announcing the
+    // image too would just repeat it.
+    expect(icon?.getAttribute('alt')).toBe('');
+  });
+
   it('sends the reader to /login rather than signing in inline', () => {
     renderPage();
 
-    const cta = screen.getByRole('link', { name: /ok, show me/i });
+    // Matched loosely on purpose. The exact wording of this button is still
+    // being tuned, and a test that pins the copy verbatim just breaks every
+    // time someone improves it. What must not change is where it goes.
+    const cta = screen.getByRole('link', { name: /show me/i });
     expect(cta.getAttribute('href')).toBe('/login');
   });
 

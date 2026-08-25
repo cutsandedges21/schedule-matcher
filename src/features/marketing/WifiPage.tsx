@@ -30,7 +30,10 @@ export default function WifiPage() {
       <div className="flex flex-1 flex-col justify-center gap-6 text-center">
         <div className="flex flex-col gap-1">
           <h1 className="text-4xl font-bold tracking-tight">there is no wifi.</h1>
-          <p className="text-2xl font-bold tracking-tight text-slate-400">i lied.</p>
+          {/* slate-500, not slate-400: this is read on a phone in a bright
+              hallway, and slate-400 on the slate-50 body is 2.45:1 — under the
+              3:1 floor for large text. slate-500 is 4.55:1. */}
+          <p className="text-2xl font-bold tracking-tight text-slate-500">i lied.</p>
         </div>
 
         <p className="mx-auto max-w-xs text-balance text-sm leading-relaxed text-slate-600">
@@ -54,7 +57,7 @@ export default function WifiPage() {
           ok, show me &rarr;
         </Link>
 
-        <p className="text-center text-xs leading-relaxed text-slate-500">
+        <p className="text-center text-xs leading-relaxed text-slate-600">
           built by a Vanier student. free, no ads, nothing to buy.
           <br />
           <Link to="/privacy" className="underline underline-offset-2">
@@ -66,7 +69,10 @@ export default function WifiPage() {
           </Link>
         </p>
 
-        <p className="text-center text-xs leading-relaxed text-slate-400">
+        {/* One step lighter than the line above it, which keeps the hierarchy
+            the old slate-400 gave — but at 4.55:1 rather than 2.45:1, which
+            matters more at 12px than the half-shade of contrast does. */}
+        <p className="text-center text-xs leading-relaxed text-slate-500">
           close it if you want. i&rsquo;m just trying to help people out.
         </p>
       </div>

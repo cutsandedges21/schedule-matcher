@@ -44,7 +44,7 @@ A new `marketing/` feature folder: a campaign landing page is not authentication
 - Create: `src/features/marketing/WifiPage.tsx`
 - Test: `src/features/marketing/__tests__/WifiPage.test.tsx`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `src/features/marketing/__tests__/WifiPage.test.tsx`:
 
@@ -104,7 +104,7 @@ describe('WifiPage', () => {
 });
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 ```bash
 npx vitest run src/features/marketing/__tests__/WifiPage.test.tsx
@@ -113,7 +113,7 @@ npx vitest run src/features/marketing/__tests__/WifiPage.test.tsx
 Expected: FAIL. The error is a module resolution failure, something like
 `Failed to resolve import "../WifiPage"`, because the component does not exist yet.
 
-- [ ] **Step 3: Write the component**
+- [x] **Step 3: Write the component**
 
 Create `src/features/marketing/WifiPage.tsx`:
 
@@ -198,7 +198,7 @@ export default function WifiPage() {
 Note the argument order on `buttonClassName(variant, className, size)` — the class string is the
 **second** argument, not the first.
 
-- [ ] **Step 4: Run the test to verify it passes**
+- [x] **Step 4: Run the test to verify it passes**
 
 ```bash
 npx vitest run src/features/marketing/__tests__/WifiPage.test.tsx
@@ -210,7 +210,7 @@ If `getByRole('link', { name: 'privacy' })` fails on an ambiguous name, the caus
 accessible name picked up surrounding text; the fix is to keep the two legal links as their own
 elements exactly as written above, not to loosen the assertion to a regex.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/features/marketing/WifiPage.tsx src/features/marketing/__tests__/WifiPage.test.tsx
@@ -231,7 +231,7 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
 **Files:**
 - Modify: `src/App.tsx` (the eager import block near the top, and the `<Routes>` inside `App`)
 
-- [ ] **Step 1: Add the eager import**
+- [x] **Step 1: Add the eager import**
 
 In `src/App.tsx`, find this line among the top-level eager imports:
 
@@ -250,7 +250,7 @@ first paint for every poster scan, and a lazy chunk adds a network round trip at
 moment it costs the most. The component is static JSX with no images, so it barely moves the
 main bundle.
 
-- [ ] **Step 2: Add the route and extend the comment**
+- [x] **Step 2: Add the route and extend the comment**
 
 In the `App` component at the bottom of the file, replace this:
 
@@ -280,7 +280,7 @@ Then, in the same `<Routes>` block, add the route immediately above `/privacy`:
 React Router v6 ranks routes by specificity rather than declaration order, so `/wifi` beats the
 `/*` catch-all wherever it sits. It goes here for readability, next to the other public routes.
 
-- [ ] **Step 3: Typecheck**
+- [x] **Step 3: Typecheck**
 
 ```bash
 npx tsc -b
@@ -288,7 +288,7 @@ npx tsc -b
 
 Expected: no output, exit code 0. Any error here is an import path typo.
 
-- [ ] **Step 4: Verify the route in a browser**
+- [x] **Step 4: Verify the route in a browser**
 
 ```bash
 npm run dev
@@ -305,7 +305,7 @@ mobile-first app and every scanner is on a phone):
 
 Stop the dev server when done.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add src/App.tsx
@@ -325,7 +325,7 @@ Co-Authored-By: Claude Opus 5 <noreply@anthropic.com>"
 No new code in this task. It exists because the previous two ran narrow commands, and a
 regression elsewhere would not have shown up.
 
-- [ ] **Step 1: Run the whole test suite**
+- [x] **Step 1: Run the whole test suite**
 
 ```bash
 npx vitest run
@@ -335,7 +335,7 @@ Expected: every test passes. The suite was at 250+ tests before this work; the c
 up by 4 and nothing should go red. If something unrelated fails, stop and report it rather than
 pressing on — do not fix it as part of this branch.
 
-- [ ] **Step 2: Run a production build**
+- [x] **Step 2: Run a production build**
 
 ```bash
 npm run build
@@ -344,7 +344,7 @@ npm run build
 Expected: exit code 0. This runs `tsc -b` and then `vite build`, so it catches type errors the
 dev server tolerates.
 
-- [ ] **Step 3: Confirm onboarding is still reached from the new entry point**
+- [x] **Step 3: Confirm onboarding is still reached from the new entry point**
 
 This is a **read-only code check**, not a code change — the spec's claim is that no change is
 needed, and this step confirms the chain is still intact after the route was added. Verify each
@@ -364,7 +364,7 @@ If any link in that chain has changed, stop and report it — a new student arri
 would be skipping the install instructions and the intro slides, which is the one requirement
 this feature must not break.
 
-- [ ] **Step 4: Report, do not self-certify**
+- [x] **Step 4: Report, do not self-certify**
 
 State the actual command output for steps 1 and 2 (test count, build exit status). Do not claim
 the feature works without pasting what the commands printed.
@@ -377,6 +377,19 @@ the feature works without pasting what the commands printed.
 - **Scan analytics.** No `?p=<location>` tracking parameter, no counter.
 - **Any modification to `LoginPage.tsx`, `RequireAuth.tsx`, `OnboardingPage.tsx`, `AboutIntro.tsx`, `redirect.ts`, or `slideshow.ts`.** An earlier draft of the design extracted the shared OAuth call into a new module; routing to `/login` removed the need, and reintroducing it is not in scope.
 - **A "seen the intro" flag.** Returning users with a profile are supposed to skip the slides.
+
+## Deviation from this plan, recorded during execution
+
+The component code above specifies `text-slate-400` for the "i lied." punchline and the closing
+line. **That shipped as `text-slate-500`, and the trust line as `text-slate-600`.** Measured
+against the slate-50 body, slate-400 is 2.45:1 — below the 3:1 floor for large text and far
+below 4.5:1 for the 12px closing line. slate-500 is 4.55:1 and slate-600 is 7.24:1. Read the
+component, not this plan, for the current values.
+
+Verification results at completion: 364 tests passing across 36 files (up 4), `npm run build`
+exit 0. The >500 kB chunk warning in the build output is pre-existing — the main bundle measured
+518.92 kB before this work and 520.73 kB after, so the eager import cost 1.81 kB raw and roughly
+0.51 kB gzipped.
 
 ## Note for whoever generates the QR code
 

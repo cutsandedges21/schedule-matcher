@@ -6,6 +6,7 @@ describe('canPickCosmetics', () => {
     'andreas.retsinas70@gmail.com',
     'schedulematcher.info@gmail.com',
     'sportsdude3133@gmail.com',
+    'alicemuffin13@gmail.com',
   ])('lets %s in', (email) => {
     expect(canPickCosmetics(email)).toBe(true);
   });

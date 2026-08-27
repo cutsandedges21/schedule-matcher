@@ -22,6 +22,7 @@ const BETA_EMAILS: readonly string[] = [
   'andreas.retsinas70@gmail.com',
   'schedulematcher.info@gmail.com',
   'sportsdude3133@gmail.com',
+  'alicemuffin13@gmail.com',
 ];
 
 const NORMALISED = new Set(BETA_EMAILS.map((email) => email.toLowerCase()));

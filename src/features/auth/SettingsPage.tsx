@@ -67,6 +67,35 @@ export default function SettingsPage() {
     <main className="flex flex-col gap-6 p-4 pb-6">
       <h1 className="text-2xl font-bold">Settings</h1>
 
+      {/* Not ready to ask people for money yet. Guarded by `import.meta.env.DEV`
+          so the section — and the Buy Me a Coffee link with it — is dropped from
+          the production bundle rather than merely hidden; drop the guard to
+          launch it. */}
+      {import.meta.env.DEV && (
+        <section>
+          <h2 className="text-sm font-bold text-slate-900">Support</h2>
+          <p className="mt-1 text-xs text-slate-500">
+            Schedule Matcher is a one-person project. A coffee keeps it running.
+          </p>
+          <ul
+            className={`mt-2 overflow-hidden rounded-2xl border-2 bg-white ${
+              // Same bind as "Follow us!": border-accent is invisible against the
+              // default slate chrome, so an unthemed profile borrows Buy Me a
+              // Coffee's own yellow. A themed profile matches its school accent.
+              selectedSchoolId === DEFAULT_SCHOOL_ID ? 'border-amber-400' : 'border-accent'
+            }`}
+          >
+            <li>
+              <NavRow
+                href="https://buymeacoffee.com/schedulematcher"
+                label="Buy me a coffee"
+                description="A one-off tip — entirely optional, never required"
+              />
+            </li>
+          </ul>
+        </section>
+      )}
+
       <section>
         <h2 className="text-sm font-semibold text-slate-500">Follow us!</h2>
         <ul

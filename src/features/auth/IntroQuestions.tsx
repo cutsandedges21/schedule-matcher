@@ -9,18 +9,17 @@ import {
 } from '@/domain/onboardingQuestions';
 
 /**
- * The four photos that used to be beat 4, copied out of slideshow.ts rather
- * than imported from it: the beat is being deleted, and this screen should not
- * be holding the last reference to a list the next commit removes.
+ * The photo that closes the payoff, copied out of slideshow.ts rather than
+ * imported from it: beat 4 was deleted, and this screen should not have held
+ * the last reference to a list that was going away.
  *
- * Alt text is verbatim from the beat, for the reason in the render below.
+ * One photo, not the four the beat used. slideshow.ts argued that four "read
+ * as a person with a life" where one reads as a headshot, and that was a fair
+ * argument — but whose face it is and how much of it to show is the founder's
+ * call, and he made it. A headshot beside a name is the ordinary shape of a
+ * sign-off anyway.
  */
-const PHOTOS: readonly { src: string; alt: string }[] = [
-  { src: '/about/us-1.jpg', alt: 'Me in a car' },
-  { src: '/about/us-2.jpg', alt: 'Me on a plane' },
-  { src: '/about/us-3.jpg', alt: 'Me in a car wearing a backwards cap' },
-  { src: '/about/us-4.jpg', alt: 'Me at work in a black shirt' },
-];
+const PHOTO = { src: '/about/us-4.jpg', alt: 'Me at work in a black shirt' };
 
 /**
  * Three questions, then a payoff assembled from the answers. Replaces the old
@@ -48,16 +47,26 @@ export default function IntroQuestions({ onDone }: { onDone: () => void }) {
 
     return (
       <main className="flex min-h-dvh flex-col p-6">
+        {/* Outside the keyed block below, so it does not restart its colour
+            transition every time a question mounts. */}
         <div aria-hidden className="flex gap-1 pt-2">
           {QUESTIONS.map((_, i) => (
             <div
               key={i}
-              className={`h-0.5 flex-1 rounded-full ${i <= index ? 'bg-accent' : 'bg-slate-200'}`}
+              className={`h-0.5 flex-1 rounded-full transition-colors duration-300 ${
+                i <= index ? 'bg-accent' : 'bg-slate-200'
+              }`}
             />
           ))}
         </div>
 
-        <div className="flex flex-1 flex-col justify-center gap-8">
+        {/* Keyed by index so React remounts on every answer and the enter
+            animation actually replays — without the key it is one element
+            whose text changed, and CSS animations do not re-fire for that. */}
+        <div
+          key={index}
+          className="question-enter flex flex-1 flex-col justify-center gap-8"
+        >
           <h1 className="text-2xl font-bold leading-snug">{question.prompt}</h1>
 
           <div className="flex flex-col gap-3">
@@ -83,7 +92,7 @@ export default function IntroQuestions({ onDone }: { onDone: () => void }) {
 
   return (
     <main className="flex min-h-dvh flex-col gap-6 p-6">
-      <div className="flex flex-1 flex-col justify-center gap-5">
+      <div className="question-enter flex flex-1 flex-col justify-center gap-5">
         <p className="text-sm leading-relaxed text-slate-500">{result.recap}</p>
 
         <h1 className="text-2xl font-bold leading-snug">{result.headline}</h1>
@@ -101,25 +110,19 @@ export default function IntroQuestions({ onDone }: { onDone: () => void }) {
 
         <p className="text-base leading-relaxed text-slate-700">{result.bridge}</p>
 
-        {/* The old beat 4, now closing the payoff. Four photos rather than one:
-            a single photo reads as a headshot, four read as a person.
+        {/* The old beat 4, now closing the payoff.
 
-            Described rather than alt="", because that claim is the whole reason
-            they are here — they are the evidence for the signoff, not decoration
-            beside it. Hiding them leaves a screen-reader user with "I'm Mossimo"
-            and nothing behind it. */}
-        <div className="grid w-full max-w-[240px] grid-cols-2 gap-2">
-          {PHOTOS.map((photo) => (
-            <img
-              key={photo.src}
-              src={photo.src}
-              alt={photo.alt}
-              width={480}
-              height={480}
-              className="aspect-square w-full rounded-lg object-cover"
-            />
-          ))}
-        </div>
+            Described rather than alt="", because the photo is the evidence for
+            the signoff rather than decoration beside it. Hiding it leaves a
+            screen-reader user with "I'm Mossimo" and nothing behind it, which
+            is the anonymous "I built this" the beat existed to avoid. */}
+        <img
+          src={PHOTO.src}
+          alt={PHOTO.alt}
+          width={480}
+          height={480}
+          className="aspect-square w-28 rounded-xl object-cover"
+        />
 
         <p className="text-base font-semibold leading-relaxed">{result.signoff}</p>
       </div>

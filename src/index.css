@@ -51,6 +51,9 @@
     transform-origin: left;
     animation: intro-segment-fill var(--intro-duration) linear forwards;
   }
+  .question-enter {
+    animation: question-enter 260ms ease-out forwards;
+  }
 }
 
 @keyframes intro-beat-enter {
@@ -85,6 +88,31 @@
 }
 
 /**
+ * Each question, and the payoff, arriving.
+ *
+ * An ENTER animation with no matching exit, deliberately. An exit would put a
+ * couple of hundred milliseconds between the tap and any visible response, on
+ * the one screen where the student has just started interacting — that reads
+ * as lag, not polish. The prologue's beats can afford `intro-beat-exit`
+ * because nothing is waiting on a finger there.
+ *
+ * Sideways, where the prologue rises vertically. The prologue plays at you;
+ * the questions move because you moved them, and changing the axis is the
+ * cheapest way to say so. 260ms is tuned to finish before a fast reader has
+ * found the first option.
+ */
+@keyframes question-enter {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/**
  * Redefining the keyframes inside the media query is the whole reduced-motion
  * story for the intro: same names, same durations, so the sequence still
  * advances at exactly the same pace — it just crossfades instead of moving.
@@ -106,6 +134,16 @@
     }
     to {
       opacity: 0;
+    }
+  }
+  /* Same name, same 260ms, no sideways travel — the question still announces
+     itself as new, without anything sliding. */
+  @keyframes question-enter {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
     }
   }
 }

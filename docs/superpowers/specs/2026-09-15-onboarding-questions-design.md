@@ -22,11 +22,11 @@ beat 2  "Everyone sends a screenshot. Nobody gets an answer."  (unchanged, auto-
 Q1      who                                                (tap to advance)
 Q2      how it goes                                        (tap to advance)
 Q3      what it costs                                      (tap to advance)
-payoff  recap -> headline -> body -> bridge -> photos -> signoff
+payoff  recap -> headline -> body -> bridge -> photo -> signoff
 username
 ```
 
-The founder beat is not deleted, it is **merged into the payoff**. Its four
+The founder beat is not deleted, it is **merged into the payoff**. One of its
 photos and its line now close the payoff screen. Credibility lands at the
 moment the student has just finished describing the problem in their own words,
 which is the strongest placement available for it.
@@ -136,7 +136,7 @@ no migration and raises no Law 25 question: nothing new is collected.
 ## 4. The payoff copy
 
 Render order: **recap** (body type, top) → **headline** (large) → **body** →
-**bridge** → the four candid photos from the old beat 4 → **signoff**.
+**bridge** → one candid photo from the old beat 4 → **signoff**.
 
 ### `clear` — score 0
 
@@ -211,7 +211,7 @@ die. It never asserts how they feel. "Up to five friends" matches
 
 > You worked that out. I just added it up.
 >
-> *(four photos)*
+> *(photo)*
 >
 > I'm Mossimo. I got tired of asking, so I built this.
 
@@ -277,7 +277,7 @@ prologue rather than the whole intro.
 plays whatever is in `ABOUT_BEATS` and calls `onDone`.
 
 **Orphaned — `public/about/overlap.svg`.** Beat 3 was its only reference, and
-the payoff screen uses the four photos rather than an illustration. Delete it
+the payoff screen uses a photo rather than an illustration. Delete it
 with the change rather than leaving an asset nothing points at. `real-proof.jpg`,
 `problem.svg` and `us-1.jpg`–`us-4.jpg` are all still used.
 

@@ -11,8 +11,8 @@ import {
 } from '../slideshow';
 
 describe('ABOUT_BEATS', () => {
-  it('is the four beats the design calls for', () => {
-    expect(ABOUT_BEATS).toHaveLength(4);
+  it('is the two beats the design calls for', () => {
+    expect(ABOUT_BEATS).toHaveLength(2);
   });
 
   it('gives every beat text and at least one image', () => {

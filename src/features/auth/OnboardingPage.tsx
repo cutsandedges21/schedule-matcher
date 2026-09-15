@@ -8,6 +8,7 @@ import { consumeRedirect } from './redirect';
 import Button from '@/components/Button';
 import InstallInstructions from '@/components/InstallInstructions';
 import AboutIntro from './AboutIntro';
+import IntroQuestions from './IntroQuestions';
 
 /**
  * A 23505 on the profile insert means one of two things: the *username* is
@@ -36,22 +37,22 @@ export default function OnboardingPage() {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   /**
-   * install → intro → username. Install leads, so that everything after it
-   * happens in the app the student is actually going to keep using.
+   * install → intro → questions → username. Install leads, so that everything
+   * after it happens in the app the student is actually going to keep using.
    *
    * On iPhone a home-screen app gets its own storage container, separate from
    * Safari's, so anyone who follows the instructions and switches over arrives
    * signed out and finishes onboarding in the installed app. With the intro
-   * first that meant watching the whole nine-second sequence in Safari and
-   * then watching it again in the app; leading with install means they see it
-   * once, in the right place. Picking a username still happens after the move
-   * for the same reason it always did.
+   * first that meant sitting through the prologue and the questions in Safari
+   * and then doing both again in the app; leading with install means they see
+   * it once, in the right place. Picking a username still happens after the
+   * move for the same reason it always did.
    *
    * Anyone already running from an icon starts at the intro — there is nothing
    * to install, and that includes someone who installed midway through a
    * previous attempt and has come back through the installed app.
    */
-  const [step, setStep] = useState<'install' | 'intro' | 'username'>(
+  const [step, setStep] = useState<'install' | 'intro' | 'questions' | 'username'>(
     isStandalone() ? 'intro' : 'install'
   );
 
@@ -71,7 +72,11 @@ export default function OnboardingPage() {
    * Stable identity: AboutIntro keys its beat timer off this, and a fresh arrow
    * every render would keep restarting the current beat.
    */
-  const afterIntro = useCallback(() => setStep('username'), []);
+  // The prologue now hands off to the questions, not straight to the username.
+  const afterIntro = useCallback(() => setStep('questions'), []);
+
+  /** Stable for the same reason afterIntro is. */
+  const afterQuestions = useCallback(() => setStep('username'), []);
 
   /** The username is the last step, so saving it ends onboarding. */
   async function afterProfileSaved() {
@@ -194,6 +199,10 @@ export default function OnboardingPage() {
 
   if (step === 'intro') {
     return <AboutIntro onDone={afterIntro} />;
+  }
+
+  if (step === 'questions') {
+    return <IntroQuestions onDone={afterQuestions} />;
   }
 
   return (

@@ -1,10 +1,11 @@
 // src/domain/slideshow.ts
 //
-// The onboarding intro: four beats of text + image that play themselves and
-// hand off to the username step. There are no controls — no next, no back, no
-// skip, and tapping does nothing — so the timing table and the termination
-// guarantee below are the only things standing between a new student and an
-// intro they cannot get out of. slideshow.test.ts asserts the sequence ends.
+// The onboarding prologue: two beats of text + image that play themselves and
+// hand off once the last one has faded. There are no controls — no next, no
+// back, no skip, and tapping does nothing — so the timing table and the
+// termination guarantee below are the only things standing between a new
+// student and a prologue they cannot get out of. slideshow.test.ts asserts the
+// sequence ends.
 
 export type BeatPhase = 'enter' | 'hold' | 'exit';
 
@@ -44,7 +45,7 @@ export const PHASE_ORDER: readonly BeatPhase[] = ['enter', 'hold', 'exit'];
  * Milliseconds per phase. The whole pace of the intro lives here.
  *
  * Tuned so a beat is exactly 3.5s end to end (400 + 2750 + 350), which puts the
- * whole sequence at 14s. Only `hold` moves when the pace changes — the fades
+ * two-beat prologue at 7s. Only `hold` moves when the pace changes — the fades
  * are transitions, not reading time, and stretching them makes the intro feel
  * sluggish rather than giving anyone longer to read.
  *
@@ -60,29 +61,19 @@ export const BEAT_TIMING: Record<BeatPhase, number> = {
 };
 
 /**
- * The story, in four beats:
+ * The problem, in two beats:
  *
  *   1. this really happens, here is the receipt
  *   2. and the thing everyone does about it does not work
- *   3. here is what we do instead
- *   4. and I am the person it happened to
  *
- * Beat 4 closes the loop on beat 1. It used to read "We're students who got
- * tired of that", where "that" pointed at the previous beat — which is the
- * *solution*, so it said the author was tired of their own app. "Tired of
- * asking" names beat 1 instead: the asking is the thing in the screenshot, and
- * it is what every student reading this has done themselves.
+ * It used to be four. Beats 3 and 4 — the solution and the founder — are now
+ * IntroQuestions: three questions the student taps through, and a payoff
+ * assembled from the answers, which carries the founder line at its end. See
+ * docs/superpowers/specs/2026-09-15-onboarding-questions-design.md.
  *
- * First person singular throughout, because that is the truth — one person
- * built this. "We" in a founder story that has no second founder is the kind
- * of small inflation students notice, and it costs the beat exactly the
- * credibility it exists to buy.
- *
- * The name is doing real work rather than being a credit. Beat 1's screenshot
- * tags @moss.bianco, so a student who read it fifteen seconds earlier can see
- * that the person introducing himself here is the person who was tagged in the
- * message — the claim checks out against evidence already on screen. An
- * anonymous "I built this" asks to be believed; this one does not have to.
+ * What is left here is a prologue, not the whole intro. These two beats still
+ * auto-play with no controls, but they are 7 seconds rather than 14, and the
+ * student reaches something tappable immediately afterwards.
  */
 export const ABOUT_BEATS: readonly Beat[] = [
   {
@@ -107,46 +98,6 @@ export const ABOUT_BEATS: readonly Beat[] = [
       },
     ],
   },
-  {
-    text: "Upload your schedule once. See when you're all free.",
-    images: [
-      {
-        src: '/about/overlap.svg',
-        alt: 'A week grid with the window both students have free highlighted',
-        width: 320,
-        height: 240,
-      },
-    ],
-  },
-  {
-    text: "I'm Mossimo. I got tired of asking, so I built this.",
-    images: [
-      {
-        src: '/about/us-1.jpg',
-        alt: 'Me in a car',
-        width: 480,
-        height: 480,
-      },
-      {
-        src: '/about/us-2.jpg',
-        alt: 'Me on a plane',
-        width: 480,
-        height: 480,
-      },
-      {
-        src: '/about/us-3.jpg',
-        alt: 'Me in a car wearing a backwards cap',
-        width: 480,
-        height: 480,
-      },
-      {
-        src: '/about/us-4.jpg',
-        alt: 'Me at work in a black shirt',
-        width: 480,
-        height: 480,
-      },
-    ],
-  },
 ];
 
 export interface BeatPosition {
@@ -160,17 +111,24 @@ export const FIRST_POSITION: BeatPosition = { index: 0, phase: 'enter' };
 export const BEAT_DURATION = PHASE_ORDER.reduce((total, phase) => total + BEAT_TIMING[phase], 0);
 
 /**
- * How long a new student is held on the intro. Currently 14s.
+ * How long a new student is held on the prologue. Currently 7s.
  *
- * There are no controls on this screen, so every second here is a second
+ * There are still no controls on this screen, so every second here is a second
  * nobody can escape, on the first screen after installing. The assertion in
  * slideshow.test.ts exists to make a change to this number deliberate — it has
- * been 11.8s, then 20s, now 14s, and each move was a judgement about how much
- * compulsory time the story is worth.
+ * been 11.8s, then 20s, then 14s, and each move was a judgement about how much
+ * compulsory time the story is worth. 7s is not that judgement being revisited:
+ * it is what two beats cost at an unchanged pace. The budget still binds,
+ * because the seconds that cutting beats 3 and 4 freed are exactly the seconds
+ * a third beat would quietly take back.
  *
- * The change that would take the pressure off is letting a tap advance the
- * beat: still unskippable, but a fast reader moves on and a slow one lingers,
- * which turns this into a ceiling rather than a sentence.
+ * The pressure came off from a different direction than this comment once
+ * predicted. It argued for letting a tap advance the beat; what happened
+ * instead is that the tappable content moved *after* the prologue —
+ * IntroQuestions is paced entirely by the student, so what is unescapable now
+ * is 7 seconds rather than the whole story. Tap-to-advance is still the right
+ * move if even these two beats prove too long, but it is no longer the only
+ * thing standing between a fast reader and the rest of the app.
  */
 export const SEQUENCE_DURATION = BEAT_DURATION * ABOUT_BEATS.length;
 

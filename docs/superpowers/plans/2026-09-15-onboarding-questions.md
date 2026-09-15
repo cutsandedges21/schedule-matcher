@@ -262,12 +262,19 @@ export const ALL_ANSWERS: readonly Answers[] = QUESTIONS[0].options.flatMap((who
 
 - [ ] **Step 2: Verify it typechecks and the suite is still green**
 
-Run: `npx tsc --noEmit -p tsconfig.app.json && npx vitest run src/domain/__tests__/onboardingQuestions.test.ts`
-Expected: no type errors, and Task 1's 5 tests still PASS.
+Run: `npx vitest run src/domain/__tests__/onboardingQuestions.test.ts`
+Expected: Task 1's 5 tests still PASS.
 
-`optionFor` is unused until Task 3. If your editor flags it, leave it — the
-next task consumes it, and `tsc` does not error on unused module-scope
-functions under this config.
+**Do not run `tsc` at this checkpoint.** `tsconfig.app.json` sets
+`noUnusedLocals: true`, and `BAND_TABLE` and `optionFor` have no consumer until
+Task 3 — so `tsc` fails with TS6133 here by construction. That is expected and
+self-resolves the moment Task 3 lands. Do **not** add suppression comments or
+alter the code to silence it; the whole point of splitting these tasks is that
+Task 2's output is scaffolding for Task 3.
+
+`npm test` runs vitest only and is unaffected, so the Task 2 commit is green by
+the gate this repo actually enforces. Run `tsc` at the end of Task 3, where it
+must pass clean.
 
 - [ ] **Step 3: Commit**
 

@@ -129,8 +129,14 @@ describe('recap', () => {
   });
 });
 
+function optionForTest(id: 'who' | 'how' | 'cost', value: string) {
+  return QUESTIONS.find((q) => q.id === id)!.options.find((o) => o.value === value)!;
+}
+
+// Expressed in terms of optionForTest so there is one lookup, not two
+// near-identical ones.
 function optionLabelFragment(id: 'who' | 'how' | 'cost', value: string): string {
-  return QUESTIONS.find((q) => q.id === id)!.options.find((o) => o.value === value)!.fragment;
+  return optionForTest(id, value).fragment;
 }
 
 describe('band copy', () => {
@@ -147,5 +153,49 @@ describe('band copy', () => {
         expect(text).not.toContain('{');
       }
     }
+  });
+});
+
+describe('the truth constraint', () => {
+  /**
+   * Band copy must never contain a phrase an answer denies. A student who said
+   * "me and one friend" must not be told about "the group"; one who said "two
+   * minutes" must not be told they are "drowning".
+   *
+   * This is the whole reason the copy is band-level rather than per-answer: it
+   * is the assertion that makes a lie in onboarding a failing test rather than
+   * a thing somebody notices in three months.
+   */
+  it('never contradicts an answer the student gave', () => {
+    for (const answers of ALL_ANSWERS) {
+      const result = payoff(answers);
+      const rendered = `${result.headline} ${result.body} ${result.bridge}`.toLowerCase();
+
+      const denied = [
+        optionForTest('who', answers.who),
+        optionForTest('how', answers.how),
+        optionForTest('cost', answers.cost),
+      ].flatMap((option) => option.denies);
+
+      for (const phrase of denied) {
+        expect(
+          rendered.includes(phrase.toLowerCase()),
+          `band "${result.band}" contains "${phrase}", denied by ${JSON.stringify(answers)}`
+        ).toBe(false);
+      }
+    }
+  });
+
+  /**
+   * All 27 rendered payoffs. Any later copy edit is then reviewed against
+   * every student who can reach it, rather than against the one the author had
+   * in mind while editing.
+   */
+  it('matches the recorded payoff for every combination', () => {
+    const rendered = ALL_ANSWERS.map((answers) => {
+      const r = payoff(answers);
+      return `${answers.who}/${answers.how}/${answers.cost} [${r.score} ${r.band}]\n${r.recap}\n${r.headline}`;
+    });
+    expect(rendered).toMatchSnapshot();
   });
 });

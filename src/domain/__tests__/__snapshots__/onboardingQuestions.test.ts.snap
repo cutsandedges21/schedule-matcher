@@ -1,0 +1,87 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`the truth constraint > matches the recorded payoff for every combination 1`] = `
+[
+  "one/sorted/minutes [0 clear]
+You and one friend. You sort it out. Two minutes, tops.
+Nothing about that is broken.",
+  "one/sorted/halfhour [1 edge]
+You and one friend. You sort it out. Half an hour, every time.
+You don't need a system for this.",
+  "one/sorted/plan [2 edge]
+You and one friend. You sort it out. The plan doesn't happen.
+You don't need a system for this.",
+  "one/busy/minutes [1 edge]
+You and one friend. Someone always turns out to be busy. Two minutes, tops.
+You don't need a system for this.",
+  "one/busy/halfhour [2 edge]
+You and one friend. Someone always turns out to be busy. Half an hour, every time.
+You don't need a system for this.",
+  "one/busy/plan [3 manual]
+You and one friend. Someone always turns out to be busy. The plan doesn't happen.
+You've been doing that part by hand.",
+  "one/silence/minutes [2 edge]
+You and one friend. Screenshots go in, nothing comes back. Two minutes, tops.
+You don't need a system for this.",
+  "one/silence/halfhour [3 manual]
+You and one friend. Screenshots go in, nothing comes back. Half an hour, every time.
+You've been doing that part by hand.",
+  "one/silence/plan [4 manual]
+You and one friend. Screenshots go in, nothing comes back. The plan doesn't happen.
+You've been doing that part by hand.",
+  "few/sorted/minutes [1 edge]
+Three or four of you. You sort it out. Two minutes, tops.
+You don't need a system for this.",
+  "few/sorted/halfhour [2 edge]
+Three or four of you. You sort it out. Half an hour, every time.
+You don't need a system for this.",
+  "few/sorted/plan [3 manual]
+Three or four of you. You sort it out. The plan doesn't happen.
+You've been doing that part by hand.",
+  "few/busy/minutes [2 edge]
+Three or four of you. Someone always turns out to be busy. Two minutes, tops.
+You don't need a system for this.",
+  "few/busy/halfhour [3 manual]
+Three or four of you. Someone always turns out to be busy. Half an hour, every time.
+You've been doing that part by hand.",
+  "few/busy/plan [4 manual]
+Three or four of you. Someone always turns out to be busy. The plan doesn't happen.
+You've been doing that part by hand.",
+  "few/silence/minutes [3 manual]
+Three or four of you. Screenshots go in, nothing comes back. Two minutes, tops.
+You've been doing that part by hand.",
+  "few/silence/halfhour [4 manual]
+Three or four of you. Screenshots go in, nothing comes back. Half an hour, every time.
+You've been doing that part by hand.",
+  "few/silence/plan [5 core]
+Three or four of you. Screenshots go in, nothing comes back. The plan doesn't happen.
+You just described why this exists.",
+  "chat/sorted/minutes [2 edge]
+The whole group chat. You sort it out. Two minutes, tops.
+You don't need a system for this.",
+  "chat/sorted/halfhour [3 manual]
+The whole group chat. You sort it out. Half an hour, every time.
+You've been doing that part by hand.",
+  "chat/sorted/plan [4 manual]
+The whole group chat. You sort it out. The plan doesn't happen.
+You've been doing that part by hand.",
+  "chat/busy/minutes [3 manual]
+The whole group chat. Someone always turns out to be busy. Two minutes, tops.
+You've been doing that part by hand.",
+  "chat/busy/halfhour [4 manual]
+The whole group chat. Someone always turns out to be busy. Half an hour, every time.
+You've been doing that part by hand.",
+  "chat/busy/plan [5 core]
+The whole group chat. Someone always turns out to be busy. The plan doesn't happen.
+You just described why this exists.",
+  "chat/silence/minutes [4 manual]
+The whole group chat. Screenshots go in, nothing comes back. Two minutes, tops.
+You've been doing that part by hand.",
+  "chat/silence/halfhour [5 core]
+The whole group chat. Screenshots go in, nothing comes back. Half an hour, every time.
+You just described why this exists.",
+  "chat/silence/plan [6 core]
+The whole group chat. Screenshots go in, nothing comes back. The plan doesn't happen.
+You just described why this exists.",
+]
+`;

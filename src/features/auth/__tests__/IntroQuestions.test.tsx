@@ -1,15 +1,28 @@
 // @vitest-environment jsdom
 // src/features/auth/__tests__/IntroQuestions.test.tsx
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import IntroQuestions from '../IntroQuestions';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
+import IntroQuestions, { CHOICE_LOCKOUT_MS } from '../IntroQuestions';
 import { QUESTIONS, SIGNOFF } from '@/domain/onboardingQuestions';
 
-afterEach(cleanup);
+/**
+ * Fake timers because `choose` compares `Date.now()` against the last accepted
+ * answer. Without them every test would fire its taps inside the same
+ * millisecond, i.e. as a double-tap, and would be testing the lockout rather
+ * than the flow.
+ */
+beforeEach(() => vi.useFakeTimers());
+afterEach(() => {
+  vi.useRealTimers();
+  cleanup();
+});
 
-/** Tap the option with this label. */
+/** Answer at human speed: tap, then wait out the double-tap lockout. */
 function tap(label: string) {
   fireEvent.click(screen.getByRole('button', { name: label }));
+  act(() => {
+    vi.advanceTimersByTime(CHOICE_LOCKOUT_MS);
+  });
 }
 
 describe('IntroQuestions', () => {
@@ -57,5 +70,35 @@ describe('IntroQuestions', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Continue' }));
 
     expect(onDone).toHaveBeenCalledTimes(1);
+  });
+
+  /**
+   * The three options occupy the same three coordinates on every question, so
+   * a tap that does not feel like it landed invites a second one — which would
+   * otherwise answer a question the student never read and put a value into
+   * the payoff that they never chose.
+   */
+  it('ignores a second tap inside the lockout', () => {
+    render(<IntroQuestions onDone={() => {}} />);
+
+    const first = () => screen.getAllByRole('button')[0];
+    fireEvent.click(first());
+    fireEvent.click(first()); // same spot, same instant
+
+    expect(screen.getByText(QUESTIONS[1].prompt)).toBeDefined();
+    expect(screen.queryByText(QUESTIONS[2].prompt)).toBeNull();
+  });
+
+  it('accepts the next tap once the lockout has passed', () => {
+    render(<IntroQuestions onDone={() => {}} />);
+
+    const first = () => screen.getAllByRole('button')[0];
+    fireEvent.click(first());
+    act(() => {
+      vi.advanceTimersByTime(CHOICE_LOCKOUT_MS);
+    });
+    fireEvent.click(first());
+
+    expect(screen.getByText(QUESTIONS[2].prompt)).toBeDefined();
   });
 });

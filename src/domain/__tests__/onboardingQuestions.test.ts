@@ -1,3 +1,4 @@
+import { readFile } from 'node:fs/promises';
 import { describe, expect, it } from 'vitest';
 import { ALL_ANSWERS, BANDS, QUESTIONS, payoff } from '../onboardingQuestions';
 
@@ -194,8 +195,43 @@ describe('the truth constraint', () => {
   it('matches the recorded payoff for every combination', () => {
     const rendered = ALL_ANSWERS.map((answers) => {
       const r = payoff(answers);
-      return `${answers.who}/${answers.how}/${answers.cost} [${r.score} ${r.band}]\n${r.recap}\n${r.headline}`;
+      // Body, bridge and signoff included deliberately. They were left out at
+      // first, and the snapshot passed happily while "Up to five friends do the
+      // same" was edited to "ten" — a claim MAX_GROUP_FRIENDS makes false. Body
+      // is where nearly every load-bearing sentence lives ("Your friend does
+      // the same", "Everyone you add does the same"), so a snapshot without it
+      // guards the labels and not the claims.
+      return [
+        `${answers.who}/${answers.how}/${answers.cost} [${r.score} ${r.band}]`,
+        r.recap,
+        r.headline,
+        r.body,
+        r.bridge,
+        r.signoff,
+      ].join('\n');
     });
     expect(rendered).toMatchSnapshot();
+  });
+
+  /**
+   * Spec §7 promises this and it was never written. The module is the reason
+   * this feature needed no migration and raises no Law 25 question: answers
+   * exist for as long as the component is mounted and are then gone. An import
+   * added here later is how that quietly stops being true.
+   */
+  it('reaches no storage of any kind', async () => {
+    const source = await readFile(
+      new URL('../onboardingQuestions.ts', import.meta.url),
+      'utf8'
+    );
+
+    // Comments stripped first. The module's own header explains that answers
+    // are never written to Supabase or localStorage, and scanning raw source
+    // failed on that sentence — the test flagging the promise as the breach.
+    const code = source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
+
+    for (const forbidden of ['@/lib/supabase', 'localStorage', 'sessionStorage', 'fetch(']) {
+      expect(code, `${forbidden} appears in executable code`).not.toContain(forbidden);
+    }
   });
 });

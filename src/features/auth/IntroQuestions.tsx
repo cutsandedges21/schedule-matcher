@@ -1,5 +1,5 @@
 // src/features/auth/IntroQuestions.tsx
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import Button from '@/components/Button';
 import {
   QUESTIONS,
@@ -33,11 +33,33 @@ const PHOTO = { src: '/about/us-4.jpg', alt: 'Me at work in a black shirt' };
  * reader moves immediately and a slow one takes as long as they like. That is
  * the fix slideshow.ts asks for in its own header.
  */
+/**
+ * How long after an answer a second tap is ignored.
+ *
+ * Every question renders three options into the same three boxes at the same
+ * three coordinates, so the screen after a tap looks almost exactly like the
+ * screen before it. A student who taps and does not feel it land taps again,
+ * and the second tap answers a question they never read — which puts a value
+ * into `answers` that they did not choose, and the payoff then confidently
+ * describes somebody who does not exist. That is precisely the untrue payoff
+ * the fragments and the `denies` table exist to make impossible, arriving
+ * through the one door those guards do not watch.
+ *
+ * 300ms is the 260ms enter animation plus a frame: taps are ignored until the
+ * new question has actually finished arriving.
+ */
+export const CHOICE_LOCKOUT_MS = 300;
+
 export default function IntroQuestions({ onDone }: { onDone: () => void }) {
   const [answers, setAnswers] = useState<Partial<Answers>>({});
   const [index, setIndex] = useState(0);
+  const lastChoiceAt = useRef(0);
 
   function choose(id: QuestionId, value: string) {
+    const now = Date.now();
+    if (now - lastChoiceAt.current < CHOICE_LOCKOUT_MS) return;
+    lastChoiceAt.current = now;
+
     setAnswers((current) => ({ ...current, [id]: value }));
     setIndex((current) => current + 1);
   }

@@ -4,84 +4,253 @@ exports[`the truth constraint > matches the recorded payoff for every combinatio
 [
   "one/sorted/minutes [0 clear]
 You and one friend. You sort it out. Two minutes, tops.
-Nothing about that is broken.",
+Nothing about that is broken.
+You've got the easy version, and it still costs you two minutes.
+
+Screenshot your schedule once and fix anything it reads wrong. Your friend does the same. After that the hours you're both free are just there. When someone in the chat asks, you're the one who already knows.
+You worked that out. I just added it up.
+I'm Mossimo. I got tired of asking, so I built this.",
   "one/sorted/halfhour [1 edge]
 You and one friend. You sort it out. Half an hour, every time.
-You don't need a system for this.",
+You don't need a system for this.
+You need your week saved somewhere your friends can see it.
+
+Screenshot your schedule once and fix anything it reads wrong. They do the same. After that the hours you're all free are already worked out. Nothing to send to the chat.
+You worked that out. I just added it up.
+I'm Mossimo. I got tired of asking, so I built this.",
   "one/sorted/plan [2 edge]
 You and one friend. You sort it out. The plan doesn't happen.
-You don't need a system for this.",
+You don't need a system for this.
+You need your week saved somewhere your friends can see it.
+
+Screenshot your schedule once and fix anything it reads wrong. They do the same. After that the hours you're all free are already worked out. Nothing to send to the chat.
+You worked that out. I just added it up.
+I'm Mossimo. I got tired of asking, so I built this.",
   "one/busy/minutes [1 edge]
 You and one friend. Someone always turns out to be busy. Two minutes, tops.
-You don't need a system for this.",
+You don't need a system for this.
+You need your week saved somewhere your friends can see it.
+
+Screenshot your schedule once and fix anything it reads wrong. They do the same. After that the hours you're all free are already worked out. Nothing to send to the chat.
+You worked that out. I just added it up.
+I'm Mossimo. I got tired of asking, so I built this.",
   "one/busy/halfhour [2 edge]
 You and one friend. Someone always turns out to be busy. Half an hour, every time.
-You don't need a system for this.",
+You don't need a system for this.
+You need your week saved somewhere your friends can see it.
+
+Screenshot your schedule once and fix anything it reads wrong. They do the same. After that the hours you're all free are already worked out. Nothing to send to the chat.
+You worked that out. I just added it up.
+I'm Mossimo. I got tired of asking, so I built this.",
   "one/busy/plan [3 manual]
 You and one friend. Someone always turns out to be busy. The plan doesn't happen.
-You've been doing that part by hand.",
+You've been doing that part by hand.
+None of that is hanging out. It's the part before hanging out.
+
+Screenshot your schedule once and fix anything it reads wrong. Everyone you add does the same. After that: every hour all of you are free, and the classes you have in common, on one screen.
+
+Making a plan becomes opening the app.
+You worked that out. I just added it up.
+I'm Mossimo. I got tired of asking, so I built this.",
   "one/silence/minutes [2 edge]
 You and one friend. Screenshots go in, nothing comes back. Two minutes, tops.
-You don't need a system for this.",
+You don't need a system for this.
+You need your week saved somewhere your friends can see it.
+
+Screenshot your schedule once and fix anything it reads wrong. They do the same. After that the hours you're all free are already worked out. Nothing to send to the chat.
+You worked that out. I just added it up.
+I'm Mossimo. I got tired of asking, so I built this.",
   "one/silence/halfhour [3 manual]
 You and one friend. Screenshots go in, nothing comes back. Half an hour, every time.
-You've been doing that part by hand.",
+You've been doing that part by hand.
+None of that is hanging out. It's the part before hanging out.
+
+Screenshot your schedule once and fix anything it reads wrong. Everyone you add does the same. After that: every hour all of you are free, and the classes you have in common, on one screen.
+
+Making a plan becomes opening the app.
+You worked that out. I just added it up.
+I'm Mossimo. I got tired of asking, so I built this.",
   "one/silence/plan [4 manual]
 You and one friend. Screenshots go in, nothing comes back. The plan doesn't happen.
-You've been doing that part by hand.",
+You've been doing that part by hand.
+None of that is hanging out. It's the part before hanging out.
+
+Screenshot your schedule once and fix anything it reads wrong. Everyone you add does the same. After that: every hour all of you are free, and the classes you have in common, on one screen.
+
+Making a plan becomes opening the app.
+You worked that out. I just added it up.
+I'm Mossimo. I got tired of asking, so I built this.",
   "few/sorted/minutes [1 edge]
 Three or four of you. You sort it out. Two minutes, tops.
-You don't need a system for this.",
+You don't need a system for this.
+You need your week saved somewhere your friends can see it.
+
+Screenshot your schedule once and fix anything it reads wrong. They do the same. After that the hours you're all free are already worked out. Nothing to send to the chat.
+You worked that out. I just added it up.
+I'm Mossimo. I got tired of asking, so I built this.",
   "few/sorted/halfhour [2 edge]
 Three or four of you. You sort it out. Half an hour, every time.
-You don't need a system for this.",
+You don't need a system for this.
+You need your week saved somewhere your friends can see it.
+
+Screenshot your schedule once and fix anything it reads wrong. They do the same. After that the hours you're all free are already worked out. Nothing to send to the chat.
+You worked that out. I just added it up.
+I'm Mossimo. I got tired of asking, so I built this.",
   "few/sorted/plan [3 manual]
 Three or four of you. You sort it out. The plan doesn't happen.
-You've been doing that part by hand.",
+You've been doing that part by hand.
+None of that is hanging out. It's the part before hanging out.
+
+Screenshot your schedule once and fix anything it reads wrong. Everyone you add does the same. After that: every hour all of you are free, and the classes you have in common, on one screen.
+
+Making a plan becomes opening the app.
+You worked that out. I just added it up.
+I'm Mossimo. I got tired of asking, so I built this.",
   "few/busy/minutes [2 edge]
 Three or four of you. Someone always turns out to be busy. Two minutes, tops.
-You don't need a system for this.",
+You don't need a system for this.
+You need your week saved somewhere your friends can see it.
+
+Screenshot your schedule once and fix anything it reads wrong. They do the same. After that the hours you're all free are already worked out. Nothing to send to the chat.
+You worked that out. I just added it up.
+I'm Mossimo. I got tired of asking, so I built this.",
   "few/busy/halfhour [3 manual]
 Three or four of you. Someone always turns out to be busy. Half an hour, every time.
-You've been doing that part by hand.",
+You've been doing that part by hand.
+None of that is hanging out. It's the part before hanging out.
+
+Screenshot your schedule once and fix anything it reads wrong. Everyone you add does the same. After that: every hour all of you are free, and the classes you have in common, on one screen.
+
+Making a plan becomes opening the app.
+You worked that out. I just added it up.
+I'm Mossimo. I got tired of asking, so I built this.",
   "few/busy/plan [4 manual]
 Three or four of you. Someone always turns out to be busy. The plan doesn't happen.
-You've been doing that part by hand.",
+You've been doing that part by hand.
+None of that is hanging out. It's the part before hanging out.
+
+Screenshot your schedule once and fix anything it reads wrong. Everyone you add does the same. After that: every hour all of you are free, and the classes you have in common, on one screen.
+
+Making a plan becomes opening the app.
+You worked that out. I just added it up.
+I'm Mossimo. I got tired of asking, so I built this.",
   "few/silence/minutes [3 manual]
 Three or four of you. Screenshots go in, nothing comes back. Two minutes, tops.
-You've been doing that part by hand.",
+You've been doing that part by hand.
+None of that is hanging out. It's the part before hanging out.
+
+Screenshot your schedule once and fix anything it reads wrong. Everyone you add does the same. After that: every hour all of you are free, and the classes you have in common, on one screen.
+
+Making a plan becomes opening the app.
+You worked that out. I just added it up.
+I'm Mossimo. I got tired of asking, so I built this.",
   "few/silence/halfhour [4 manual]
 Three or four of you. Screenshots go in, nothing comes back. Half an hour, every time.
-You've been doing that part by hand.",
+You've been doing that part by hand.
+None of that is hanging out. It's the part before hanging out.
+
+Screenshot your schedule once and fix anything it reads wrong. Everyone you add does the same. After that: every hour all of you are free, and the classes you have in common, on one screen.
+
+Making a plan becomes opening the app.
+You worked that out. I just added it up.
+I'm Mossimo. I got tired of asking, so I built this.",
   "few/silence/plan [5 core]
 Three or four of you. Screenshots go in, nothing comes back. The plan doesn't happen.
-You just described why this exists.",
+You just described why this exists.
+That's not you being bad at planning. It's a pile of schedules and no way to lay them on top of each other.
+
+Screenshot yours once and fix anything it reads wrong. Up to five friends do the same. After that there's nothing to work out — the free hours are already there, with the classes you share highlighted.
+
+Making a plan becomes opening the app.
+You worked that out. I just added it up.
+I'm Mossimo. I got tired of asking, so I built this.",
   "chat/sorted/minutes [2 edge]
 The whole group chat. You sort it out. Two minutes, tops.
-You don't need a system for this.",
+You don't need a system for this.
+You need your week saved somewhere your friends can see it.
+
+Screenshot your schedule once and fix anything it reads wrong. They do the same. After that the hours you're all free are already worked out. Nothing to send to the chat.
+You worked that out. I just added it up.
+I'm Mossimo. I got tired of asking, so I built this.",
   "chat/sorted/halfhour [3 manual]
 The whole group chat. You sort it out. Half an hour, every time.
-You've been doing that part by hand.",
+You've been doing that part by hand.
+None of that is hanging out. It's the part before hanging out.
+
+Screenshot your schedule once and fix anything it reads wrong. Everyone you add does the same. After that: every hour all of you are free, and the classes you have in common, on one screen.
+
+Making a plan becomes opening the app.
+You worked that out. I just added it up.
+I'm Mossimo. I got tired of asking, so I built this.",
   "chat/sorted/plan [4 manual]
 The whole group chat. You sort it out. The plan doesn't happen.
-You've been doing that part by hand.",
+You've been doing that part by hand.
+None of that is hanging out. It's the part before hanging out.
+
+Screenshot your schedule once and fix anything it reads wrong. Everyone you add does the same. After that: every hour all of you are free, and the classes you have in common, on one screen.
+
+Making a plan becomes opening the app.
+You worked that out. I just added it up.
+I'm Mossimo. I got tired of asking, so I built this.",
   "chat/busy/minutes [3 manual]
 The whole group chat. Someone always turns out to be busy. Two minutes, tops.
-You've been doing that part by hand.",
+You've been doing that part by hand.
+None of that is hanging out. It's the part before hanging out.
+
+Screenshot your schedule once and fix anything it reads wrong. Everyone you add does the same. After that: every hour all of you are free, and the classes you have in common, on one screen.
+
+Making a plan becomes opening the app.
+You worked that out. I just added it up.
+I'm Mossimo. I got tired of asking, so I built this.",
   "chat/busy/halfhour [4 manual]
 The whole group chat. Someone always turns out to be busy. Half an hour, every time.
-You've been doing that part by hand.",
+You've been doing that part by hand.
+None of that is hanging out. It's the part before hanging out.
+
+Screenshot your schedule once and fix anything it reads wrong. Everyone you add does the same. After that: every hour all of you are free, and the classes you have in common, on one screen.
+
+Making a plan becomes opening the app.
+You worked that out. I just added it up.
+I'm Mossimo. I got tired of asking, so I built this.",
   "chat/busy/plan [5 core]
 The whole group chat. Someone always turns out to be busy. The plan doesn't happen.
-You just described why this exists.",
+You just described why this exists.
+That's not you being bad at planning. It's a pile of schedules and no way to lay them on top of each other.
+
+Screenshot yours once and fix anything it reads wrong. Up to five friends do the same. After that there's nothing to work out — the free hours are already there, with the classes you share highlighted.
+
+Making a plan becomes opening the app.
+You worked that out. I just added it up.
+I'm Mossimo. I got tired of asking, so I built this.",
   "chat/silence/minutes [4 manual]
 The whole group chat. Screenshots go in, nothing comes back. Two minutes, tops.
-You've been doing that part by hand.",
+You've been doing that part by hand.
+None of that is hanging out. It's the part before hanging out.
+
+Screenshot your schedule once and fix anything it reads wrong. Everyone you add does the same. After that: every hour all of you are free, and the classes you have in common, on one screen.
+
+Making a plan becomes opening the app.
+You worked that out. I just added it up.
+I'm Mossimo. I got tired of asking, so I built this.",
   "chat/silence/halfhour [5 core]
 The whole group chat. Screenshots go in, nothing comes back. Half an hour, every time.
-You just described why this exists.",
+You just described why this exists.
+That's not you being bad at planning. It's a pile of schedules and no way to lay them on top of each other.
+
+Screenshot yours once and fix anything it reads wrong. Up to five friends do the same. After that there's nothing to work out — the free hours are already there, with the classes you share highlighted.
+
+Making a plan becomes opening the app.
+You worked that out. I just added it up.
+I'm Mossimo. I got tired of asking, so I built this.",
   "chat/silence/plan [6 core]
 The whole group chat. Screenshots go in, nothing comes back. The plan doesn't happen.
-You just described why this exists.",
+You just described why this exists.
+That's not you being bad at planning. It's a pile of schedules and no way to lay them on top of each other.
+
+Screenshot yours once and fix anything it reads wrong. Up to five friends do the same. After that there's nothing to work out — the free hours are already there, with the classes you share highlighted.
+
+Making a plan becomes opening the app.
+You worked that out. I just added it up.
+I'm Mossimo. I got tired of asking, so I built this.",
 ]
 `;

@@ -135,3 +135,80 @@ export const ALL_ANSWERS: readonly Answers[] = QUESTIONS[0].options.flatMap((who
     }))
   )
 );
+
+/**
+ * Its "I" is the same "I" as the signoff's, so the founder line arrives as the
+ * next sentence of a thought rather than as a credit. Merging the old beat 4
+ * into the payoff only works because of this line.
+ */
+export const BRIDGE = 'You worked that out. I just added it up.';
+
+export const SIGNOFF = "I'm Mossimo. I got tired of asking, so I built this.";
+
+/**
+ * Band copy may assert only two things: product facts, and total coordination
+ * cost implied by the score. It may never name a failure mechanism belonging
+ * to one question, because every band above `clear` is reachable by answer
+ * sets that deny that mechanism. The DENIES test enforces this.
+ */
+export const BANDS: Record<BandId, { headline: string; body: string }> = {
+  // Exactly one answer set lands here, which is the only reason the singular
+  // "your friend" is safe. Nothing in this band diagnoses a problem.
+  clear: {
+    headline: 'Nothing about that is broken.',
+    body:
+      "You've got the easy version, and it still costs you two minutes.\n\n" +
+      'Screenshot your schedule once and fix anything it reads wrong. Your friend does the ' +
+      "same. After that the hours you're both free are just there. When someone in the chat " +
+      "asks, you're the one who already knows.",
+  },
+  // Names no failure mechanism at all, because it is reachable by answer sets
+  // that deny each one — including (chat / sorted / minutes), where a scolding
+  // middle band would be flatly wrong.
+  edge: {
+    headline: "You don't need a system for this.",
+    body:
+      'You need your week saved somewhere your friends can see it.\n\n' +
+      'Screenshot your schedule once and fix anything it reads wrong. They do the same. ' +
+      "After that the hours you're all free are already worked out. Nothing to send to the chat.",
+  },
+  manual: {
+    headline: "You've been doing that part by hand.",
+    body:
+      "None of that is hanging out. It's the part before hanging out.\n\n" +
+      'Screenshot your schedule once and fix anything it reads wrong. Everyone you add does ' +
+      'the same. After that: every hour all of you are free, and the classes you have in ' +
+      'common, on one screen.\n\nMaking a plan becomes opening the app.',
+  },
+  core: {
+    headline: 'You just described why this exists.',
+    body:
+      "That's not you being bad at planning. It's a pile of schedules and no way to lay them " +
+      'on top of each other.\n\nScreenshot yours once and fix anything it reads wrong. Up to ' +
+      "five friends do the same. After that there's nothing to work out — the free hours are " +
+      'already there, with the classes you share highlighted.\n\n' +
+      'Making a plan becomes opening the app.',
+  },
+};
+
+export function payoff(answers: Answers): Payoff {
+  const chosen = [
+    optionFor('who', answers.who),
+    optionFor('how', answers.how),
+    optionFor('cost', answers.cost),
+  ];
+
+  const score = chosen.reduce((total, option) => total + option.weight, 0);
+  const band = BAND_TABLE.find((entry) => score <= entry.max)!.id;
+
+  return {
+    score,
+    band,
+    // The join is the only string operation performed on fragments.
+    recap: chosen.map((option) => option.fragment).join(' '),
+    headline: BANDS[band].headline,
+    body: BANDS[band].body,
+    bridge: BRIDGE,
+    signoff: SIGNOFF,
+  };
+}

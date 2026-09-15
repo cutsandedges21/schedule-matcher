@@ -87,3 +87,51 @@ export const QUESTIONS: readonly Question[] = [
     ],
   },
 ];
+
+export type BandId = 'clear' | 'edge' | 'manual' | 'core';
+
+export interface Answers {
+  who: WhoValue;
+  how: HowValue;
+  cost: CostValue;
+}
+
+export interface Payoff {
+  score: number;
+  band: BandId;
+  recap: string;
+  headline: string;
+  body: string;
+  bridge: string;
+  signoff: string;
+}
+
+/**
+ * Ascending, first match wins. The final `max` equals the highest possible
+ * score, so the scan is total and there is no fallback branch left untested.
+ *
+ * Band sizes follow the trinomial (1 + x + x^2)^3 = [1,3,6,7,6,3,1]:
+ * clear 1, edge 9, manual 13, core 4. All four are reachable.
+ */
+const BAND_TABLE: readonly { max: number; id: BandId }[] = [
+  { max: 0, id: 'clear' },
+  { max: 2, id: 'edge' },
+  { max: 4, id: 'manual' },
+  { max: 6, id: 'core' },
+];
+
+function optionFor(questionId: QuestionId, value: string): Option {
+  const question = QUESTIONS.find((q) => q.id === questionId)!;
+  return question.options.find((o) => o.value === value)!;
+}
+
+/** Every combination, for exhaustive tests. */
+export const ALL_ANSWERS: readonly Answers[] = QUESTIONS[0].options.flatMap((who) =>
+  QUESTIONS[1].options.flatMap((how) =>
+    QUESTIONS[2].options.map((cost) => ({
+      who: who.value as WhoValue,
+      how: how.value as HowValue,
+      cost: cost.value as CostValue,
+    }))
+  )
+);

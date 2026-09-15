@@ -162,43 +162,41 @@ export const SIGNOFF = "I'm Mossimo. I got tired of asking, so I built this.";
  * to one question, because every band above `clear` is reachable by answer
  * sets that deny that mechanism. The DENIES test enforces this.
  */
+/**
+ * One line each, on purpose.
+ *
+ * Every band used to carry forty to sixty words, and the bulk of it was the
+ * same paragraph four times over — screenshot your schedule, your friends do
+ * the same, the free hours appear. It explained the app to someone who was one
+ * tap from using it, arriving right after they had already tapped three times.
+ * Beats 1 and 2 and the questions do the selling; by the time a student reaches
+ * this screen the only things left worth saying are that they were heard and
+ * who built the thing.
+ *
+ * What survives is the reframe — the sentence that tells a student what their
+ * own answers mean. The product pitch is gone and is not missed.
+ */
 export const BANDS: Record<BandId, { headline: string; body: string }> = {
-  // Exactly one answer set lands here, which is the only reason the singular
-  // "your friend" is safe. Nothing in this band diagnoses a problem.
+  // Exactly one answer set lands here. Nothing in this band diagnoses a
+  // problem: it repeats their own number back and stops.
   clear: {
     headline: 'Nothing about that is broken.',
-    body:
-      "You've got the easy version, and it still costs you two minutes.\n\n" +
-      'Screenshot your schedule once and fix anything it reads wrong. Your friend does the ' +
-      "same. After that the hours you're both free are just there. When someone in the chat " +
-      "asks, you're the one who already knows.",
+    body: 'It still costs you two minutes.',
   },
   // Names no failure mechanism at all, because it is reachable by answer sets
   // that deny each one — including (chat / sorted / minutes), where a scolding
-  // middle band would be flatly wrong.
+  // middle band would be flatly wrong. An offer, not a diagnosis.
   edge: {
     headline: "You don't need a system for this.",
-    body:
-      'You need your week saved somewhere your friends can see it.\n\n' +
-      'Screenshot your schedule once and fix anything it reads wrong. They do the same. ' +
-      "After that the hours you're all free are already worked out. Nothing to send to the chat.",
+    body: 'Just your week, where your friends can see it.',
   },
   manual: {
     headline: "You've been doing that part by hand.",
-    body:
-      "None of that is hanging out. It's the part before hanging out.\n\n" +
-      'Screenshot your schedule once and fix anything it reads wrong. Everyone you add does ' +
-      'the same. After that: every hour all of you are free, and the classes you have in ' +
-      'common, on one screen.\n\nMaking a plan becomes opening the app.',
+    body: "None of that is hanging out. It's the part before.",
   },
   core: {
     headline: 'You just described why this exists.',
-    body:
-      "That's not you being bad at planning. It's a pile of schedules and no way to lay them " +
-      'on top of each other.\n\nScreenshot yours once and fix anything it reads wrong. Up to ' +
-      "five friends do the same. After that there's nothing to work out — the free hours are " +
-      'already there, with the classes you share highlighted.\n\n' +
-      'Making a plan becomes opening the app.',
+    body: 'Not bad planning. Just schedules nobody can lay on top of each other.',
   },
 };
 

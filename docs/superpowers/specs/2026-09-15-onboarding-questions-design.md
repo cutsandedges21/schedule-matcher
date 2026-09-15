@@ -138,74 +138,60 @@ no migration and raises no Law 25 question: nothing new is collected.
 Render order: **recap** (body type, top) → **headline** (large) → **body** →
 **bridge** → one candid photo from the old beat 4 → **signoff**.
 
+One line of body per band, on purpose. Every band used to carry forty to sixty
+words, and the bulk was the same paragraph four times over — screenshot your
+schedule, your friends do the same, the free hours appear. It explained the app
+to a student who was one tap from using it, arriving straight after they had
+already tapped three times. Beats 1 and 2 and the questions do the selling; by
+this screen the only things left worth saying are that they were heard and who
+built it. What survives is the reframe: the sentence telling a student what
+their own answers mean.
+
 ### `clear` — score 0
 
 > **Nothing about that is broken.**
 >
-> You've got the easy version, and it still costs you two minutes.
->
-> Screenshot your schedule once and fix anything it reads wrong. Your friend
-> does the same. After that the hours you're both free are just there. When
-> someone in the chat asks, you're the one who already knows.
+> It still costs you two minutes.
 
-Exactly one answer set reaches this band, which is what makes the singular
-"your friend" provably safe here and nowhere else. Nothing in it diagnoses a
-problem. A student who just said their setup works is not told they are
-secretly suffering; they are offered a future moment instead.
+Exactly one answer set reaches this band. Nothing in it diagnoses a problem — it
+repeats their own number back and stops. A student who just said their setup
+works is not told they are secretly suffering.
 
 ### `edge` — score 1–2
 
 > **You don't need a system for this.**
 >
-> You need your week saved somewhere your friends can see it.
->
-> Screenshot your schedule once and fix anything it reads wrong. They do the
-> same. After that the hours you're all free are already worked out. Nothing to
-> send to the chat.
+> Just your week, where your friends can see it.
 
 The headline is the app declining to sell them a system, which cannot insult a
-student who has just said theirs is fine. This band deliberately names **no**
-failure mechanism, because it is reachable by answer sets that deny every
-individual mechanism — including *(whole group chat / we sort it out / two
-minutes)*, where a scolding middle band would be flatly wrong.
+student who has just said theirs is fine, and the body is an offer rather than a
+diagnosis. This band deliberately names **no** failure mechanism, because it is
+reachable by answer sets that deny every individual one — including *(whole
+group chat / we sort it out / two minutes)*, where a scolding middle band would
+be flatly wrong.
 
 ### `manual` — score 3–4
 
 > **You've been doing that part by hand.**
 >
-> None of that is hanging out. It's the part before hanging out.
->
-> Screenshot your schedule once and fix anything it reads wrong. Everyone you
-> add does the same. After that: every hour all of you are free, and the
-> classes you have in common, on one screen.
->
-> Making a plan becomes opening the app.
+> None of that is hanging out. It's the part before.
 
-"By hand" is true of every student not already using this app, including one
-who said picking a time is quick — quick and manual are not in conflict, and
-the line makes no claim about duration. This band is reachable by a pair, so
-the copy says "all of you" and the contradiction table forbids "the group"
-here.
+"By hand" is true of every student not already using this app, including one who
+said picking a time is quick — quick and manual are not in conflict, and the
+line makes no claim about duration. The body names the coordination step itself
+rather than how much it hurts, so it holds at both ends of a thirteen-set band.
 
 ### `core` — score 5–6
 
 > **You just described why this exists.**
 >
-> That's not you being bad at planning. It's a pile of schedules and no way to
-> lay them on top of each other.
->
-> Screenshot yours once and fix anything it reads wrong. Up to five friends do
-> the same. After that there's nothing to work out — the free hours are already
-> there, with the classes you share highlighted.
->
-> Making a plan becomes opening the app.
+> Not bad planning. Just schedules nobody can lay on top of each other.
 
 A score of 5 is unreachable without at least two weight-2 answers, so every
 student here reported two outright failures and the headline is literally true.
-The middle line is a structural diagnosis rather than an emotional one, so it
-holds for the student whose cost is half an hour as well as the one whose plans
-die. It never asserts how they feel. "Up to five friends" matches
-`MAX_GROUP_FRIENDS` in `src/domain/constants.ts`.
+The body is a structural diagnosis rather than an emotional one, so it holds for
+the student whose cost is half an hour as well as the one whose plans die. It
+never asserts how they feel.
 
 ### Bridge and signoff — constant in all four bands
 

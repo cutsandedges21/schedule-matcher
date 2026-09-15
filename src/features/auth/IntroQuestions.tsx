@@ -176,7 +176,7 @@ export default function IntroQuestions({
           alt={PHOTO.alt}
           width={480}
           height={480}
-          className="aspect-square w-28 rounded-xl object-cover"
+          className="aspect-square w-28 self-center rounded-xl object-cover"
         />
 
         <p className="text-base font-semibold leading-relaxed">{result.signoff}</p>

@@ -88,11 +88,13 @@ export default function IntroQuestions({ onDone }: { onDone: () => void }) {
 
         <h1 className="text-2xl font-bold leading-snug">{result.headline}</h1>
 
-        {/* Keyed by text, which is only safe while no band repeats a paragraph
-            within its own body. Checked: none does. "Making a plan becomes
-            opening the app." is in two bands, but only one band ever renders. */}
-        {result.body.split('\n\n').map((paragraph) => (
-          <p key={paragraph} className="text-base leading-relaxed text-slate-700">
+        {/* Keyed by index, which is the correct choice for once: this list is
+            derived from one static string, is never reordered or filtered, and
+            a <p> holds no state. Keying by the text instead would couple React
+            correctness to copy content — repeat a short line inside one band
+            for rhythm and you get a duplicate key, with no test to catch it. */}
+        {result.body.split('\n\n').map((paragraph, i) => (
+          <p key={i} className="text-base leading-relaxed text-slate-700">
             {paragraph}
           </p>
         ))}

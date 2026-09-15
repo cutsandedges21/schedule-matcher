@@ -1,4 +1,4 @@
-import { lazy, Suspense, type ComponentType, type ReactNode } from 'react';
+import { lazy, Suspense, type ReactNode } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from '@/features/auth/AuthProvider';
 import RequireAuth from '@/features/auth/RequireAuth';
@@ -25,33 +25,6 @@ const ComparePage = lazy(() => import('@/features/compare/ComparePage'));
 const GroupComparePage = lazy(() => import('@/features/compare/GroupComparePage'));
 const PrivacyPage = lazy(() => import('@/features/legal/PrivacyPage'));
 const TermsPage = lazy(() => import('@/features/legal/TermsPage'));
-
-/**
- * Dev-only viewer for onboarding: the prologue, the three questions and the
- * payoff, played by the real components, with controls to jump straight to any
- * of the four payoff bands. See OnboardingPreview.tsx.
- *
- * Onboarding is otherwise unreachable without a fresh account — it mounts only
- * while a signed-in user has no `profiles` row — so there is no way to look at
- * a change to it short of deleting your own. It replaced `/__preview-intro`,
- * which showed the prologue alone and predated the questions entirely.
- *
- * The earlier routes of this kind (`/__preview-upload`, `/__preview-intro`)
- * were deleted once they had done their job; do the same with this one.
- *
- * The DEV check is inside the loader, not just on the `<Route>` below, and that
- * is the whole point of the shape. Guarding only the route leaves the
- * `import()` standing in the module graph, and Rollup emits and preloads the
- * chunk for it regardless of whether anything renders it — the harness would be
- * sitting on the CDN, fetchable, in every production deploy. Here Vite replaces
- * the check with `false`, the branch dies, and the import dies with it: no
- * chunk. `npm run build && grep -r OnboardingPreview dist/assets/*.js` is the
- * check, and it has to come back empty.
- */
-const OnboardingPreview = lazy<ComponentType>(async () => {
-  if (!import.meta.env.DEV) return { default: () => null };
-  return import('@/features/auth/OnboardingPreview');
-});
 
 const shell = (element: ReactNode) => (
   <RequireAuth><AppShell>{element}</AppShell></RequireAuth>
@@ -95,9 +68,6 @@ export default function App() {
     <BrowserRouter>
       <Suspense fallback={<Spinner />}>
         <Routes>
-          {import.meta.env.DEV && (
-            <Route path="/__preview-onboarding" element={<OnboardingPreview />} />
-          )}
           <Route path="/wifi" element={<WifiPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/terms" element={<TermsPage />} />

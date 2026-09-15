@@ -243,7 +243,15 @@ Enforced by construction and then by test:
    |---|---|
    | `who.one` | "five of you", "the group", "everyone in the chat" |
    | `how.sorted` | "takes forever", "you're stuck", "nobody answers" |
-   | `cost.minutes` | "drowning", "never happens", "hours" |
+   | `cost.minutes` | "drowning", "never happens", "takes hours", "costs you hours", "spend hours" |
+
+   The last three began as the bare word "hours" and were narrowed during
+   implementation, when the test caught it colliding with the `clear` and `edge`
+   bodies — both of which say "the hours you're free", describing what the app
+   surfaces rather than what coordination costs. A substring check cannot tell
+   those apart. Narrowing an entry because it is over-broad is a precision fix;
+   narrowing one to dodge a genuine contradiction would defeat the mechanism,
+   and the fix there is always the copy.
 
    A test asserts that for all 27 combinations, `headline + body + bridge`
    contains none of the phrases denied by any chosen answer. This is the

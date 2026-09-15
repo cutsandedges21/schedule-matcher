@@ -78,8 +78,19 @@ export const QUESTIONS: readonly Question[] = [
     id: 'cost',
     prompt: 'Last one. What does that cost you?',
     options: [
+      // This list began as the bare word 'hours', which the contradiction test
+      // immediately caught colliding with the `clear` and `edge` bodies — both
+      // say "the hours you're free", a description of what the app surfaces
+      // rather than a claim about what coordination costs. A substring check
+      // cannot tell "you lose hours" from "your free hours are right there".
+      //
+      // Narrowed to the phrasings that would actually be a lie to someone who
+      // said two minutes. This is a precision fix, not a weakening: the entry
+      // was over-broad and would have blocked correct copy forever. Narrowing
+      // a `denies` entry to dodge a genuine contradiction would be the
+      // opposite, and is never the right move — fix the copy instead.
       { value: 'minutes', label: 'Two minutes', weight: 0, fragment: 'Two minutes, tops.',
-        denies: ['drowning', 'never happens', 'hours'] },
+        denies: ['drowning', 'never happens', 'takes hours', 'costs you hours', 'spend hours'] },
       { value: 'halfhour', label: 'Half an hour, easy', weight: 1,
         fragment: 'Half an hour, every time.', denies: [] },
       { value: 'plan', label: 'The plan itself', weight: 2, fragment: "The plan doesn't happen.",

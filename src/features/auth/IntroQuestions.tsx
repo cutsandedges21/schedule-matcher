@@ -50,9 +50,43 @@ const PHOTO = { src: '/about/us-4.jpg', alt: 'Me at work in a black shirt' };
  */
 export const CHOICE_LOCKOUT_MS = 300;
 
-export default function IntroQuestions({ onDone }: { onDone: () => void }) {
-  const [answers, setAnswers] = useState<Partial<Answers>>({});
-  const [index, setIndex] = useState(0);
+/**
+ * The first question with no answer yet, or `QUESTIONS.length` when there are
+ * none left — which is the payoff.
+ *
+ * Total by construction: it stops at the first gap, so `index` can only reach
+ * `QUESTIONS.length` when every question has an answer. That is what keeps the
+ * `as Answers` cast below sound for a seeded start as well as a tapped one.
+ */
+function firstUnanswered(answers: Partial<Answers>): number {
+  const gap = QUESTIONS.findIndex((question) => !(question.id in answers));
+  return gap === -1 ? QUESTIONS.length : gap;
+}
+
+export default function IntroQuestions({
+  onDone,
+  initialAnswers = {},
+}: {
+  onDone: () => void;
+  /**
+   * Answers to open with, instead of a blank slate.
+   *
+   * This exists for one caller: the dev-only onboarding preview
+   * (OnboardingPreview.tsx, reachable at /__preview-onboarding in dev only).
+   * Four payoff bands sit behind 27 answer combinations, so reviewing the copy
+   * for one band otherwise means remembering which three options lead there and
+   * tapping them again on every reload. Seeding the answers is how the preview
+   * shows a band's real payoff — rendered by this component, from the real
+   * `payoff()` — rather than a mock-up of it that would quietly go stale.
+   *
+   * Nothing in the product passes it, and nothing should: a student always
+   * starts at question one. It is a harness seam, not a resume feature, and
+   * not dead code.
+   */
+  initialAnswers?: Partial<Answers>;
+}) {
+  const [answers, setAnswers] = useState<Partial<Answers>>(initialAnswers);
+  const [index, setIndex] = useState(() => firstUnanswered(initialAnswers));
   const lastChoiceAt = useRef(0);
 
   function choose(id: QuestionId, value: string) {
@@ -108,8 +142,7 @@ export default function IntroQuestions({ onDone }: { onDone: () => void }) {
     );
   }
 
-  // All three answered, so the cast is safe: `index` only reaches
-  // QUESTIONS.length after one `choose` per question.
+  // All three answered, so the cast is safe — see `firstUnanswered`.
   const result = payoff(answers as Answers);
 
   return (

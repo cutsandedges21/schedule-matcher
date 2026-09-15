@@ -89,6 +89,29 @@ describe('IntroQuestions', () => {
     expect(screen.queryByText(QUESTIONS[2].prompt)).toBeNull();
   });
 
+  /**
+   * `initialAnswers` is there for the dev preview (OnboardingPreview.tsx), but
+   * it is still a way into the `as Answers` cast at the payoff, so the two ends
+   * of it are pinned here: a complete seed opens on the payoff, and an
+   * incomplete one resumes at the first gap instead of skipping it.
+   */
+  it('opens on the payoff when seeded with a full set of answers', () => {
+    render(
+      <IntroQuestions
+        onDone={() => {}}
+        initialAnswers={{ who: 'chat', how: 'silence', cost: 'plan' }}
+      />
+    );
+
+    expect(screen.getByText('You just described why this exists.')).toBeDefined();
+  });
+
+  it('resumes at the first unanswered question', () => {
+    render(<IntroQuestions onDone={() => {}} initialAnswers={{ who: 'chat' }} />);
+
+    expect(screen.getByText(QUESTIONS[1].prompt)).toBeDefined();
+  });
+
   it('accepts the next tap once the lockout has passed', () => {
     render(<IntroQuestions onDone={() => {}} />);
 

@@ -11,8 +11,13 @@ import {
 } from '@/domain/slideshow';
 
 /**
- * The three-beat intro that opens onboarding. It plays itself and calls
- * `onDone` when the last beat has faded out.
+ * The two-beat prologue that opens onboarding. It plays itself and calls
+ * `onDone` when the last beat has faded out, which hands over to
+ * IntroQuestions.
+ *
+ * It said "three-beat" while there were four, and would now say it while there
+ * are two. It renders whatever `ABOUT_BEATS` holds, so the count belongs in
+ * slideshow.ts and not in this sentence.
  *
  * There are no controls — no next, no back, no skip — and tapping does
  * nothing. The progress hairline is the only affordance, and its only job is

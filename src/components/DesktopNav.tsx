@@ -1,17 +1,21 @@
 // src/components/DesktopNav.tsx
 import { useLayoutEffect, useRef, useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
-import { NAV_TABS, activeNavIndex } from '@/domain/navTabs';
+import { Link, NavLink, useLocation } from 'react-router-dom';
+import { DESKTOP_NAV_TABS, UTILITY_LINKS, activeNavIndex } from '@/domain/navTabs';
+import UtilityLinks from './UtilityLinks';
 
 interface PillRect {
   left: number;
   width: number;
 }
 
+/** Friends is a full tab up here, so the icon group drops it. */
+const HEADER_UTILITY_LINKS = UTILITY_LINKS.filter((link) => link.to !== '/friends');
+
 /**
  * BottomNav's counterpart above the `lg` breakpoint. A tab bar pinned to the
  * bottom of a 1440px-wide window reads as a mistake, not a design choice —
- * this is the same three destinations in a normal top bar instead.
+ * this is the same destinations in a normal top bar instead.
  */
 export default function DesktopNav() {
   const { pathname } = useLocation();
@@ -25,11 +29,11 @@ export default function DesktopNav() {
   const [pill, setPill] = useState<PillRect | null>(null);
 
   /**
-   * Unlike BottomNav's equal-width tabs, "Schedule"/"Friends"/"Settings" are
-   * sized to their own text, so the pill's position and width have to come
-   * from the DOM rather than a fixed fraction. useLayoutEffect (not
-   * useEffect) so the first paint after a route change already has the
-   * pill in the right place — no frame where it lags behind.
+   * Unlike BottomNav's equal-width tabs, these are sized to their own text,
+   * so the pill's position and width have to come from the DOM rather than a
+   * fixed fraction. useLayoutEffect (not useEffect) so the first paint after a
+   * route change already has the pill in the right place — no frame where it
+   * lags behind.
    *
    * DesktopNav stays mounted below `lg` (hidden via `display: none`, not
    * unmounted — see the header below), where every offset reads as zero. A
@@ -38,7 +42,7 @@ export default function DesktopNav() {
    */
   useLayoutEffect(() => {
     function measure() {
-      const activeEl = itemRefs.current[activeNavIndex(pathname)];
+      const activeEl = itemRefs.current[activeNavIndex(pathname, DESKTOP_NAV_TABS)];
       setPill(activeEl ? { left: activeEl.offsetLeft, width: activeEl.offsetWidth } : null);
     }
 
@@ -49,9 +53,11 @@ export default function DesktopNav() {
 
   return (
     <header className="sticky top-0 z-20 hidden border-b border-slate-200 bg-white/95 backdrop-blur lg:block">
-      <div className="mx-auto flex max-w-5xl items-center justify-between px-8 py-3">
-        <span className="text-lg font-bold text-slate-900">Schedule Matcher</span>
-        <nav>
+      <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-8 py-2">
+        <Link to="/" className="text-lg font-bold text-slate-900">
+          Schedule Matcher
+        </Link>
+        <nav aria-label="Main" className="flex items-center gap-4">
           <ul className="relative flex gap-1">
             {pill && (
               <span
@@ -67,7 +73,7 @@ export default function DesktopNav() {
               as "the one true indicator" rather than one of several
               backgrounds that happen to coincide when it lands on a tab.
             */}
-            {NAV_TABS.map((tab, i) => (
+            {DESKTOP_NAV_TABS.map((tab, i) => (
               <li
                 key={tab.to}
                 ref={(el) => {
@@ -89,6 +95,7 @@ export default function DesktopNav() {
               </li>
             ))}
           </ul>
+          <UtilityLinks links={HEADER_UTILITY_LINKS} />
         </nav>
       </div>
     </header>

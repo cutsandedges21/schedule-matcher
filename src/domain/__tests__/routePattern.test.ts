@@ -24,6 +24,20 @@ describe('routePattern', () => {
     expect(routePattern('/invite/AB12CD')).toBe('/invite/:code');
   });
 
+  it('generalises space ids and invite codes, which identify a private group', () => {
+    const id = '7b0c6f9e-2d7c-4f61-9a39-1b9d5b3c2a10';
+    expect(routePattern(`/spaces/${id}`)).toBe('/spaces/:spaceId');
+    expect(routePattern(`/spaces/${id}/members`)).toBe('/spaces/:spaceId/members');
+    expect(routePattern(`/spaces/${id}/events/new`)).toBe('/spaces/:spaceId/events/new');
+    expect(routePattern(`/spaces/${id}/events/${id}`)).toBe('/spaces/:spaceId/events/:eventId');
+    expect(routePattern(`/spaces/${id}/polls/new`)).toBe('/spaces/:spaceId/polls/new');
+    expect(routePattern('/join/aB3_dE5-fG7hJ9kL1mN2pQ')).toBe('/join/:code');
+  });
+
+  it('keeps the static /spaces/new ahead of /spaces/:spaceId', () => {
+    expect(routePattern('/spaces/new')).toBe('/spaces/new');
+  });
+
   it('falls back to a fixed placeholder for anything unrecognised, rather than logging raw path text', () => {
     expect(routePattern('/definitely/not/a/real/route')).toBe('(unknown route)');
   });

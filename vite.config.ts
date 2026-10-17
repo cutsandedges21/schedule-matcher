@@ -21,6 +21,8 @@ export default defineConfig({
   },
   test: {
     environment: 'node',
-    include: ['src/**/__tests__/**/*.test.{ts,tsx}'],
+    // supabase/tests/db runs every migration in PGlite (in-process Postgres)
+    // and tests RLS and the RPCs as a signed-in student. See its harness.ts.
+    include: ['src/**/__tests__/**/*.test.{ts,tsx}', 'supabase/tests/db/**/*.test.ts'],
   },
 });

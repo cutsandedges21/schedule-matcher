@@ -1,5 +1,6 @@
 // src/domain/compare.ts
 import { DAY_START_MINUTE, DAY_END_MINUTE, MIN_FREE_MINUTES } from './constants';
+import { gapsWithin } from './intervals';
 import { normalizeClassName } from './text';
 import type { ClassMeeting, Interval } from './types';
 
@@ -87,31 +88,11 @@ export function computeGroupFree(schedules: ClassMeeting[][], day: number): Inte
   const busy = schedules
     .flat()
     .filter((c) => c.days.includes(day))
-    .map((c) => ({
-      start: Math.max(c.startMinute, DAY_START_MINUTE),
-      end: Math.min(c.endMinute, DAY_END_MINUTE),
-    }))
-    .filter((i) => i.end > i.start)
-    .sort((a, b) => a.start - b.start);
+    .map((c) => ({ start: c.startMinute, end: c.endMinute }));
 
-  const merged: Interval[] = [];
-  for (const interval of busy) {
-    const last = merged[merged.length - 1];
-    if (last && interval.start <= last.end) last.end = Math.max(last.end, interval.end);
-    else merged.push({ ...interval });
-  }
-
-  const free: Interval[] = [];
-  let cursor = DAY_START_MINUTE;
-  for (const block of merged) {
-    if (block.start - cursor >= MIN_FREE_MINUTES) free.push({ start: cursor, end: block.start });
-    cursor = Math.max(cursor, block.end);
-  }
-  if (DAY_END_MINUTE - cursor >= MIN_FREE_MINUTES) {
-    free.push({ start: cursor, end: DAY_END_MINUTE });
-  }
-
-  return free;
+  // The same merge-and-invert the dated availability engine uses
+  // (src/domain/intervals.ts), on minutes of the day instead of instants.
+  return gapsWithin(busy, { start: DAY_START_MINUTE, end: DAY_END_MINUTE }, MIN_FREE_MINUTES);
 }
 
 /** The two-person case, unchanged in behaviour: a group of exactly two. */

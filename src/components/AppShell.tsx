@@ -2,11 +2,13 @@
 import type { ReactNode } from 'react';
 import BottomNav from './BottomNav';
 import DesktopNav from './DesktopNav';
+import TopBar from './TopBar';
 
 export default function AppShell({ children }: { children: ReactNode }) {
   return (
-    <div className="min-h-dvh pb-20 lg:pb-0">
+    <div className="min-h-dvh pb-24 lg:pb-0">
       <DesktopNav />
+      <TopBar />
       {/* The max-width keeps the full-week grid and card lists at a readable
           line length on a wide monitor instead of stretching edge to edge;
           individual pages keep their own px-4 for the phone layout. */}

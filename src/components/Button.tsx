@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes } from 'react';
+import type { ComponentProps } from 'react';
 import { twMerge } from 'tailwind-merge';
 
 type Variant = 'primary' | 'secondary' | 'ghost';
@@ -47,11 +47,19 @@ export function buttonClassName(
   );
 }
 
+/**
+ * `ComponentProps<'button'>` rather than the attribute interface so `ref`
+ * passes straight through — React 19 hands refs to function components as an
+ * ordinary prop, and ConfirmDialog focuses its Cancel button through one.
+ * `type="button"` by default: inside a form, a bare <button> submits it, and
+ * every Cancel, Remove and tab chip in this app would otherwise do that.
+ */
 export default function Button({
   variant = 'primary',
   size = 'md',
   className,
+  type = 'button',
   ...props
-}: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant; size?: Size }) {
-  return <button {...props} className={buttonClassName(variant, className, size)} />;
+}: ComponentProps<'button'> & { variant?: Variant; size?: Size }) {
+  return <button type={type} {...props} className={buttonClassName(variant, className, size)} />;
 }

@@ -203,7 +203,7 @@ export default function UploadPage() {
     setSaving(true);
     try {
       await saveSchedule(classes);
-      navigate('/', { replace: true });
+      navigate('/schedule', { replace: true });
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Could not save your schedule.');
     } finally {
@@ -239,7 +239,7 @@ export default function UploadPage() {
 
   return (
     <main className="p-4 lg:mx-auto lg:max-w-2xl lg:py-6">
-      <BackButton to="/" />
+      <BackButton to="/schedule" />
 
       <h1 className="mt-1 text-2xl font-bold">Add your schedule</h1>
 

@@ -5,7 +5,11 @@ import RequireAuth from '@/features/auth/RequireAuth';
 import AppShell from '@/components/AppShell';
 import SchoolThemeEffect from '@/features/theme/SchoolThemeEffect';
 import Spinner from '@/components/Spinner';
+import { ToastProvider } from '@/components/Toast';
+import { ConfirmProvider } from '@/components/ConfirmDialog';
+import { NotificationsProvider } from '@/features/notifications/NotificationsProvider';
 import LoginPage from '@/features/auth/LoginPage';
+import HomePage from '@/features/home/HomePage';
 import SchedulePage from '@/features/schedule/SchedulePage';
 import NotFoundPage from '@/features/error/NotFoundPage';
 // Eager, unlike the lazy routes below: /wifi is the first paint for every
@@ -25,6 +29,15 @@ const ComparePage = lazy(() => import('@/features/compare/ComparePage'));
 const GroupComparePage = lazy(() => import('@/features/compare/GroupComparePage'));
 const PrivacyPage = lazy(() => import('@/features/legal/PrivacyPage'));
 const TermsPage = lazy(() => import('@/features/legal/TermsPage'));
+const SpacesPage = lazy(() => import('@/features/spaces/SpacesPage'));
+const CreateSpacePage = lazy(() => import('@/features/spaces/CreateSpacePage'));
+const JoinSpacePage = lazy(() => import('@/features/spaces/JoinSpacePage'));
+const SpaceLayout = lazy(() => import('@/features/spaces/SpaceLayout'));
+const SpaceOverviewPage = lazy(() => import('@/features/spaces/SpaceOverviewPage'));
+const SpaceMembersPage = lazy(() => import('@/features/spaces/SpaceMembersPage'));
+const SpaceSettingsPage = lazy(() => import('@/features/spaces/SpaceSettingsPage'));
+const NotificationsPage = lazy(() => import('@/features/notifications/NotificationsPage'));
+const NotificationSettingsPage = lazy(() => import('@/features/notifications/NotificationSettingsPage'));
 
 const shell = (element: ReactNode) => (
   <RequireAuth><AppShell>{element}</AppShell></RequireAuth>
@@ -35,25 +48,42 @@ function AppRoutes() {
   return (
     <AuthProvider>
       <SchoolThemeEffect />
-      <Suspense fallback={<Spinner />}>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/onboarding" element={<RequireAuth><OnboardingPage /></RequireAuth>} />
-          <Route path="/invite/:username" element={<RequireAuth><InvitePage /></RequireAuth>} />
-          <Route path="/" element={shell(<SchedulePage />)} />
-          <Route path="/upload" element={<RequireAuth><UploadPage /></RequireAuth>} />
-          <Route path="/friends" element={shell(<FriendsPage />)} />
-          <Route path="/settings" element={shell(<SettingsPage />)} />
-          <Route path="/settings/customization" element={shell(<CustomizationPage />)} />
-          {/* The tab was called Profile until the settings rename; old links,
-              bookmarks and home-screen shortcuts still point here. */}
-          <Route path="/profile" element={<Navigate to="/settings" replace />} />
-          <Route path="/u/:username" element={shell(<FriendSchedulePage />)} />
-          <Route path="/compare" element={shell(<GroupComparePage />)} />
-          <Route path="/compare/:username" element={shell(<ComparePage />)} />
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
-      </Suspense>
+      <NotificationsProvider>
+        <ToastProvider>
+          <ConfirmProvider>
+            <Suspense fallback={<Spinner />}>
+              <Routes>
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/onboarding" element={<RequireAuth><OnboardingPage /></RequireAuth>} />
+                <Route path="/invite/:username" element={<RequireAuth><InvitePage /></RequireAuth>} />
+                <Route path="/join/:code" element={<RequireAuth><JoinSpacePage /></RequireAuth>} />
+                <Route path="/" element={shell(<HomePage />)} />
+                <Route path="/schedule" element={shell(<SchedulePage />)} />
+                <Route path="/upload" element={<RequireAuth><UploadPage /></RequireAuth>} />
+                <Route path="/friends" element={shell(<FriendsPage />)} />
+                <Route path="/spaces" element={shell(<SpacesPage />)} />
+                <Route path="/spaces/new" element={shell(<CreateSpacePage />)} />
+                <Route path="/spaces/:spaceId" element={shell(<SpaceLayout />)}>
+                  <Route index element={<SpaceOverviewPage />} />
+                  <Route path="members" element={<SpaceMembersPage />} />
+                  <Route path="settings" element={<SpaceSettingsPage />} />
+                </Route>
+                <Route path="/notifications" element={shell(<NotificationsPage />)} />
+                <Route path="/settings" element={shell(<SettingsPage />)} />
+                <Route path="/settings/customization" element={shell(<CustomizationPage />)} />
+                <Route path="/settings/notifications" element={shell(<NotificationSettingsPage />)} />
+                {/* The tab was called Profile until the settings rename; old links,
+                    bookmarks and home-screen shortcuts still point here. */}
+                <Route path="/profile" element={<Navigate to="/settings" replace />} />
+                <Route path="/u/:username" element={shell(<FriendSchedulePage />)} />
+                <Route path="/compare" element={shell(<GroupComparePage />)} />
+                <Route path="/compare/:username" element={shell(<ComparePage />)} />
+                <Route path="*" element={<NotFoundPage />} />
+              </Routes>
+            </Suspense>
+          </ConfirmProvider>
+        </ToastProvider>
+      </NotificationsProvider>
     </AuthProvider>
   );
 }

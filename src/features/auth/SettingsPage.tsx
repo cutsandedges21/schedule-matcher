@@ -141,6 +141,19 @@ export default function SettingsPage() {
       </section>
 
       <section>
+        <h2 className="text-sm font-semibold text-slate-500">Planning</h2>
+        <ul className="mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white">
+          <li>
+            <NavRow
+              to="/settings/notifications"
+              label="Notifications"
+              description="What your spaces can notify you about"
+            />
+          </li>
+        </ul>
+      </section>
+
+      <section>
         <h2 className="text-sm font-bold text-slate-900">More from me</h2>
         <p className="mt-1 text-xs text-slate-500">
           I also run a few other things outside of class:

@@ -1,18 +1,37 @@
 // src/domain/navTabs.ts
 
+/** A subset of components/Icon's names, kept here so domain/ imports nothing from components/. */
+export type NavIcon = 'home' | 'clock' | 'spaces' | 'calendar' | 'tasks' | 'friends' | 'bell' | 'settings';
+
 export interface NavTab {
   to: string;
   label: string;
+  icon: NavIcon;
 }
 
 /**
- * The single source for BottomNav and DesktopNav, which used to each carry
- * their own copy of this exact array.
+ * The bottom tab bar on a phone, and the first tabs of the desktop header.
+ * Calendar and Tasks join as the fourth and fifth tabs once their pages exist
+ * (design doc §1) — five is the most a 320px-wide bar can hold with a label
+ * under each icon. Never list a tab whose route is not built: it would 404.
  */
 export const NAV_TABS: readonly NavTab[] = [
-  { to: '/', label: 'Schedule' },
-  { to: '/friends', label: 'Friends' },
-  { to: '/settings', label: 'Settings' },
+  { to: '/', label: 'Home', icon: 'home' },
+  { to: '/schedule', label: 'Schedule', icon: 'clock' },
+  { to: '/spaces', label: 'Spaces', icon: 'spaces' },
+];
+
+/**
+ * The desktop header has the room for Friends as a sixth tab — on a phone it
+ * lives in the top bar instead, next to notifications and settings.
+ */
+export const DESKTOP_NAV_TABS: readonly NavTab[] = [...NAV_TABS, { to: '/friends', label: 'Friends', icon: 'friends' }];
+
+/** Icon buttons in the phone top bar (all three) and the desktop header (the last two). */
+export const UTILITY_LINKS: readonly NavTab[] = [
+  { to: '/friends', label: 'Friends', icon: 'friends' },
+  { to: '/notifications', label: 'Notifications', icon: 'bell' },
+  { to: '/settings', label: 'Settings', icon: 'settings' },
 ];
 
 /**
@@ -27,11 +46,11 @@ export const NAV_TABS: readonly NavTab[] = [
  * rather than a bare `startsWith`, which would wrongly match "/settingsx"
  * against "/settings".
  *
- * -1 for a route that is not one of the three nav destinations (compare, a
- * friend's schedule, upload) — those pages have no tab to highlight.
+ * -1 for a route that is not one of the tabs (compare, a friend's schedule,
+ * upload) — those pages have no tab to highlight.
  */
-export function activeNavIndex(pathname: string): number {
-  return NAV_TABS.findIndex((tab) =>
+export function activeNavIndex(pathname: string, tabs: readonly NavTab[] = NAV_TABS): number {
+  return tabs.findIndex((tab) =>
     tab.to === '/' ? pathname === '/' : pathname === tab.to || pathname.startsWith(`${tab.to}/`)
   );
 }

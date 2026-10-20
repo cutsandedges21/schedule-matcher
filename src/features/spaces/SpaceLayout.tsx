@@ -25,10 +25,13 @@ export function useSpace(): SpaceContextValue {
   return useOutletContext<SpaceContextValue>();
 }
 
-// Find a time, Calendar, Tasks, Polls and Resources slot in here as their
-// pages land (plan: docs/superpowers/plans/2026-10-17-spaces-platform.md).
 const SPACE_TABS = [
   { to: '', label: 'Overview', end: true },
+  { to: 'availability', label: 'Find a time' },
+  { to: 'calendar', label: 'Calendar' },
+  { to: 'tasks', label: 'Tasks' },
+  { to: 'polls', label: 'Polls' },
+  { to: 'resources', label: 'Links' },
   { to: 'members', label: 'Members' },
   { to: 'settings', label: 'Settings' },
 ] as const;

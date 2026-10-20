@@ -94,16 +94,18 @@ Space, only returns members of that Space, caps the range at 62 days, and
 returns events from *other* Spaces as anonymous busy time. Direct reads of
 `classes` keep the original friends-only policy.
 
-## 5. Data model (migrations 0016–0021)
+## 5. Data model (migrations 0016–0019)
 
 | Migration | Tables / functions |
 |---|---|
 | 0016_spaces | `spaces`, `space_members`, `space_invites` (links), `space_invitations` (direct), `space_activity`, `notifications`, `notification_preferences`, membership RPCs, `private` helpers |
-| 0017_availability | `profiles.timezone`, `availability_preferences`, `availability_blocks`, `space_availability()` |
-| 0018_events | `space_events`, `event_attendees`, `create_space_event()`, change notifications |
-| 0019_tasks | `space_tasks` (assignments are tasks with subtasks), `task_assignees`, task RPCs |
-| 0020_polls | `polls`, `poll_options`, `poll_votes`, `create_poll()`, `cast_vote()`, `close_poll()`, `get_poll_results()`, poll → event |
-| 0021_resources_reminders | `space_resources`, `sync_my_reminders()` |
+| 0017_availability_events | `profiles.timezone`, `availability_preferences`, `availability_blocks`, `space_events`, `event_attendees`, `create_space_event()`, change notices, `space_availability()` |
+| 0018_tasks_polls | `space_tasks` (assignments are tasks with subtasks), `task_assignees`, `polls`, `poll_options`, `poll_votes`, `create_poll()`, `cast_vote()`, `close_poll()`, `get_poll_results()`, `schedule_poll_option()` |
+| 0019_resources_reminders | `space_resources`, `sync_my_reminders()` |
+
+All four were applied to the live project on 2026-10-20. Every policy and RPC
+is tested against real Postgres (PGlite) in `supabase/tests/db`, which runs
+as part of `npm test`.
 
 Rules that hold everywhere:
 

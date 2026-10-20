@@ -158,6 +158,24 @@ a shape you tap into rather than read. Anyone in the group with no saved
 schedule is called out explicitly, because "no classes" and "free all week"
 are the same thing to `computeGroupFree` and only one of them is true.
 
+## Spaces
+
+A space is one group's shared place: members and roles, invite links, find a
+time, a calendar, tasks, polls, saved links and notifications. Design:
+`docs/superpowers/specs/2026-10-17-spaces-platform-design.md`.
+
+- **Migrations 0016–0019** add it. Apply them in order, like the others.
+- **Permissions live in Postgres.** Every write goes through RLS or an RPC
+  that re-checks the caller's role; the UI only hides buttons.
+- **`npm test` includes database tests.** `supabase/tests/db` runs every
+  migration in PGlite (Postgres in WASM, no Docker) and tests the policies
+  and RPCs as a signed-in student. Change a policy, run the suite.
+- **Availability privacy** is per space: hidden, free/busy only (default), or
+  full details. Other spaces only ever see you as busy.
+- **Reminders have no background job.** `sync_my_reminders()` runs when the
+  app is open, so a reminder shows the next time the student opens it. No
+  email or push.
+
 ## Phase 0 analytics
 
 `app_events` (migration `0009`) plus the existing `extraction_log` answer the

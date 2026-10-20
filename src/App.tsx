@@ -38,6 +38,18 @@ const SpaceMembersPage = lazy(() => import('@/features/spaces/SpaceMembersPage')
 const SpaceSettingsPage = lazy(() => import('@/features/spaces/SpaceSettingsPage'));
 const NotificationsPage = lazy(() => import('@/features/notifications/NotificationsPage'));
 const NotificationSettingsPage = lazy(() => import('@/features/notifications/NotificationSettingsPage'));
+const AvailabilitySettingsPage = lazy(() => import('@/features/availability/AvailabilitySettingsPage'));
+const FindTimePage = lazy(() => import('@/features/availability/FindTimePage'));
+const SpaceCalendarPage = lazy(() => import('@/features/calendar/SpaceCalendarPage'));
+const CalendarPage = lazy(() => import('@/features/calendar/CalendarPage'));
+const EventFormPage = lazy(() => import('@/features/events/EventFormPage'));
+const EventDetailPage = lazy(() => import('@/features/events/EventDetailPage'));
+const SpaceTasksPage = lazy(() => import('@/features/tasks/SpaceTasksPage'));
+const MyTasksPage = lazy(() => import('@/features/tasks/MyTasksPage'));
+const PollsPage = lazy(() => import('@/features/polls/PollsPage'));
+const NewPollPage = lazy(() => import('@/features/polls/NewPollPage'));
+const PollDetailPage = lazy(() => import('@/features/polls/PollDetailPage'));
+const ResourcesPage = lazy(() => import('@/features/resources/ResourcesPage'));
 
 const shell = (element: ReactNode) => (
   <RequireAuth><AppShell>{element}</AppShell></RequireAuth>
@@ -59,12 +71,25 @@ function AppRoutes() {
                 <Route path="/join/:code" element={<RequireAuth><JoinSpacePage /></RequireAuth>} />
                 <Route path="/" element={shell(<HomePage />)} />
                 <Route path="/schedule" element={shell(<SchedulePage />)} />
+                <Route path="/schedule/availability" element={shell(<AvailabilitySettingsPage />)} />
+                <Route path="/calendar" element={shell(<CalendarPage />)} />
+                <Route path="/tasks" element={shell(<MyTasksPage />)} />
                 <Route path="/upload" element={<RequireAuth><UploadPage /></RequireAuth>} />
                 <Route path="/friends" element={shell(<FriendsPage />)} />
                 <Route path="/spaces" element={shell(<SpacesPage />)} />
                 <Route path="/spaces/new" element={shell(<CreateSpacePage />)} />
                 <Route path="/spaces/:spaceId" element={shell(<SpaceLayout />)}>
                   <Route index element={<SpaceOverviewPage />} />
+                  <Route path="availability" element={<FindTimePage />} />
+                  <Route path="calendar" element={<SpaceCalendarPage />} />
+                  <Route path="events/new" element={<EventFormPage />} />
+                  <Route path="events/:eventId" element={<EventDetailPage />} />
+                  <Route path="events/:eventId/edit" element={<EventFormPage />} />
+                  <Route path="tasks" element={<SpaceTasksPage />} />
+                  <Route path="polls" element={<PollsPage />} />
+                  <Route path="polls/new" element={<NewPollPage />} />
+                  <Route path="polls/:pollId" element={<PollDetailPage />} />
+                  <Route path="resources" element={<ResourcesPage />} />
                   <Route path="members" element={<SpaceMembersPage />} />
                   <Route path="settings" element={<SpaceSettingsPage />} />
                 </Route>

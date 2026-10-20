@@ -5,23 +5,11 @@ Branch: `feat/spaces`
 
 Checks after every step: `npx tsc -b`, `npm test` (domain + components + DB).
 
-## Status at handoff (2026-10-17)
+## Status (2026-10-20)
 
-- **Backend complete and tested in PGlite**: migrations 0016–0019 (spaces,
-  availability + events, tasks + polls, resources + reminders). 0017 merged
-  availability and events into one file; 0018 holds tasks AND polls; 0019 is
-  resources + reminders. **None are applied to the live project yet** — apply
-  0016 → 0019 in order (SQL Editor, or `scripts/run-sql.mjs` with a token).
-- **Domain complete with tests**: zonedTime, intervals (shared with
-  computeGroupFree), availability engine, events, spaces.
-- **UI built**: nav (Home / Schedule / Spaces + top bar), Home, Spaces list,
-  create, join link, space overview / members / settings, notifications +
-  settings.
-- **UI not built yet**: Find a time page, space + personal calendar, event
-  form/detail, availability settings (`/schedule/availability`), tasks pages,
-  polls pages, resources page, `tasks.ts` / `polls.ts` domain helpers. When a
-  page lands, add its tab back to NAV_TABS / SPACE_TABS and its route in
-  App.tsx (routePattern.ts already lists them).
+All phases built. Migrations 0016–0019 applied live by Moss on 2026-10-20.
+Not verified in a signed-in browser session (Google sign-in cannot be driven
+from an agent): the first real use may surface UI bugs the tests cannot see.
 
 ## Phase 1 — Inspect and plan
 - [x] Inspect repo, record architecture and conflicts (design doc §1–2)
@@ -36,24 +24,25 @@ Checks after every step: `npx tsc -b`, `npm test` (domain + components + DB).
 - [x] Notifications page (invites land here)
 
 ## Phase 3 — Availability and events
-- [ ] `intervals.ts`, `zonedTime.ts` (DST tests), `availability.ts` (realistic cases)
-- [ ] 0017_availability.sql + 0018_events.sql + DB tests
-- [ ] Availability settings page (timezone, preferences, one-off blocks)
-- [ ] Find a time (plan an event) + heatmap
-- [ ] Space calendar, personal calendar, event form, event detail + RSVP + conflicts
+- [x] `intervals.ts`, `zonedTime.ts` (DST tests), `availability.ts` (realistic cases)
+- [x] 0017_availability_events.sql + DB tests
+- [x] Availability settings page (timezone, preferences, one-off blocks)
+- [x] Find a time (plan an event) + heatmap
+- [x] Space calendar, personal calendar, event form, event detail + RSVP + conflicts
 
 ## Phase 4 — Tasks and polls
-- [ ] 0019_tasks.sql, 0020_polls.sql + DB tests (permissions, voting rules, anonymous results)
-- [ ] `tasks.ts`, `polls.ts` domain + tests
-- [ ] Space tasks, assignments with progress, My Tasks
-- [ ] Polls: general + schedule (suggested from availability), vote, close, tie handling, poll → event
+- [x] 0018_tasks_polls.sql + DB tests (permissions, voting rules, anonymous results)
+- [x] `tasks.ts`, `polls.ts` domain + tests
+- [x] Space tasks, assignments with progress, My Tasks
+- [x] Polls: general + schedule (suggested from availability), vote, close, tie handling, poll → event
 
 ## Phase 5 — Resources and notifications
-- [ ] 0021_resources_reminders.sql + DB tests
-- [ ] Resources page, notification preferences, reminder sync, activity feed
+- [x] 0019_resources_reminders.sql + DB tests
+- [x] Resources page, notification preferences, reminder sync, activity feed
 
 ## Phase 6 — Polish and verification
-- [ ] Dashboard complete, empty states, responsive pass
-- [ ] `supabase/tests/spaces_rls_check.sql` for the live project
-- [ ] README: Spaces section, migration order, env
-- [ ] Full typecheck, tests, build; browser pass
+- [x] Dashboard complete, empty states, responsive pass
+- [ ] `supabase/tests/spaces_rls_check.sql` for the live project (not written; PGlite tests cover the same rules)
+- [x] README: Spaces section, migration order, env
+- [x] Full typecheck, tests, build
+- [ ] Signed-in browser pass (needs Moss: Google sign-in)

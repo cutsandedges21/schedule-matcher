@@ -150,6 +150,12 @@ export default function SchedulePage() {
 
       {error && <p className="px-4 pt-3 text-sm text-rose-600">{error}</p>}
 
+      <p className="px-4 pt-2">
+        <Link to="/schedule/availability" className="text-sm font-medium text-slate-600 underline underline-offset-4">
+          Time zone, preferred hours and one-off changes
+        </Link>
+      </p>
+
       {classes.length === 0 ? (
         <EmptyState
           title="No schedule yet"

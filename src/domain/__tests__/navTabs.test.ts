@@ -7,6 +7,8 @@ describe('activeNavIndex', () => {
     expect(activeNavIndex('/')).toBe(0);
     expect(activeNavIndex('/schedule')).toBe(1);
     expect(activeNavIndex('/spaces')).toBe(2);
+    expect(activeNavIndex('/calendar')).toBe(3);
+    expect(activeNavIndex('/tasks')).toBe(4);
   });
 
   it('matches a subpath of a non-root tab, the same way NavLink without `end` does', () => {
@@ -32,12 +34,12 @@ describe('activeNavIndex', () => {
   });
 
   it('matches Friends as the extra tab on desktop', () => {
-    expect(activeNavIndex('/friends', DESKTOP_NAV_TABS)).toBe(3);
+    expect(activeNavIndex('/friends', DESKTOP_NAV_TABS)).toBe(5);
     expect(activeNavIndex('/u/alice', DESKTOP_NAV_TABS)).toBe(-1);
   });
 
   it('lists only built destinations, in nav order', () => {
-    expect(NAV_TABS.map((tab) => tab.to)).toEqual(['/', '/schedule', '/spaces']);
+    expect(NAV_TABS.map((tab) => tab.to)).toEqual(['/', '/schedule', '/spaces', '/calendar', '/tasks']);
   });
 
   it('keeps every existing destination one tap away: friends, notifications, settings', () => {

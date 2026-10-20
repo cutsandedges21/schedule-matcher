@@ -41,6 +41,10 @@ export interface SpaceEvent {
   createdAt: string;
   updatedAt: string;
   attendees: EventAttendee[];
+  /** Set when the event came from a scheduling poll (0018). */
+  pollId?: string | null;
+  /** Filled in on cross-space lists (the personal calendar). */
+  spaceName?: string | null;
 }
 
 export interface EventSeries {

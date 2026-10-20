@@ -265,6 +265,11 @@ export function formatTimeIn(epochMs: number, timeZone: string): string {
   return `${hour12}:${pad(minute % 60)} ${meridiem}`;
 }
 
+/** "Mon, Oct 20 · 10:30 AM" — one instant on the wall clock of `timeZone`. */
+export function formatInstantIn(epochMs: number, timeZone: string): string {
+  return `${formatDateKey(epochToZoned(epochMs, timeZone).date)} · ${formatTimeIn(epochMs, timeZone)}`;
+}
+
 /** "Mon, Oct 20 · 10:30 AM – 12:00 PM", with the end date added when it differs. */
 export function formatRangeIn(startMs: number, endMs: number, timeZone: string): string {
   const start = epochToZoned(startMs, timeZone);

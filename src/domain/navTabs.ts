@@ -10,15 +10,18 @@ export interface NavTab {
 }
 
 /**
- * The bottom tab bar on a phone, and the first tabs of the desktop header.
- * Calendar and Tasks join as the fourth and fifth tabs once their pages exist
- * (design doc §1) — five is the most a 320px-wide bar can hold with a label
- * under each icon. Never list a tab whose route is not built: it would 404.
+ * The bottom tab bar on a phone, and the first five tabs of the desktop
+ * header. Five is the most a 320px-wide bar can hold with a label under each
+ * icon, so these are the five things a student opens most: what is on, their
+ * own week, their groups, the shared calendar, and what they owe someone.
+ * Never list a tab whose route is not built: it would 404.
  */
 export const NAV_TABS: readonly NavTab[] = [
   { to: '/', label: 'Home', icon: 'home' },
   { to: '/schedule', label: 'Schedule', icon: 'clock' },
   { to: '/spaces', label: 'Spaces', icon: 'spaces' },
+  { to: '/calendar', label: 'Calendar', icon: 'calendar' },
+  { to: '/tasks', label: 'Tasks', icon: 'tasks' },
 ];
 
 /**

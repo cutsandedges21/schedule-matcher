@@ -28,7 +28,7 @@ export default function BottomNav() {
           <span
             aria-hidden
             data-nav-pill
-            className="absolute inset-y-1.5 left-2 w-[calc((100%-1rem)/3)] rounded-2xl bg-slate-100 transition-transform duration-200 ease-out motion-reduce:transition-none"
+            className="absolute inset-y-1.5 left-2 w-[calc((100%-1rem)/5)] rounded-2xl bg-slate-100 transition-transform duration-200 ease-out motion-reduce:transition-none"
             style={{ transform: `translateX(${index * 100}%)` }}
           />
         )}

@@ -29,6 +29,8 @@ describe('BottomNav', () => {
     const cases: Array<[string, string]> = [
       ['/schedule', 'translateX(100%)'],
       ['/spaces', 'translateX(200%)'],
+      ['/calendar', 'translateX(300%)'],
+      ['/tasks', 'translateX(400%)'],
     ];
     for (const [path, transform] of cases) {
       const { unmount } = renderAt(path);
@@ -58,7 +60,7 @@ describe('BottomNav', () => {
 
   it('renders every tab label', () => {
     renderAt('/');
-    for (const label of ['Home', 'Schedule', 'Spaces']) {
+    for (const label of ['Home', 'Schedule', 'Spaces', 'Calendar', 'Tasks']) {
       expect(screen.getByText(label)).toBeDefined();
     }
   });

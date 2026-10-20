@@ -150,6 +150,13 @@ export default function SettingsPage() {
               description="What your spaces can notify you about"
             />
           </li>
+          <li className="border-t border-slate-200">
+            <NavRow
+              to="/schedule/availability"
+              label="Availability"
+              description="Time zone, preferred hours, one-off busy or free times"
+            />
+          </li>
         </ul>
       </section>
 

@@ -31,7 +31,7 @@ const BETA_EMAILS: readonly string[] = [
  * sturdier of the two lists.
  */
 const BETA_USER_IDS: readonly string[] = [
-  'dda1c1b5-6102-4538-9534-f5d080091b4b',
+  'dda1c1b5-6102-4538-9534-f5d080091b4b', // Bianca
 ];
 
 const NORMALISED_EMAILS = new Set(BETA_EMAILS.map((email) => email.toLowerCase()));

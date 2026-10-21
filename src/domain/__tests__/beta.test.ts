@@ -38,4 +38,33 @@ describe('canPickCosmetics', () => {
   ])('keeps the near-miss %s out', (email) => {
     expect(canPickCosmetics(email)).toBe(false);
   });
+
+  // Some testers are listed by user id instead of email. The id alone is
+  // enough — their email can be anything, or missing.
+  it.each([
+    'someone.else@gmail.com',
+    null,
+    undefined,
+  ])('lets a listed user id in with email %p', (email) => {
+    expect(canPickCosmetics(email, 'dda1c1b5-6102-4538-9534-f5d080091b4b')).toBe(true);
+  });
+
+  it('still lets a listed email in when its id is not listed', () => {
+    expect(
+      canPickCosmetics('sportsdude3133@gmail.com', '7b0c6f9e-2d7c-4f61-9a39-1b9d5b3c2a10'),
+    ).toBe(true);
+  });
+
+  it.each([
+    null,
+    undefined,
+    '',
+    '7b0c6f9e-2d7c-4f61-9a39-1b9d5b3c2a10',
+    // near misses on the listed id
+    'dda1c1b5-6102-4538-9534-f5d080091b4c',
+    'dda1c1b5-6102-4538-9534',
+    'dda1c1b5-6102-4538-9534-f5d080091b4b0',
+  ])('keeps an unlisted email with user id %p out', (userId) => {
+    expect(canPickCosmetics('someone.else@gmail.com', userId)).toBe(false);
+  });
 });

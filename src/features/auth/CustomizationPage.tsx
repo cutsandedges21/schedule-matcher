@@ -53,7 +53,7 @@ export default function CustomizationPage() {
   // gets a "coming soon" placeholder instead of a silent bounce back to
   // Settings. This is still only a UI gate, not enforcement — profiles_update
   // still permits the write. See domain/beta.ts.
-  if (!canPickCosmetics(session?.user.email)) {
+  if (!canPickCosmetics(session?.user.email, session?.user.id)) {
     return (
       <main className="flex flex-col gap-6 p-4 pb-6">
         <BackButton to="/settings" />

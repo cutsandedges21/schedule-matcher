@@ -27,9 +27,18 @@ interface Props {
    * the two variants render identically.
    */
   variant?: 'day' | 'week';
+  /**
+   * What tapping does. 'edit' opens the editor; 'view' opens the read-only
+   * details card (room, instructor, days) on a schedule that isn't being edited.
+   */
+  mode?: 'edit' | 'view';
+  /** View mode only: this block's class is the one in the details card. */
+  selected?: boolean;
 }
 
-export default function ClassBlock({ block, onSelect, variant = 'day' }: Props) {
+export default function ClassBlock({
+  block, onSelect, variant = 'day', mode = 'edit', selected = false,
+}: Props) {
   const styles = CLASS_COLORS[block.meeting.color] ?? CLASS_COLORS.indigo;
   const week = variant === 'week';
   const widthPct = 100 / block.laneCount;
@@ -59,7 +68,7 @@ export default function ClassBlock({ block, onSelect, variant = 'day' }: Props) 
   // One constant, so the div and button branches cannot drift apart.
   const className = `absolute overflow-hidden rounded-lg border text-left ${
     week ? 'px-1 py-0.5 lg:px-2 lg:py-1' : 'px-2 py-1'
-  } ${styles.block} ${styles.text}`;
+  } ${styles.block} ${styles.text} ${selected ? 'ring-2 ring-inset ring-slate-900' : ''}`;
 
   // The narrow-week sizes only ever shrink what the day variant shows, so the
   // vertical fit computed above still holds.
@@ -105,19 +114,18 @@ export default function ClassBlock({ block, onSelect, variant = 'day' }: Props) 
     return <div data-class-block="" className={className} style={positioning}>{content}</div>;
   }
 
+  // A class meeting twice a week puts two identical blocks on screen at once in
+  // the week grid, so the day is what tells them apart. The day grid shows one
+  // day at a time and has nothing to disambiguate against.
+  const where = week ? `${block.meeting.name}, ${WEEKDAY_LABELS[block.day]}` : block.meeting.name;
+
   return (
     <button
       type="button"
       data-class-block=""
       onClick={onSelect}
-      // A class meeting twice a week puts two identical blocks on screen at
-      // once in the week grid, so the day is what tells them apart. The day
-      // grid shows one day at a time and has nothing to disambiguate against.
-      aria-label={
-        week
-          ? `Edit ${block.meeting.name}, ${WEEKDAY_LABELS[block.day]}`
-          : `Edit ${block.meeting.name}`
-      }
+      aria-label={mode === 'view' ? `Details for ${where}` : `Edit ${where}`}
+      aria-pressed={mode === 'view' ? selected : undefined}
       className={className}
       style={positioning}
     >

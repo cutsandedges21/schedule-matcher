@@ -164,7 +164,7 @@ export default function SchedulePage() {
         />
       ) : (
         <div className="mt-2">
-          <ScheduleGrid classes={classes} />
+          <ScheduleGrid classes={classes} showDetails />
         </div>
       )}
     </main>

@@ -188,3 +188,54 @@ describe('ScheduleGrid week view in edit mode', () => {
     expect(onDayChange).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('ScheduleGrid class details', () => {
+  const withRoom = meeting({ room: 'Classroom D-210', instructor: 'A. Tremblay', days: [1, 3] });
+
+  it('opens a card with the room when a class is tapped', () => {
+    render(<ScheduleGrid classes={[withRoom]} showDetails />);
+    toWeek();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Details for BIO 101, Mon' }));
+
+    const card = screen.getByRole('region', { name: 'BIO 101 details' });
+    expect(card.textContent).toContain('Classroom D-210');
+    expect(card.textContent).toContain('Mon, Wed');
+    expect(card.textContent).toContain('A. Tremblay');
+  });
+
+  it('closes the card on a second tap', () => {
+    render(<ScheduleGrid classes={[withRoom]} showDetails />);
+    toWeek();
+    const block = screen.getByRole('button', { name: 'Details for BIO 101, Mon' });
+
+    fireEvent.click(block);
+    fireEvent.click(block);
+
+    expect(screen.queryByRole('region', { name: 'BIO 101 details' })).toBeNull();
+  });
+
+  it('says so when no room was listed', () => {
+    render(<ScheduleGrid classes={[meeting()]} showDetails />);
+    toWeek();
+    fireEvent.click(screen.getByRole('button', { name: 'Details for BIO 101, Mon' }));
+
+    expect(screen.getByRole('region', { name: 'BIO 101 details' }).textContent).toContain('Not listed');
+  });
+
+  it('leaves blocks inert without showDetails', () => {
+    render(<ScheduleGrid classes={[withRoom]} />);
+    expect(screen.queryByRole('button', { name: /Details for/ })).toBeNull();
+  });
+
+  it('keeps edit mode in charge when both are given', () => {
+    const onSelectClass = vi.fn();
+    render(<ScheduleGrid classes={[withRoom]} showDetails onSelectClass={onSelectClass} />);
+    toWeek();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Edit BIO 101, Mon' }));
+
+    expect(onSelectClass).toHaveBeenCalledOnce();
+    expect(screen.queryByRole('region', { name: 'BIO 101 details' })).toBeNull();
+  });
+});

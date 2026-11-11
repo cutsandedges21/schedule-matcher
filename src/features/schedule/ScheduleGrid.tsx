@@ -9,6 +9,7 @@ import { minuteFromOffset } from '@/domain/gridTime';
 import DaySelector from './DaySelector';
 import ViewToggle from './ViewToggle';
 import ClassBlock from './ClassBlock';
+import ClassDetails from './ClassDetails';
 import { useLongPress } from './useLongPress';
 import { useScheduleView, type ScheduleView } from './useScheduleView';
 
@@ -37,9 +38,30 @@ interface Props {
    * the day/week switch flipped — so an open sheet can close itself.
    */
   onDayChange?: (day: number) => void;
+  /**
+   * View mode: tapping a class opens a details card (room, days, teacher)
+   * under the grid. Ignored in edit mode, where a tap opens the editor.
+   */
+  showDetails?: boolean;
 }
 
-export default function ScheduleGrid({ classes, onSelectClass, onCreateAt, onDayChange }: Props) {
+export default function ScheduleGrid({
+  classes, onSelectClass, onCreateAt, onDayChange, showDetails = false,
+}: Props) {
+  const [detailId, setDetailId] = useState<string | null>(null);
+  const inspecting = showDetails && !onSelectClass;
+  const detail = inspecting ? classes.find((c) => c.id === detailId) ?? null : null;
+
+  /** Props that make a block open (or close) the details card, in view mode. */
+  function detailProps(meeting: ClassMeeting) {
+    if (!inspecting) return {};
+    return {
+      mode: 'view' as const,
+      selected: meeting.id === detailId,
+      onSelect: () => setDetailId((current) => (current === meeting.id ? null : meeting.id)),
+    };
+  }
+
   const weekendDays = [6, 7].filter((d) => classes.some((c) => c.days.includes(d)));
   const days = [...WEEKDAYS, ...weekendDays];
 
@@ -164,6 +186,7 @@ export default function ScheduleGrid({ classes, onSelectClass, onCreateAt, onDay
                   key={`${block.meeting.id}-${block.day}`}
                   block={block}
                   onSelect={onSelectClass ? () => onSelectClass(block.meeting) : undefined}
+                  {...detailProps(block.meeting)}
                 />
               ))}
             </div>
@@ -197,6 +220,7 @@ export default function ScheduleGrid({ classes, onSelectClass, onCreateAt, onDay
                       onSelect={
                         weekView && onSelectClass ? () => onSelectClass(block.meeting) : undefined
                       }
+                      {...detailProps(block.meeting)}
                     />
                   ))}
               </div>
@@ -204,6 +228,16 @@ export default function ScheduleGrid({ classes, onSelectClass, onCreateAt, onDay
           ))}
         </div>
       </div>
+
+      {inspecting && (
+        <div className="px-4 pb-6">
+          {detail ? (
+            <ClassDetails meeting={detail} onClose={() => setDetailId(null)} />
+          ) : (
+            <p className="text-xs text-slate-500">Tap a class to see its room.</p>
+          )}
+        </div>
+      )}
     </>
   );
 }

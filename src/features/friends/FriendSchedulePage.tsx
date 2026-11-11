@@ -120,7 +120,7 @@ export default function FriendSchedulePage() {
       {classes.length === 0 ? (
         <EmptyState title="No schedule yet" body="They haven't added their schedule yet." />
       ) : (
-        <div className="mt-2"><ScheduleGrid classes={classes} /></div>
+        <div className="mt-2"><ScheduleGrid classes={classes} showDetails /></div>
       )}
     </main>
   );
